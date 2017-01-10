@@ -262,3 +262,8 @@ ALTER SEQUENCE invoice_seq
 /*Õ¨“Â¥ */
 SELECT * FROM SCOTT.EMP;
 SELECT * FROM emp;
+CREATE PUBLIC SYNONYM tempemp FOR scott.emp;
+SELECT * FROM tempemp;
+DROP PUBLIC SYNONYM tempemp;
+
+SELECT userenv('LANG') FROM DUAL;

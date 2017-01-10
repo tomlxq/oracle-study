@@ -231,7 +231,7 @@ SELECT invoice_seq.CURRVAL, invoice_seq.NEXTVAL FROM DUAL;
 SELECT invoice_seq.CURRVAL FROM DUAL;
 
 SELECT invoice_seq.CURRVAL, invoice_seq.NEXTVAL FROM DUAL;
---序列使用
+--使用序列
 DROP TABLE invoice;
 CREATE TABLE invoice
 (
@@ -247,25 +247,18 @@ INSERT INTO invoice
   (invoice_id, vendor_id, invoice_number, invoice_total)
 VALUES
   (invoice_seq.NEXTVAL, 10, 'INV' || invoice_seq.CURRVAL, 100);
-            
-            
 
-SELECT invoice_id, vendor_id, invoice_number, invoice_total
-  FROM invoice;      
+SELECT invoice_id, vendor_id, invoice_number, invoice_total FROM invoice;
   
-  
+--修改序列 
 ALTER SEQUENCE invoice_seq
-INCREMENT BY 2
-
-
+INCREMENT BY 2;
 ALTER SEQUENCE invoice_seq
               INCREMENT BY 2
               MAXVALUE 10
               NOCACHE
-              NOCYCLE;
-              
-                        
-SELECT * FROM SCOTT.EMP;
+              NOCYCLE;                       
 
-SELECT * FROM emp;
 /*同义词*/
+SELECT * FROM SCOTT.EMP;
+SELECT * FROM emp;

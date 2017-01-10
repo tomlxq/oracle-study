@@ -1,0 +1,342 @@
+/*
+基本函数
+  字符型函数
+  数字型函数
+  日期时间函数
+  类型转换函数
+  分组函数
+  其它函数
+分析函数  
+*/
+--upper,lower,initcap
+SELECT * FROM hr.employees;
+SELECT INITCAP(first_name || ' ' || last_name) AS 姓名,
+       LOWER(email) 电子邮件,
+       UPPER(first_name) 姓
+  FROM hr.employees
+ WHERE ROWNUM <= 5;
+
+DECLARE
+  v_namelower VARCHAR2(50) := 'this is lower character';
+  v_nameupper VARCHAR2(50) := 'THIS IS UPPER CHARACTER';
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(UPPER(v_namelower));
+  DBMS_OUTPUT.PUT_LINE(LOWER(v_nameupper));
+  DBMS_OUTPUT.PUT_LINE(INITCAP(v_nameupper));
+END;
+
+--concat,length,instr,substr
+SELECT CONCAT(first_name, last_name) 姓名,
+       email,
+       LENGTH(email) 邮件长度,
+       job_id,
+       INSTR(first_name, 'a') "'a'第一次出现的位置"
+  FROM hr.employees
+ WHERE SUBSTR(job_id, 4) = 'CLERK' AND ROWNUM <= 5;
+
+DECLARE
+  v_str VARCHAR2(20) := 'Thisisastring';
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(v_str);
+  DBMS_OUTPUT.PUT_LINE('SUBSTR(v_str,5,2)：' || SUBSTR(v_str, 5, 2));
+  DBMS_OUTPUT.PUT_LINE('SUBSTR(v_str,-5,2)：' || SUBSTR(v_str, -5, 2));
+  DBMS_OUTPUT.PUT_LINE('SUBSTR(v_str,5,-2)：' || SUBSTR(v_str, 5, -2));
+  DBMS_OUTPUT.PUT_LINE('SUBSTR(v_str,5.23,2.34)：' ||
+                       SUBSTR(v_str, 5.23, 2.43));
+END;
+
+--replace,translate
+DECLARE
+  v_str VARCHAR(50) := 'This is oracle database';
+BEGIN
+  DBMS_OUTPUT.put_line('REPLACE(v_str,''oracle'',''sqlserver'')：' ||
+                       REPLACE(v_str, 'oracle', 'sqlserver'));
+  DBMS_OUTPUT.put_line('REPLACE(v_str,''oracle'')：' ||
+                       REPLACE(v_str, 'oracle'));
+  DBMS_OUTPUT.put_line('TRANSLATE(v_str,''is'',''*'')：' ||
+                       TRANSLATE(v_str, 'is', '*'));
+END;
+--round/trunc/mod
+SELECT ROUND(45.927, 2),
+       ROUND(45.923, 0),
+       ROUND(45.923, -1),
+       TRUNC(45.923),
+       TRUNC(45.923, 2),
+       MOD(45, 12)
+  FROM DUAL;
+SELECT ROUND(SYSDATE), TRUNC(SYSDATE) FROM DUAL;
+SELECT SYSDATE FROM DUAL;
+SELECT * FROM hr.employees;
+
+ALTER SESSION SET nls_date_format = 'yyyy-mm-dd hh24:mi:ss';
+
+--日期相加减
+SELECT SYSDATE - 1 当前日期减1,
+       SYSDATE - (SYSDATE - 100) 两个日期相减,
+       SYSDATE + 5 / 24 当前日期加5小时
+  FROM DUAL;
+SELECT SYSDATE - (SYSDATE - 100) FROM DUAL;
+--months_between/add_months/next_day/last_day
+BEGIN
+  DBMS_OUTPUT.put_line('两个日期之间的差异月份：' ||
+                       MONTHS_BETWEEN('1995-01-01', '1994-11-01'));
+  DBMS_OUTPUT.put_line('向指定日期添加月份：' || ADD_MONTHS(SYSDATE, 6));
+  DBMS_OUTPUT.put_line('下个星期五为：' || NEXT_DAY(SYSDATE, '星期五'));
+  DBMS_OUTPUT.put_line('显示当前月的最后1天：' || LAST_DAY(SYSDATE));
+END;
+--round/trunc日期
+SELECT TRUNC(SYSDATE, 'MONTH'),
+       ROUND(SYSDATE, 'YEAR'),
+       ROUND(SYSDATE, 'DAY'),
+       TRUNC(SYSDATE, 'YEAR'),
+       TRUNC(SYSDATE, 'DAY'),
+       TRUNC(SYSDATE, 'HH24'),
+       TRUNC(SYSDATE, 'MI')
+  FROM DUAL;
+--to_char日期格式化 
+SELECT TO_CHAR(SYSDATE, 'ddspth') FROM DUAL;
+SELECT TO_CHAR(SYSDATE, 'HH24:MI:SS AM') FROM DUAL;
+SELECT TO_CHAR(SYSDATE, 'DD "of" MONTH') FROM DUAL;
+SELECT TO_CHAR(SYSDATE, 'A.D.YYYY"年"-MONTH-DD"日"-DAY') FROM DUAL;
+SELECT TO_CHAR(SYSDATE, 'W') FROM DUAL;
+
+--to_char其它字符格式化
+SELECT TO_CHAR(123.45678, 'L99999.999') FROM DUAL;
+SELECT TO_CHAR(1234, 'C9999') FROM DUAL;
+SELECT TO_CHAR(123456789, 'L999G999G999D99', 'NLS_CURRENCY=%') FROM DUAL;
+--to_date
+SELECT TO_DATE('2010/09/13', 'YYYY-MM-DD', 'NLS_DATE_LANGUAGE=english')
+  FROM DUAL;
+SELECT TO_DATE('20100913', 'YYYY-MM-DD') FROM DUAL;
+--to_number
+SELECT TO_NUMBER('$1234.5678', '$9999.9999') FROM DUAL;
+SELECT TO_NUMBER('$123,456,789.00', '$999G999G999D99') FROM DUAL;
+
+--nvl,nvl2,nullif
+SELECT * FROM dept;
+SELECT last_name 英文名,
+       salary 薪资,
+       NVL(commission_pct, 0) 提成比率,
+       (salary * 12) + (salary * 12 * NVL(commission_pct, 0)) 年度薪水
+  FROM hr.employees;
+SELECT last_name 英文名,
+       salary 薪资,
+       commission_pct 提成,
+       NVL2(commission_pct, salary * 12 * commission_pct, salary * 12) 收入
+  FROM hr.employees
+ WHERE department_id IN (50, 80);
+
+SELECT commission_pct, NULLIF(commission_pct, 0) FROM hr.employees;
+SELECT empno,
+       ename,
+       job,
+       NULLIF(job, '销售人员'),
+       NVL(NULLIF(job, '销售人员'), '业务人员') job
+  FROM emp
+ WHERE deptno = 20;
+
+--coalesce 
+SELECT * FROM emp;
+SELECT empno, ename, mgr, deptno, empno, COALESCE(mgr, deptno, empno) 员工
+  FROM emp
+ WHERE empno > 7700 AND ROWNUM < 10;
+--decode
+SELECT last_name,
+       job_id,
+       salary,
+       DECODE(job_id,
+              'IT_PROG',
+              1.10 * salary,
+              'ST_CLERK',
+              1.15 * salary,
+              'SA_REP',
+              1.20 * salary,
+              salary) REVISED_SALARY
+  FROM hr.employees;
+
+--分析函数
+SELECT ename,
+       deptno,
+       sal,
+       SUM(sal) OVER(ORDER BY deptno, empno) AS 运行总计,
+       SUM(sal) OVER(PARTITION BY deptno ORDER BY empno) AS 分部门运行总计,
+       row_number() OVER(PARTITION BY deptno ORDER BY empno) AS 序列
+  FROM emp
+ ORDER BY deptno, empno;
+
+SELECT ename, deptno, sal, SUM(sal) OVER(ORDER BY ename) 运行总计
+  FROM emp
+ WHERE deptno IN (10, 20)
+ ORDER BY ename;
+ --rank(),dense_rank(),row_number()
+SELECT o.deptno,
+       o.job,
+       SUM(o.sal) 部门职级汇总,
+       RANK() OVER(ORDER BY SUM(o.sal) DESC) 薪资等级,
+       DENSE_RANK() OVER(ORDER BY SUM(o.sal) DESC) DENSE_RANK排名,
+       ROW_NUMBER() OVER(PARTITION BY o.deptno ORDER BY SUM(o.sal) DESC) 分组行号,
+       SUM(SUM(o.sal)) OVER(PARTITION BY o.deptno ORDER BY o.job) 部门薪资运行总计
+  FROM emp o
+ WHERE deptno IN (10, 20, 30) AND job IS NOT NULL
+ GROUP BY o.deptno, o.job
+
+SELECT deptno, empno, ename,job,
+       ROW_NUMBER () OVER (PARTITION BY deptno ORDER BY empno) 分组行号
+  FROM emp WHERE deptno IN (10,20,30) ORDER BY deptno,empno;
+  
+SELECT ename, nvl(sal, 0), AVG(nvl(sal, 0)) OVER()
+  FROM emp
+ WHERE ROWNUM <= 10;
+
+SELECT ename, nvl(sal, 0), AVG(nvl(sal, 0)) OVER(ORDER BY ename)
+  FROM emp
+ WHERE ROWNUM <= 10;
+
+--统计部门薪水及汇总
+SELECT deptno,SUM(sal) 部门薪水,SUM(SUM(sal)) OVER(ORDER BY deptno ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED following)
+FROM emp GROUP BY deptno ORDER BY deptno;
+--统计薪水差异个数
+SELECT empno,
+       ename
+       sal,
+       COUNT(*) OVER(ORDER BY sal RANGE BETWEEN 50 PRECEDING AND 150 FOLLOWING) AS 薪水差异个数
+  FROM emp ORDER BY sal NULLS LAST;
+--按部门分类，按员工排序的条数
+SELECT deptno,empno, ename,
+       COUNT (*) OVER (PARTITION BY deptno ORDER BY empno) 条数小计
+  FROM emp ORDER BY deptno,empno;
+--按部门分类，按员工排序的平均薪水
+SELECT deptno,empno, ename,sal,
+       AVG(sal) OVER (PARTITION BY deptno ORDER BY empno) avg_sal
+  FROM emp ORDER BY deptno,empno;  
+--按部门分类，按员工雇佣时间排序的最小工资和最大工资  
+SELECT deptno,empno, ename,sal,hiredate,
+       MIN(sal) OVER (PARTITION BY deptno ORDER BY hiredate RANGE UNBOUNDED PRECEDING) min_sal,
+       MAX(sal) OVER (PARTITION BY deptno ORDER BY hiredate RANGE UNBOUNDED PRECEDING) max_sal
+  FROM emp ORDER BY deptno,hiredate;  
+  
+--rank()排名跳号，dense_rank()同级同号,row_number()排名不跳号 
+SELECT deptno,
+       empno,
+       ename,
+       sal,
+       RANK() OVER(PARTITION BY deptno ORDER BY empno) RANK集果,
+       dense_rank() OVER(PARTITION BY deptno ORDER BY empno) dense_rank集果,
+       row_number() OVER(PARTITION BY deptno ORDER BY empno) row_number集果
+  FROM emp
+ WHERE deptno IN (10, 20, 30) AND mgr IS NOT NULL
+ ORDER BY DEPTNO;
+SELECT deptno,
+       empno,
+       ename,
+       SUM(sal) dept_sales,
+       RANK() OVER(PARTITION BY deptno ORDER BY SUM(sal) DESC NULLS LAST) 薪资排名_跳号,
+       DENSE_RANK() OVER(PARTITION BY deptno ORDER BY SUM(sal) DESC NULLS LAST) 薪资排名_同级同号,
+       ROW_NUMBER() OVER(PARTITION BY deptno ORDER BY SUM(sal) DESC NULLS LAST) 薪资排名_不跳号
+  FROM emp
+ GROUP BY deptno, empno, ename;
+--max/min(field) keep(dense_rank first/last order by xxx) 
+SELECT * FROM emp WHERE deptno IN (10, 20, 30) ORDER BY deptno,comm;
+SELECT deptno,
+       MIN(comm) KEEP(dense_rank FIRST ORDER BY comm) 最低提成薪水,
+       MAX(comm) KEEP(dense_rank LAST ORDER BY comm) 最高提成薪水
+  FROM emp
+ WHERE deptno IN (10, 20, 30)
+ GROUP BY deptno;
+ 
+ SELECT MIN(empno) KEEP(DENSE_RANK FIRST ORDER BY SUM(sal) DESC NULLS LAST) 薪资排名首位,
+       MIN(empno) KEEP(DENSE_RANK LAST ORDER BY SUM(sal) DESC NULLS LAST) 薪资排名未位
+  FROM emp
+ WHERE sal IS NOT NULL AND deptno IS NOT NULL
+ GROUP BY empno;
+--各部门薪资排名前两名的员工
+SELECT deptno,empno,ename,薪资,薪资排名 FROM (
+ SELECT deptno,empno,ename,SUM(sal) 薪资,RANK() OVER (PARTITION BY deptno ORDER BY SUM(sal) DESC NULLS LAST) 薪资排名
+ FROM emp WHERE deptno IS NOT NULL GROUP BY deptno,empno,ename ORDER BY deptno,薪资 DESC NULLS LAST
+ ) t WHERE t.薪资排名<=2;
+ 
+SELECT deptno, empno, ename, dept_sales, 薪资排名
+  FROM (SELECT deptno,
+               empno,
+               ename,
+               SUM(sal) dept_sales,
+               RANK() OVER(PARTITION BY deptno ORDER BY SUM(sal) NULLS LAST) 薪资排名
+          FROM emp
+         WHERE deptno IS NOT NULL
+         GROUP BY deptno, empno, ename)
+ WHERE 薪资排名 <= 2;
+--first_value(field),last_value(field) 
+ SELECT deptno,empno,sal,
+       FIRST_VALUE(sal) OVER(PARTITION BY deptno order by empno) "第一个值",
+       LAST_VALUE(sal) OVER(PARTITION BY deptno order by empno) "最后一个值"
+FROM emp WHERE deptno IN (10,20);
+--lag(),lead()用法
+SELECT empno,
+       ename,
+       deptno,
+       hiredate,
+       sal,
+       LAG(sal, 1, 0) OVER(PARTITION BY deptno ORDER BY hiredate) 前一个雇员的薪水,
+       LEAD(sal, 1, 0) OVER(PARTITION BY deptno ORDER BY hiredate) 后一个雇员的薪水
+  FROM emp
+ ORDER BY deptno, hiredate;
+
+SELECT * FROM emp ORDER BY deptno,empno;
+--这个函数的参数为NTILE（buckets），这个bucket参数指定了分片的片数
+SELECT *
+  FROM (SELECT deptno,
+               empno,
+               ename,
+               SUM(sal) dept_sales,
+               NTILE(3) OVER(PARTITION BY deptno ORDER BY SUM(sal) NULLS LAST) RANK_RATIO
+          FROM emp
+         WHERE deptno IS NOT NULL
+         GROUP BY deptno, empno, ename)
+ WHERE RANK_RATIO = 1;
+ 
+ SELECT * FROM emp;
+
+/*select trunc(order_dt) day,
+              sum(sale_price) daily_sales,
+              avg(sum(sale_price)) over (order by trunc(order_dt)
+                       range between interval '2' day preceding 
+                                      and interval '2' day following) five_day_avg
+    from hr.cust_order
+  where sale_price is not null */
+
+
+SELECT empno,
+       ename,
+       hiredate,
+       sal,
+       MAX(sal) OVER(ORDER BY hiredate ROWS BETWEEN 10 PRECEDING AND CURRENT ROW) "前10天入职员工最高薪资",
+       MAX(sal) OVER(ORDER BY hiredate ROWS BETWEEN CURRENT ROW AND 10 FOLLOWING) "后10天入职员工最高薪资"
+  FROM emp
+ WHERE deptno IN (10, 20, 30) AND sal IS NOT NULL;
+
+SELECT ename,
+       hiredate,
+       deptno,
+       sal,
+       sal - prev_sal "与前面的差异",
+       sal - next_sal "与后面的差异"
+  FROM (SELECT ename,
+               hiredate,
+               sal,
+               deptno,
+               LAG(sal, 1, 0) OVER(ORDER BY hiredate) AS prev_sal,
+               LEAD(sal, 1, 0) OVER(ORDER BY hiredate) AS next_sal
+          FROM emp
+         WHERE deptno IS NOT NULL AND SAL IS NOT NULL);
+--查询每一年最早入职的员工
+SELECT *
+  FROM (SELECT empno,
+               ename,
+               sal,
+               hiredate,
+               ROW_NUMBER() OVER(PARTITION BY EXTRACT(YEAR FROM hiredate) ORDER BY empno) rn
+          FROM emp
+         WHERE hiredate IS NOT NULL AND
+               EXTRACT(YEAR FROM hiredate) IN (1981, 1982, 1983))
+ WHERE rn = 1;
+ 
