@@ -1,0 +1,280 @@
+/*
+基本的异常处理结构的pl/sql块包含３个部分：
+１.　在定义区，定义异常，如果使用预定义异常的话，则不用在定义区定义异常
+２.　在执行区，可以显示的触发异常，也可以由pl/sql引擎触发异常
+３.　只在执行过程中出了异常，那么执行区中后续的语句将立即停止执行，语句执行流跳转到异常处理区。
+sqlcode
+sqlerrm
+no_data_found
+*/
+
+
+
+--编译时的错误处理
+DECLARE
+   v_count NUMBER;
+BEGIN
+   --由于emp001表并不存在，因此PL/SQL引擎将产生编译时错误
+   SELECT COUNT(*) INTO v_count FROM emp001;
+   DBMS_OUTPUT.PUT_LINE('员工人数为：'||v_count);
+END;  
+
+--异常错误　zero_divide
+DECLARE
+  x NUMBER := &x; --使用参数化的数值
+  y NUMBER := &y;
+  z NUMBER;
+BEGIN
+  z := x + y; --两个数相加       
+  DBMS_OUTPUT.PUT_LINE('x+y=' || z);
+  z := x / y; --两个数相除
+  DBMS_OUTPUT.PUT_LINE('x/y=' || z);
+EXCEPTION
+  WHEN zero_divide THEN
+    dbms_output.put_line(SQLERRM);
+END;
+
+--自定义异常
+SELECT * FROM emp;
+DECLARE
+  e_dup_name EXCEPTION;
+  v_oldname scott.emp.ename%TYPE;
+  v_newname scott.emp.ename%TYPE := '韩妹妹1';
+BEGIN
+  SELECT e.ename INTO v_oldname FROM scott.emp e WHERE e.empno = 9003;
+  IF v_oldname = v_newname THEN
+    RAISE e_dup_name;
+  END IF;
+  INSERT INTO scott.emp
+  VALUES
+    (9006, v_newname, 'clerk', 7566, TRUNC(SYSDATE), 9000, NULL, 30);
+  raise_application_error(-20000, '你们全错了');
+EXCEPTION
+  WHEN e_dup_name THEN
+    dbms_output.put_line('不能插入重复的名字!');
+  WHEN OTHERS THEN
+    dbms_output.put_line('异常编码 ' || SQLCODE || ' 异常信息' || SQLERRM);
+END;
+
+
+DECLARE
+  v_str VARCHAR2(3);
+BEGIN
+  v_str := 'hello,world!';
+EXCEPTION
+  WHEN value_error THEN
+    dbms_output.put_line(SQLCODE||CHR(10)|| SQLERRM);
+END;
+--最多允许有一个声明
+DECLARE
+   e_userdefinedexception   EXCEPTION;
+   e_userdefinedexception   EXCEPTION;
+BEGIN
+   RAISE e_userdefinedexception;
+EXCEPTION
+   WHEN OTHERS THEN
+      NULL;
+END;
+
+DECLARE
+  e_userdefinedexception EXCEPTION; --定义外层外异常
+BEGIN
+  DECLARE
+    e_userdefinedexception EXCEPTION; --在内存块中定义相同的异常
+  BEGIN
+    RAISE e_userdefinedexception; --触发内存块中的异常
+  END;
+  RAISE e_userdefinedexception; --触发外层块中的异常
+EXCEPTION
+  WHEN OTHERS THEN
+    --捕获并处理外层块中的异常
+    DBMS_OUTPUT.put_line('出现了错误' || ' 错误编号：' || SQLCODE || ' 错误名称：' ||
+                         SQLERRM); --显示错误编号和错误消息      
+END;
+
+DECLARE
+  e_outerexception EXCEPTION; --定义外层外异常
+BEGIN
+  DECLARE
+    e_innerexception EXCEPTION; --在内存块中定义相同的异常
+  BEGIN
+    RAISE e_innerexception; --触发内存块中的异常
+    RAISE e_outerexception; --在内存块中触发在外层块中定义的异常
+  END;
+  RAISE e_outerexception; --触发外层块中的异常
+  --RAISE e_innerexception;                --在外层块中触发内存块中的异常是非法的
+EXCEPTION
+  WHEN OTHERS THEN
+    --捕获并处理外层块中的异常
+    DBMS_OUTPUT.put_line('出现了错误' || ' 错误编号：' || SQLCODE || ' 错误名称：' ||
+                         SQLERRM); --显示错误编号和错误消息      
+END;
+
+--exception_init的使用
+DELETE FROM emp WHERE empno IS NULL;
+SELECT * FROM scott.emp;
+ALTER TABLE scott.emp  MODIFY empno NOT NULL;
+DECLARE
+  e_missingnull EXCEPTION;
+  PRAGMA EXCEPTION_INIT(e_missingnull, -1400);--将该异常与-1400进行关联
+BEGIN
+  INSERT INTO scott.emp(empno) VALUES (NULL);
+  COMMIT;
+EXCEPTION
+  WHEN e_missingnull THEN
+    dbms_output.put_line(SQLERRM);
+    ROLLBACK;
+END;
+/*
+raise_application_error是在子程序内部使用时，能够帮助用户从子程序中抛出用户自定义的错误消息。
+这样就能将错误消息报告给应用程序而避免返回未捕获异常，是oracle中的一个内置函数。
+*/
+BEGIN
+  raise_application_error(-20000, '错了');
+EXCEPTION
+  WHEN OTHERS THEN
+    dbms_output.put_line(SQLERRM);
+END;
+
+CREATE OR REPLACE PROCEDURE registeremployee(p_empno  IN emp.empno%TYPE, --员工编号
+                                             p_ename  IN emp.ename%TYPE, --员工名称
+                                             p_sal    IN emp.sal%TYPE, --员工薪资
+                                             p_deptno IN emp.deptno%TYPE --部门编号
+                                             ) AS
+  v_empcount NUMBER;
+BEGIN
+  IF p_empno IS NULL --如果员工编号为NULL则触发错误
+   THEN
+    raise_application_error(-20000, '员工编号不能为空'); --触发应用程序异常
+  ELSE
+    SELECT COUNT(*) INTO v_empcount FROM emp WHERE empno = p_empno; --判断员工编号是否存在
+    IF v_empcount > 0 --如果员工编号已存在
+     THEN
+      raise_application_error(-20001,
+                              '员工编号为：' || p_empno || '的员工已存在！'); --触发应用程序异常
+    END IF;
+  END IF;
+  IF p_deptno IS NULL --如果部门编号为NULL
+   THEN
+    raise_application_error(-20002, '部门编号不能为空'); --触发应用程序异常
+  END IF;
+  INSERT INTO emp --向emp表中插入员工记录
+    (empno, ename, sal, deptno)
+  VALUES
+    (p_empno, p_ename, p_sal, p_deptno);
+EXCEPTION
+  WHEN OTHERS THEN
+    --捕捉应用程序异常
+    raise_application_error(-20003,
+                            '插入数据时出现错误！异常编码：' || SQLCODE || ' 异常描述 ' ||
+                            SQLERRM);
+END;
+/
+BEGIN
+RegisterEmployee(7369, '李明', 2000, NULL);
+END;
+/
+
+
+DECLARE
+   e_nocomm   EXCEPTION;                     --自定义的异常
+   v_comm     NUMBER (10, 2);                --临时保存提成数据的变量
+   v_empno    NUMBER (4)     := &empno;      --从绑定参数中获取员工信息
+BEGIN
+   SELECT comm INTO v_comm FROM emp WHERE empno = v_empno;  --查询并获取员工提成
+   IF v_comm IS NULL                         --如果没有提成
+   THEN 
+      RAISE e_nocomm;                        --触发异常
+   END IF;
+EXCEPTION
+   WHEN e_nocomm THEN                        --处理自定义异常
+      DBMS_OUTPUT.put_line ('选择的员工没有提成！');
+   WHEN NO_DATA_FOUND THEN                    --处理预定义异常
+      DBMS_OUTPUT.put_line ('没有找到任何数据');     
+   WHEN OTHERS THEN                    --处理预定义异常
+      DBMS_OUTPUT.put_line ('任何其他未处理的异常');          
+END;
+
+
+DECLARE
+   v_empno1 NUMBER(4):=&empno1;                            --定义员工查询条件变量
+   v_empno2 NUMBER(4):=&empno2;
+   v_empno3 NUMBER(4):=&empno3;   
+   v_sal1 NUMBER(10,2);                                    --定义保存员工薪资的变量
+   v_sal2 NUMBER(10,2);
+   v_sal3 NUMBER(10,2);      
+BEGIN
+   BEGIN
+   SELECT sal INTO v_sal1 FROM emp WHERE empno=v_empno1;  --查询员工薪资信息
+   EXCEPTION
+   WHEN NO_DATA_FOUND THEN                                 --处理未找到数据的异常
+     DBMS_OUTPUT.PUT_LINE('错误编号：'||SQLCODE||' 错误消息：'||SQLERRM
+                              ||' 触发异常的位置是 1');  
+   END;  
+   BEGIN      
+   SELECT sal INTO v_sal2 FROM emp WHERE empno=v_empno2;
+   EXCEPTION
+   WHEN NO_DATA_FOUND THEN                                 --处理未找到数据的异常
+     DBMS_OUTPUT.PUT_LINE('错误编号：'||SQLCODE||' 错误消息：'||SQLERRM
+                              ||' 触发异常的位置是 2'); 
+   END;  
+   BEGIN   
+   SELECT sal INTO v_sal3 FROM emp WHERE empno=v_empno3;
+   EXCEPTION
+   WHEN NO_DATA_FOUND THEN                                 --处理未找到数据的异常
+     DBMS_OUTPUT.PUT_LINE('错误编号：'||SQLCODE||' 错误消息：'||SQLERRM
+                              ||' 触发异常的位置是 3'); 
+   END;     
+EXCEPTION
+   WHEN NO_DATA_FOUND THEN                                 --处理未找到数据的异常
+     DBMS_OUTPUT.PUT_LINE('错误编号：'||SQLCODE||' 错误消息：'||SQLERRM);   
+END;   
+
+
+DECLARE
+   v_empno1 NUMBER(4):=&empno1;                            --定义员工查询条件变量
+   v_empno2 NUMBER(4):=&empno2;
+   v_empno3 NUMBER(4):=&empno3;   
+   v_sal1 NUMBER(10,2);                                    --定义保存员工薪资的变量
+   v_sal2 NUMBER(10,2);
+   v_sal3 NUMBER(10,2);      
+   v_str VARCHAR2(200);
+BEGIN
+   SELECT sal INTO v_sal1 FROM emp WHERE empno=v_empno1;  --查询员工薪资信息
+   DBMS_OUTPUT.PUT_LINE('v_empno1');   
+   SELECT sal INTO v_sal2 FROM emp WHERE empno=v_empno2;
+   DBMS_OUTPUT.PUT_LINE('v_empno2'); 
+   SELECT sal INTO v_sal3 FROM emp WHERE empno=v_empno3;
+   DBMS_OUTPUT.PUT_LINE('错误编号3'); 
+EXCEPTION
+   WHEN NO_DATA_FOUND THEN                                 --处理未找到数据的异常
+     DBMS_OUTPUT.PUT_LINE('错误编号：'||SQLCODE||' 错误消息：'||SQLERRM
+                              ||DBMS_UTILITY.FORMAT_ERROR_BACKTRACE);   
+END; 
+
+
+SELECT * FROM emp WHERE empno=9003;
+
+DECLARE
+   e_duplicate_name     EXCEPTION;                      --定义异常
+   v_ename              emp.ename%TYPE;                 --保存姓名的变量
+   v_newname            emp.ename%TYPE   := '韩妹妹';   --新插入的员工名称  
+BEGIN   
+   LOOP                                                 --开始循环
+   BEGIN                                                --将语句块嵌入到子块中
+      SAVEPOINT 开始事务;                               --定义一个保存点
+      SELECT ename INTO v_ename FROM emp WHERE empno = 9003;   --开始语句块代码
+      IF v_ename = v_newname
+      THEN
+         RAISE e_duplicate_name;                 --如果产生重复，触发e_duplicate_name异常
+      END IF;
+      INSERT INTO emp VALUES (7881, v_newname, '职员', NULL, TRUNC (SYSDATE), 2000, 200, 20);
+      COMMIT;                                       --提交事务
+      EXIT;                                         --提交完成退出循环
+      EXCEPTION                                     --异常处理语句块
+      WHEN e_duplicate_name THEN
+         ROLLBACK TO 开始事务;                      --回滚事务到检查点位置
+         v_newname:='刘大夏';                       --为产生异常的新员工名重新赋值，重新开始循环执行
+   END;                                            
+   END LOOP;    
+END;
