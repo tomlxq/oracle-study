@@ -1,0 +1,82 @@
+11.2.0.3
+1. 安装必须的包(oralce官方的数据库)
+2. 修改配置参数
+3. 修改/etc/hosts文件
+4. 创建用户和用户组
+5. 创建安装目录
+6. 修改环境变量
+
+挂载oel5.4 iso镜象文件
+mount -o loop /dev/cdrom /mnt/
+df -h
+[root@oracle ~]# cat /etc/yum.repos.d/server.repo
+[server]
+name=oel5.4
+baseurl=file:///mnt/Server
+gpgcheck=0
+yum list all
+yum install oracle-validated
+查看oracle用户
+id oracle 
+创建oracle安装目录　
+mkdir -p /u01/app/oracle 
+改变目录权限
+chown -R oracle.oinstall /u01/ 
+检查权限发现己属于oralce oinstall
+ls -l /u01/
+安装上传工具包
+cd /mnt/Server/
+rpm -ivh lrzsz-0.12.20-22.1.i386.rpm 
+cd /u01/app/oracle/
+rz 
+选择,添加
+p10404530_112030_LINUX_1of7.zip
+p10404530_112030_LINUX_2of7.zip
+unzip p10404530_112030_LINUX_1of7.zip 
+unzip p10404530_112030_LINUX_2of7.zip 
+ls
+删除旧文件
+rm -rf p10404530_112030_LINUX_*
+修改权限
+chown -R oracle.oinstall database/
+ll
+安装包自动创建的oracle账户,修改oracle用户的密码为oracle
+passwd oracle
+su - oracle
+cd /u01/app/oracle
+ll
+cd 
+增加环境变量
+cat .bash_profile  
+export ORACLE_SID=orcl
+export ORACLE_BASE=/u01/app/oracle
+export ORACLE_HOME=$ORACLE_BASE/product/11.2.0/db_1
+export PATH=$PATH:$ORACLE_HOME/bin
+编辑完成后用source编译一下
+source .bash_profile [oracle@oracle ~]$ cd -
+/u01/app/oracle
+cd database/
+./runInstaller
+没有设置图形设置的一个输出,不能安装,设置windows的IP,然后冒号0.0
+export DISPLAY=192.168.21.1:0.0
+提前开启xmanager
+./runInstaller   
+会弹出oracle安装界面
+1. 跳过email设置
+2.　勾选skip software updates.
+3. Install databases software only
+4. Single instance database installation
+5. language: english
+6. Enterprise Edition
+7. 目录核对一下,和之前设置一样就没有问题
+8.　Database administrator group: dba
+	Database operator group: dba
+9. 　校验
+     Fix & Check Again 
+	 用/tmp/CVU_11.2.0.3.0_oracle/runfixup.sh在root脚本下执行一下
+10.　校验没有问题,按一下install
+中间会弹出两个脚本,同样用root执行
+	 
+	 
+
+
