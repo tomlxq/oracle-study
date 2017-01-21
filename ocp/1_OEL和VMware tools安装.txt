@@ -64,5 +64,7 @@ cd vmware-tools-distrib/
 ./vmware-install.pl 
 	
 
-
+Reference:
+1. linux设置网关和ip
+http://blog.csdn.net/zhaozh2000/article/details/6460176
 
