@@ -46,7 +46,7 @@ oracle database server
 		控制文件control file
 		日志文件log file
 		
-其它文件
+其它文件(颈椎口参鬼)
 	参数文件
 	口令文件
 	归档日志
