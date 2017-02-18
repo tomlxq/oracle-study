@@ -1,39 +1,69 @@
 /*
+<<<<<<< HEAD
 ÅäÖÃem¹ÜÀíÆ÷
 1. ´ò¿ªdbca
 2. netmgr
 	Ìí¼Ó¼àÌý
 3.¡¡Æô¶¯¼àÌý lsnrctl start [your_listener_name] (listener control)
 4.¡¡lsnrctl status ²é¿´¼àÌý×´Ì¬
+=======
+é…ç½®emç®¡ç†å™¨
+1. æ‰“å¼€dbca
+2. netmgr
+	æ·»åŠ ç›‘å¬
+3.ã€€å¯åŠ¨ç›‘å¬ lsnrctl start [your_listener_name] (listener control)
+4.ã€€lsnrctl status æŸ¥çœ‹ç›‘å¬çŠ¶æ€
+>>>>>>> 16549245ec5920ce1df0bd26dac116c65e15c408
 	
 	df -h
 */
 
 su - oracle 
 export display=192.168.21.1:0.0 
+<<<<<<< HEAD
 --win7ÖÐ´ò¿ªXmanager
 dbca
 --²é¿´µ±Ç°ÊµÀýµÄ×´Ì¬
 select status from v$instance;
 --Èç¹ûÃ»ÓÐ´ò¿ªÔò´ò¿ª
+=======
+--win7ä¸­æ‰“å¼€Xmanager
+dbca
+--æŸ¥çœ‹å½“å‰å®žä¾‹çš„çŠ¶æ€
+select status from v$instance;
+--å¦‚æžœæ²¡æœ‰æ‰“å¼€åˆ™æ‰“å¼€
+>>>>>>> 16549245ec5920ce1df0bd26dac116c65e15c408
 alter database open;
 
 
 /*
+<<<<<<< HEAD
 ÔËÐÐDBCAÏÔÊ¾configureÑ¡ÏîÎª»ÒÉ«
 ÐÞ¸Ä/etcÏÂµÄoratabÎÄ¼þ
+=======
+è¿è¡ŒDBCAæ˜¾ç¤ºconfigureé€‰é¡¹ä¸ºç°è‰²
+ä¿®æ”¹/etcä¸‹çš„oratabæ–‡ä»¶
+>>>>>>> 16549245ec5920ce1df0bd26dac116c65e15c408
 vi /etc/oratab
 orcl:/u01/app/oracle/product/11.2.0/db_1:<Y|N>
 */
 
 /*
+<<<<<<< HEAD
 ÅäÖÃ¼àÌý
+=======
+é…ç½®ç›‘å¬
+>>>>>>> 16549245ec5920ce1df0bd26dac116c65e15c408
 su - oracle
 export DISPLAY=192.168.21.1:0.0
 netmgr/netca
 host: oracle.localdomain
 port: 1521
+<<<<<<< HEAD
 ¹Ø±Õ´°¿ÚÊ±±£´æÒ»ÏÂ
+=======
+å…³é—­çª—å£æ—¶ä¿å­˜ä¸€ä¸‹
+>>>>>>> 16549245ec5920ce1df0bd26dac116c65e15c408
 lsnrctl start
 */
 
@@ -54,17 +84,30 @@ Solution
 3) create the dbcontrol
   $ emca -config dbcontrol -repos create
 
+<<<<<<< HEAD
 ³¢ÊÔÉÏÊö²½ÖèÎÞÐ§ºó£¬·¢ÏÖremote_login_passwordfile²ÎÊýÔÚÖ®Ç°µÄ²âÊÔÖÐ±»ÐÞ¸ÄÁË£¬¸Ä»ØºóÖÕÓÚ³É¹¦
+=======
+å°è¯•ä¸Šè¿°æ­¥éª¤æ— æ•ˆåŽï¼Œå‘çŽ°remote_login_passwordfileå‚æ•°åœ¨ä¹‹å‰çš„æµ‹è¯•ä¸­è¢«ä¿®æ”¹äº†ï¼Œæ”¹å›žåŽç»ˆäºŽæˆåŠŸ
+>>>>>>> 16549245ec5920ce1df0bd26dac116c65e15c408
 SQL> show parameter remote
 SQL> alter system set remote_login_passwordfile='exclusive' scope=spfile;
 SQL> shutdown immediate
 
+<<<<<<< HEAD
 2. ORA-25153: Temporary Tablespace is Empty   ÁÙÊ±±í¿Õ¼äÎª¿Õ
 	Í¨¹ýÓï¾ä²é¿´£¬ÁÙÊ±±í¿Õ¼äÈ·²»´æÔÚ¡£
 	select FILE_NAME,TABLESPACE_NAME,STATUS from dba_temp_files;
 	alter tablespace temp add tempfile '//oradata/orcl/temp01.dbf';
 */
 /*µ±ÏµÍ³ÅäÖÃºÃÁË£¬https://oracle.example.com:1158/em
+=======
+2. ORA-25153: Temporary Tablespace is Empty   ä¸´æ—¶è¡¨ç©ºé—´ä¸ºç©º
+	é€šè¿‡è¯­å¥æŸ¥çœ‹ï¼Œä¸´æ—¶è¡¨ç©ºé—´ç¡®ä¸å­˜åœ¨ã€‚
+	select FILE_NAME,TABLESPACE_NAME,STATUS from dba_temp_files;
+	alter tablespace temp add tempfile '//oradata/orcl/temp01.dbf';
+*/
+/*å½“ç³»ç»Ÿé…ç½®å¥½äº†ï¼Œhttps://oracle.example.com:1158/em
+>>>>>>> 16549245ec5920ce1df0bd26dac116c65e15c408
 more /u01/app/oracle/product/11.2.0/db_1/install/portlist.ini 
 Enterprise Manager Console HTTP Port (orcl) = 1158
 Enterprise Manager Agent Port (orcl) = 3938
@@ -79,6 +122,7 @@ cd Server/
 rpm -ivh firefox-3.0.12-1.0.1.el5_3.i386.rpm
 
 firefox https://oracle.example.com:1158/em
+<<<<<<< HEAD
 /*
 SQL> conn scott/oracle;
 SQL> select * from tab;
@@ -225,4 +269,16 @@ ls -l catproc.sql
 2. 
 	cd /oradata/orcl/ 
 	du -sh/du -h
+=======
+
+SQL> conn scott/oracle;
+SQL> select * from tab;
+/*
+schema->æ•°æ®åº“->è¡¨ç©ºé—´->æ®µ->åŒº->å—
+å—å¤§å°
+	ç¾¤é›†ä¸€èˆ¬æ˜¯4Kã€€
+	å•å®žä¾‹ 8K
+	show parameter db_block_size
+v$control v$log v$logfile v$instance v$database v$spacefile	
+>>>>>>> 16549245ec5920ce1df0bd26dac116c65e15c408
 */
