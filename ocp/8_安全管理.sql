@@ -187,3 +187,82 @@
 		[oracle@oracle ~]$ lsnrctl status lsnr2
 		sqlplus sys/oracle@orcl_s2 as sysdba
 */
+clear screen --清屏
+create user u02 identified by oracle;
+grant sysdba to u02;
+conn u02/oracle
+show user--此时显示USER is "U02"
+conn u02/oracle as sysdba
+show user--此时显示USER is "SYS"
+--查看审计文件
+cd /u01/app/oracle/admin/orcl/adump/
+--口令文件
+$ORACLE_HOME/dbs/orapwSID
+ls /u01/app/oracle/product/11.2.0/db_1/dbs/orapworcl
+--不允许远程登陆
+ alter system set remote_login_passwordfile='none' scope=spfile;  
+ 
+/*
+linux 中password存放用户
+more /etc/passwd　
+linux 中password存放密码
+more /etc/shadow
+
+select profile from dba_users where username='U01';
+
+SQL> select * from  dba_profiles where profile='DEFAULT';
+SQL> col profile for a10
+SQL> col limit for a10
+SQL> /
+*/
+
+[oracle@oracle install]$ emctl start dbconsole
+OLAP:查询    u01,hr
+OLTP:增删改  OE
+window 1-5  OLTP 70% OLAP 20% other 10%  
+window 6-7  OLTP 20% OLAP 70% other 10%
+
+create user u01
+identified by 123456
+default tablespace users
+temporary tablespace temp
+quota 10m on users
+password expire;
+
+ORA-01045: user U03 lacks CREATE SESSION privilege; logon denied
+grant connect to u03;
+grant create table to u03;
+create table t1(id number);
+SQL> insert into t1 values(1);
+ORA-01950: no privileges on tablespace 'USERS'
+SQL> insert into u03.t1 values(1);
+ORA-01950: no privileges on tablespace 'USERS'
+SQL> alter user u03 quota 10m on users;
+权限：
+	系统：create session、create tablespace
+	对象
+	
+create table hwm as select * from dba_objects;
+select segment_name,segment_type,blocks from dba_segments where segment_name='HWM';
+analyze table hwm estimate statistics;
+select table_name,num_rows,blocks,empty_blocks from dba_tables where table_name='HWM';
+--有多少块容纳数据
+select count(distinct dbms_rowid.rowid_block_number(rowid)||dbms_rowid.rowid_relative_fno(rowid)) "used" from hwm;
+set timing on
+delete from hwm;
+commit;
+--没变
+select table_name,num_rows,blocks,empty_blocks from dba_tables where table_name='HWM';
+--0块容纳数据
+select count(distinct dbms_rowid.rowid_block_number(rowid)||dbms_rowid.rowid_relative_fno(rowid)) "used" from hwm;
+
+--对比可以理解truncate把水位线降下来了
+SQL> create table hwm1 as select * from dba_objects;
+SQL> select segment_name,segment_type,blocks from dba_segments where segment_name='HWM1';
+SQL> analyze table hwm1 estimate statistics;
+SQL> select table_name,num_rows,blocks,empty_blocks from dba_tables where table_name='HWM1';
+SQL> select count(distinct dbms_rowid.rowid_block_number(rowid)||dbms_rowid.rowid_relative_fno(rowid)) "used" from hwm1;
+SQL> truncate table hwm1;
+SQL> analyze table hwm1 estimate statistics ;
+SQL> select table_name,num_rows,blocks,empty_blocks from dba_tables where table_name='HWM1';
+

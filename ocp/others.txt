@@ -1,0 +1,32 @@
+下载电子证书
+https://education.oracle.com/pls/eval-eddap-dcd/ocp_interface.exam_history
+
+以下是OCP/OCM的云盘资料，请查收！如需密码，密码是：togogo    
+
+OCP	
+	链接：https://pan.baidu.com/s/1c1FGjYC 密码：rhqe
+		OCP认证班课程表	
+		Oracle考试操作流程指导书
+	链接：http://pan.baidu.com/s/1jH8JjoE 密码：qij9
+		OCP教学视频	
+		OCP题库
+		OCP学习资料
+	链接：http://pan.baidu.com/s/1mi6U4M8 密码：mva5
+		OCP题库	
+	链接：http://pan.baidu.com/s/1c2Nylgs 密码：70t3
+		OCP第一天上课资料	
+OCM
+	链接：https://pan.baidu.com/s/1c3jmLC 密码：qm5h
+		OCM课程表	
+		Oracle考试操作流程指导书
+	请学员直接与欧灿荣老师（oucanrong@togogo.net）或授课老师联系
+		OCM教学视频	
+		OCM题库
+		OCM学习资料
+	链接：http://pan.baidu.com/s/1o7Hxvke 密码：su03
+		OCM第一天上课资料	
+
+1. VMware虚拟机启动时提示internal error 的处理方法
+cmd->services.msc->开启VMware Authorization Service
+出现此种错的主要错误是，换了操作系统，是其中的系统支持服务没有打开造成的。
+处理方法：打开计算管理器，选择服务与支持项，开启VMware Authorization Service服务项目，并将其设置为开机启动
