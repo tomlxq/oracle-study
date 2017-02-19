@@ -526,4 +526,52 @@ SQL> select * from v$log;
 极点五笔如何切换繁简输入法？
 ctrl+j
 */
+物理备份: 数据文件、日志文件、控制文件
+逻辑备份: 全库、表空间、schema、表 imp/exp impdp/expdp
 
+冷备份：脱机
+热备份：联机
+
+完全备份
+不完全备份
+增量备份
+
+完全恢复
+不完全恢复
+
+一致性备份
+非一致性备份
+
+archivelog
+	正常运行、异常关闭：有效
+	正常关闭：有效
+noarchivelog
+	正常运行、异常关闭：无效
+	正常关闭：有效 
+RMAN
+	recover manager
+	[oracle@oracle ~]$ rman target /
+	RMAN> show all;
+	RMAN> backup tablespace users format '/u01/app/oracle/backup/orcl/orcl_users%U.bak';
+	RMAN> list backup;
+	--查看现在的数据文件大小
+	[oracle@oracle orcl]$ cd /oradata/
+	[oracle@oracle oradata]$ du -sh
+	RMAN> exit
+	[oracle@oracle ~]$ sqlplus / as sysdba
+	SQL> create table new_tab tablespace users as select * from t1;
+	[oracle@oracle ~]$ cd /oradata/orcl/
+	[oracle@oracle orcl]$ rm -rf user01.dbf 
+	SQL> startup force
+	[oracle@oracle trace]$ pwd
+	/u01/app/oracle/diag/rdbms/orcl/orcl/trace
+	[oracle@oracle trace]$ tail -200f alert_orcl.log 
+	RMAN> list failure;
+		-->a:backup-->b:create table--->c:missing--|--解决故障
+		-->a:user01.dbf 
+		  ----------------------------->c:	
+		restore datafile 4; 恢复到a,cp备份到文件丢失的位置
+		recover datafile 4; 恢复到c
+		alter database datafile 4 online
+	RMAN> advise failure;
+	RMAN> repair failure;
