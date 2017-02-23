@@ -20,6 +20,11 @@ scn: system change number 系统更改号
 		如果所有stop scn都有值，说明数据库是正常关闭
 		这时要实例恢复instance recover,不需要人工干预（检查scn号，将重做日志里的操作写入数据数据）
 */
+begin
+载入数据-->buffer cache
+修改数据-->redo log buffer、buffer cache(脏缓冲s)
+提交数据-->LGWR进程,redo log buffer写入online redo log
+ckpt------>更新数据库头信息(system checkpoint scn-->controlfile,logfile,datafile),buffer cache写入到data file
 /*
 实验1: 如何启用归档
 	SQL> archive log list

@@ -30,6 +30,8 @@
 		fbda
 	来源回收站閃回數據歸檔區（指定特定的表）
 	主要是和undo分開,可以長時間保留
+	清除数据
+	SQL> alter flashback archive fla1 purge before timestamp(systimestamp - interval '1' day);
 闪回数据库flashback database
 	1. 啟用歸檔模式
 		如何查看归档
@@ -329,15 +331,24 @@ SQL> flashback table t1 to before drop rename to t3; 闪回t1表时，重命名�
 
 实验7：閃回數據歸檔
 	1.　創建表空間
-		create tablespace tbs1 datafile '/oradata/orcl/tbs1.dbf' size 50m
+		create tablespace tbs1 datafile '/oradata/orcl/tbs1.dbf' size 50m;
 	2. 創建閃回數據歸檔
-		create flashback archive fla1 default tablespace tbs1 quota 10g retention 5 year;
+		create flashback archive default fla1  tablespace tbs1 quota 10g retention 5 year;
 	3. 對表啟用表跟蹤
 		alter table t1 flashback archive fla1;
 	4. 記錄scn、數據增刪改
 		select * from t1 of scn ...
 	5. 後面恢復與閃回版本查詢和閃回事務是一樣的
-	
+
+SQL> col FILE_NAME for a30
+SQL> select FILE_NAME,FILE_ID,TABLESPACE_NAME from dba_data_files;
+		FILE_NAME                         FILE_ID TABLESPACE_NAME
+		------------------------------ ---------- ------------------------------
+		/oradata/orcl/user01.dbf                4 USERS
+		/oradata/orcl/sysaux01.dbf              2 SYSAUX
+		/oradata/orcl/system01.dbf              1 SYSTEM
+		/u01/app/oracle/dbda                    6 FBDA1
+		/oradata/orcl/undotbs2.dbf              7 UNDOTBS2	
 SQL> create tablespace tbs1 datafile '/oradata/orcl/tbs1.dbf' size 50m;
 SQL> create flashback archive fla1 tablespace tbs1 quota 10g retention 5 year;
 SQL> alter table t2 flashback archive fla1;
@@ -525,22 +536,23 @@ SQL> select * from v$log;
 
 极点五笔如何切换繁简输入法？
 ctrl+j
+
+SCN号
+	介质故障
+	实例故障
+闪回
+	闪回版本查询
+	闪回事务
+	闪回表
+	闪回数据归档
+	闪回丢弃
+	闪回数据库
+		一般生产不用，测试环境才用一下
+RMAN	
+	数据恢复顾问
 */
-物理备份: 数据文件、日志文件、控制文件
-逻辑备份: 全库、表空间、schema、表 imp/exp impdp/expdp
+	
 
-冷备份：脱机
-热备份：联机
-
-完全备份
-不完全备份
-增量备份
-
-完全恢复
-不完全恢复
-
-一致性备份
-非一致性备份
 
 archivelog
 	正常运行、异常关闭：有效
@@ -550,6 +562,17 @@ noarchivelog
 	正常关闭：有效 
 RMAN
 	recover manager
+
+实验10：用rman恢复
+	步骤：
+		1.作备份 
+			backup tablespace users format ''
+		2.一些操作，创建表，删除数据文件user01.dbf 
+		3.用rman指令恢复
+			list failure
+			advise failure
+			repaire failure
+		
 	[oracle@oracle ~]$ rman target /
 	RMAN> show all;
 	RMAN> backup tablespace users format '/u01/app/oracle/backup/orcl/orcl_users%U.bak';
