@@ -137,5 +137,6 @@ Question:
 	ORA-01078: failure in processing system parameters
 	LRM-00109: could not open parameter file '/u01/app/oracle/product/11.2.0/db_1/dbs/initorcl.ora'
 
+
 Reference:
 http://blog.csdn.net/zhengwei125/article/details/48502765

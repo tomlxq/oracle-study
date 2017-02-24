@@ -6,77 +6,134 @@
 5. 创建安装目录
 6. 修改环境变量
 
-挂载oel5.4 iso镜象文件
-mount -o loop /dev/cdrom /mnt/
-df -h
-[root@oracle ~]# cat /etc/yum.repos.d/server.repo
-[server]
-name=oel5.4
-baseurl=file:///mnt/Server
-gpgcheck=0
-yum list all
-yum install oracle-validated
-查看oracle用户
-id oracle 
-创建oracle安装目录　
-mkdir -p /u01/app/oracle 
-改变目录权限
-chown -R oracle.oinstall /u01/ 
-检查权限发现己属于oralce oinstall
-ls -l /u01/
-安装上传工具包
-cd /mnt/Server/
-rpm -ivh lrzsz-0.12.20-22.1.i386.rpm 
-cd /u01/app/oracle/
-rz 
-选择,添加
-p10404530_112030_LINUX_1of7.zip
-p10404530_112030_LINUX_2of7.zip
-unzip p10404530_112030_LINUX_1of7.zip 
-unzip p10404530_112030_LINUX_2of7.zip 
-ls
-删除旧文件
-rm -rf p10404530_112030_LINUX_*
-修改权限
-chown -R oracle.oinstall database/
-ll
-安装包自动创建的oracle账户,修改oracle用户的密码为oracle
-passwd oracle
-su - oracle
-cd /u01/app/oracle
-ll
-cd 
-增加环境变量
-cat .bash_profile  
-export ORACLE_SID=orcl
-export ORACLE_BASE=/u01/app/oracle
-export ORACLE_HOME=$ORACLE_BASE/product/11.2.0/db_1
-export PATH=$PATH:$ORACLE_HOME/bin
-编辑完成后用source编译一下
-source .bash_profile [oracle@oracle ~]$ cd -
-/u01/app/oracle
-cd database/
-./runInstaller
-没有设置图形设置的一个输出,不能安装,设置windows的IP,然后冒号0.0
-export DISPLAY=192.168.21.1:0.0
-提前开启xmanager
-./runInstaller   
-会弹出oracle安装界面
-1. 跳过email设置
-2.　勾选skip software updates.
-3. Install databases software only
-4. Single instance database installation
-5. language: english
-6. Enterprise Edition
-7. 目录核对一下,和之前设置一样就没有问题
-8.　Database administrator group: dba
-	Database operator group: dba
-9. 　校验
-     Fix & Check Again 
-	 用/tmp/CVU_11.2.0.3.0_oracle/runfixup.sh在root脚本下执行一下
-10.　校验没有问题,按一下install
-中间会弹出两个脚本,同样用root执行
+1.　挂载oel5.4 iso镜象文件
+	mount -o loop /dev/cdrom /mnt/
+	df -h
+	[root@oracle ~]# cat /etc/yum.repos.d/server.repo
+	[server]
+	name=oel5.4
+	baseurl=file:///mnt/Server
+	gpgcheck=0
+	yum list all
+	yum install oracle-validated
+	查看oracle用户
+	id oracle 安装完成发现oracle用户己自动创建出来了
+2.　创建oracle安装目录　
+	mkdir -p /u01/app/oracle 
+	改变目录权限
+	chown -R oracle.oinstall /u01/ 
+	检查权限发现己属于oralce oinstall
+	ls -l /u01/
+3.	安装上传工具包
+	cd /mnt/Server/
+	rpm -ivh lrzsz-0.12.20-22.1.i386.rpm 
+3.	安装所需要的包
+	[root@ocm ~]# vi yum.sh
+	yum install binutils* -y
+	yum install compat* -y
+	yum install elfutils* -y
+	yum install gcc* -y
+	yum install glibc* -y
+	yum install kernel* -y
+	yum install ksh* -y
+	yum install libaio* -y
+	yum install libgcc* -y
+	yum install libgomp* -y
+	yum install libstdc* -y
+	yum install make* -y
+	yum install sysstat* -y
+	[root@ocm ~]# chmod 755 yum.sh 
+	[root@ocm ~]# ./yum.sh 
+
+4.	上传oracle安装包
+	cd /u01/app/oracle/
+	rz 
+	选择,添加
+	p10404530_112030_LINUX_1of7.zip
+	p10404530_112030_LINUX_2of7.zip
+	unzip p10404530_112030_LINUX_1of7.zip 
+	unzip p10404530_112030_LINUX_2of7.zip 
+	ls
+	删除旧文件
+	rm -rf p10404530_112030_LINUX_*
+	修改权限
+	chown -R oracle.oinstall database/
+	ll
+5. 
+	安装包自动创建的oracle账户,修改oracle用户的密码为oracle
+	passwd oracle
+	su - oracle
+	cd /u01/app/oracle
+	ll
+	cd 
+	增加环境变量
+	cat .bash_profile  
+	export ORACLE_SID=orcl
+	export ORACLE_BASE=/u01/app/oracle
+	export ORACLE_HOME=$ORACLE_BASE/product/11.2.0/db_1
+	export PATH=$PATH:$ORACLE_HOME/bin
+	编辑完成后用source编译一下
+	source .bash_profile 
+6. 安装oracle
+	su - oracle
+	cd /u01/app/oracle
+	cd database/
+	./runInstaller
+	没有设置图形设置的一个输出,不能安装,设置windows的IP,然后冒号0.0
+	export DISPLAY=192.168.21.1:0.0
+	提前开启xmanager
+	./runInstaller   
+	会弹出oracle安装界面
+	1. 跳过email设置
+	2.　勾选skip software updates.
+	3. Install databases software only
+	4. Single instance database installation
+	5. language: english
+	6. Enterprise Edition
+	7. 目录核对一下,和之前设置一样就没有问题
+	8.　Database administrator group: dba
+		Database operator group: dba
+	9. 　校验
+		 Fix & Check Again 
+		 用/tmp/CVU_11.2.0.3.0_oracle/runfixup.sh在root脚本下执行一下
+	10.　校验没有问题,按一下install
+	中间会弹出两个脚本,同样用root执行
 	 
 	 
+1. ORA-00845: MEMORY_TARGET not supported on this system
+[root@ocm ~]# df -h | grep shm
+tmpfs                1014M     0 1014M   0% /dev/shm
+[root@ocm ~]# mount -o remount,size=2G /dev/shm 
+[root@ocm ~]# df -h | grep shm
+tmpfs                 2.0G     0  2.0G   0% /dev/shm
+
+来自Oracle的官方解析是：
+Starting with Oracle Database 11g, the Automatic Memory Management feature requires more shared memory (/dev/shm)and file descriptors. The size of the shared memory should be at least the greater of MEMORY_MAX_TARGET and MEMORY_TARGET for each Oracle instance on the computer. If MEMORY_MAX_TARGET or MEMORY_TARGET is set to a non zero value, and an incorrect size is assigned to the shared memory, it will result in an ORA-00845 error at startup.
+简单来说就是 MEMORY_MAX_TARGET 的设置不能超过 /dev/shm 的大小
+
+2. SecureCRT中解决SQLPLUS上下左右键问题
+	1 下载安装包rlwrap: rlwrap-0.30.tar.gz
+		http://utopia.knoware.nl/~hlub/uck/rlwrap/
+	2  install rlwrap：
+		wget "http://utopia.knoware.nl/~hlub/rlwrap/rlwrap-0.37.tar.gz"
+		tar -xzvf rlwrap-0.37.tar.gz
+		cd rlwrap-0.37
+		./configure && make && make check && make install
+		 
+		执行 ./configure && make && make check && make install 报错:
+		You need the GNU readline library(ftp://ftp.gnu.org/gnu/readline/ ) to build
+		this program!
+		 
+		PS:解决办法, 安装相关组件,  如:  yum install readline*
+		然后再执行  ./configure && make && make check && make install
+
+	3 使用
+	   切换到oracle用户，编辑.bash_profile文件，
+	   #su - oracle
+	   #vi .bash_profile
+	   在后边加上如下内容：
+		  alias sqlplus='rlwrap sqlplus'
+		  alias rman='rlwrap rman'
+		  stty erase ^h 
 
 
