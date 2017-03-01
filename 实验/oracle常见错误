@@ -1,0 +1,5 @@
+SQL> startup
+ORA-00845: MEMORY_TARGET not supported on this system
+[oracle@oracle ~]$  df -h|grep shm
+tmpfs                1014M  484M  530M  48% /dev/shm
+[root@oracle ~]# mount -t tmpfs shmfs -o size=2g /dev/shm

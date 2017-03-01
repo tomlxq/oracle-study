@@ -78,3 +78,6 @@ SQL> select * from RC_DATABASE;
 	rman target /									不会写到catalog库
 	rman target / catalog rc_admin/oracle@emrep_s	会写到catalog库
 	
+	
+	[oracle@oracle dbs]$ df -h | grep shm 
+	
