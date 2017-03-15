@@ -350,3 +350,6 @@ ORA-39149: cannot link privileged user to non-privileged user
 去源机子
 [oracle@ocm exp]$ sqlplus sys/oracle@emrep as sysdba   
 SQL> grant exp_full_database to scott;
+
+emctl start dbcontrol
+
