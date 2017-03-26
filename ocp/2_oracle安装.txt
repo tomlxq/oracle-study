@@ -7,6 +7,7 @@
 6. 修改环境变量
 
 1.　挂载oel5.4 iso镜象文件
+	在虚拟机中选中你的虚拟机，右键->settings->CD/DVD(IDE)->Use ISO Image file,勾选Connected,Connect at power on 
 	mount -o loop /dev/cdrom /mnt/
 	df -h
 	[root@oracle ~]# cat /etc/yum.repos.d/server.repo
@@ -14,6 +15,7 @@
 	name=oel5.4
 	baseurl=file:///mnt/Server
 	gpgcheck=0
+	
 	yum list all
 	yum install oracle-validated
 	查看oracle用户
@@ -27,7 +29,7 @@
 3.	安装上传工具包
 	cd /mnt/Server/
 	rpm -ivh lrzsz-0.12.20-22.1.i386.rpm 
-3.	安装所需要的包
+4.	安装所需要的包
 	[root@ocm ~]# vi yum.sh
 	yum install binutils* -y
 	yum install compat* -y
@@ -45,7 +47,7 @@
 	[root@ocm ~]# chmod 755 yum.sh 
 	[root@ocm ~]# ./yum.sh 
 
-4.	上传oracle安装包
+5.	上传oracle安装包
 	cd /u01/app/oracle/
 	rz 
 	选择,添加
@@ -98,7 +100,8 @@
 		 用/tmp/CVU_11.2.0.3.0_oracle/runfixup.sh在root脚本下执行一下
 	10.　校验没有问题,按一下install
 	中间会弹出两个脚本,同样用root执行
-	 
+
+
 	 
 1. ORA-00845: MEMORY_TARGET not supported on this system
 [root@ocm ~]# df -h | grep shm

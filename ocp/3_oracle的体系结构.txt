@@ -8,22 +8,50 @@ oracle database server
 	实例Instance->内存(SGA)+进程
 		内存结构
 			数据库高速缓冲区 database buffer cache
-				脏缓冲区dirty buffer 	发生DML操作的缓冲区,脏列表
-				自由缓冲区free buffer	当'脏缓冲区'的内容被写入数据文件后,因为该缓冲区与相应数据文件部分内容一致
-				忙缓冲区 pinned buffer 	服务器进程正在访问的缓冲区
+				分类:
+					脏缓冲区dirty buffer 	
+						发生DML操作的缓冲区,脏列表
+					自由缓冲区free buffer	
+						当'脏缓冲区'的内容被写入数据文件后,因为该缓冲区与相应数据文件部分内容一致
+					忙缓冲区 pinned buffer 	
+						服务器进程正在访问的缓冲区
 				缓存最近从数据库中读了的数据块,并可供其它客户进行进程共享
 				非标准块大小的支持
-				多个缓冲区
-					保留缓冲区keep buffer cache	用来保留在内存中最有可能保存的对象,db_keep_cache_size
-					循环缓冲区recycle buffer cache	用在保留在内存重用机会不大的内存块,db_recycle_cache_size
-					默认的缓冲区default buffer cache	此池始终存在,相当于一个实例数据库高速缓冲区保存和循环区以外的部分,db_cache_size
+				Oracle 用LRU（Least Recently Used）算法来管理数据高速缓冲区（原理请参考ORACLE服务器组成.pdf p9）	
 			重做日志缓冲区 redo log buffer
-				用来记录对数据缓冲区数据进行的修改,可以循环使用,当用户运行DML(insert,update,delete)以及DDL(create,alter,drop)语句时,会改变数据高速缓存中的相应缓冲区.在修改这些缓冲区之前,oracle会自动生成重做项,首先将这些缓冲区的变化记载到重做日志缓冲区中.当重做日志缓冲区填满时,数据库将重做日志缓冲区的内容写入日志文件.在系统发生故障时,可能通过重做项重新执行对数据库的修改,实现对实例的恢复.参数log_buffer
+				用来记录对数据缓冲区数据进行的修改,可以循环使用
+				在系统发生故障时,可能通过重做项重新执行对数据库的修改,实现对实例的恢复.
+				重做日志缓冲区大小 show parameter LOG_BUFFER
+				过程：
+					用户->DML(insert,update,delete)/DDL(create,alter,drop)->
+					oracle会自动生成重做项->
+					这些缓冲区的变化记载到重做日志缓冲区->
+					改变数据高速缓存中的相应缓冲区。
+					重做日志缓冲区填满->重做日志缓冲区的内容写入日志文件
+				每条重做项记载了修改的时间、被修改的块、修改位置以及新数据
+				
 			共享池 share pool(shared_pool_size)
 				库缓存library cache
 					共享sql、共享pl/sql
 				数据字典缓冲区dictionary cache
 					保存的数据的参数信息,(如数据库结构,用户)的表和视图
+				show parameter shared_pool_size
+			Java 池（Java Pool）
+			大池（Large Pool）
+			流池（Stream Pool）
+			多个缓冲区
+				数据库管理员（DBA ）可以通过创建多个缓冲池来提高数据库缓冲区高速缓存的性能。
+				用户可以指定方案对象（schema object）（表，簇，索引，及分区）使用相应的缓冲池，以便控制数据被移出缓存区的时机。
+				分类：
+					保留缓冲区keep buffer cache	
+						用来保留在内存中最有可能保存的对象
+						show parameter db_keep_cache_size
+					循环缓冲区recycle buffer cache	
+						用在保留在内存重用机会不大的内存块
+						show parameter DB_RECYCLE_CACHE_SIZE
+					默认的缓冲区default buffer cache	
+						此池始终存在,相当于一个实例数据库高速缓冲区保存和循环区以外的部分
+						show parameter DB_CACHE_SIZE
 		进程processes:
 			LGWR:DBWR工作之前，1/3,>1M,每隔3s,commit
 			DBWn(db_writer_processes):ckpt、脏缓冲达到阀值、搜索数据块找不到自由缓冲区、数据写入时间到、表空脱机或进入只读状态、执行删除或截断表，alter tablespace...begin backup
@@ -43,15 +71,31 @@ oracle database server
 		sql工作区
 	database->存储数据
 		数据文件data file
-		控制文件control file
+			用于存放数据的数据文件（DataFiles）
 		日志文件log file
+			用于保护数据不丢失的联机重做日志文件（Online Redolog Files）
+				记录了用户对数据的各项操作，用于保护数据不丢失。
+				以日志组的形式存在。
+				每个Oracle 数据库至少包含两个日志组。
+		控制文件control file
+			用于连接Oracle 实例和数据库所需要的控制文件（Control Files）。
+				记录了数据库的各项信息
+				是连接Oracle 实例和Oracle 数据库的桥梁
+				每个Oracle 数据库包含1-8 个控制文件
 		
 其它文件(颈椎口参鬼)
 	参数文件
+		记录了Oracle 实例的各项信息。
+		分为动态和静态初始化参数文件。
 	口令文件
+		存放特定用户的口令。
 	归档日志
+		相当于联机重做日志文件的备份，用于保护数据不丢失。
 	警告文件
+		警告文件由连续的消息和错误组成。
+		可以查看到Oracle 内部错误、块损坏错误以及非默认的初始化参数值等。
 	追踪文件
+		存放后台进程和服务器进程的跟踪信息。
 
 自动共享管理内存asmm(automatic shared memory management)
 	10g设置sga总容量大小sga_target(sga)、sga_max_size,11g为memory_target（sga+pga）、memory_max_target
@@ -166,3 +210,184 @@ http://www.linuxidc.com/Linux/2011-07/38076.htm
 http://docs.oracle.com/cd/E11882_01/index.html
 
 
+
+实验：查询 SGA 的大小
+SQL> show parameter sga
+
+NAME                                 TYPE        VALUE
+------------------------------------ ----------- ------------------------------
+lock_sga                             boolean     FALSE
+pre_page_sga                         boolean     FALSE
+sga_max_size                         big integer 812M
+sga_target                           big integer 0
+
+SQL> select * from v$sga;
+
+NAME                      VALUE
+-------------------- ----------
+Fixed Size              1348244
+Variable Size         499125612
+Database Buffers      343932928
+Redo Buffers            5124096
+
+SQL> show parameter sga_target
+
+NAME                                 TYPE        VALUE
+------------------------------------ ----------- ------------------------------
+sga_target                           big integer 0
+--显示 SGA 最大值
+SQL> show parameter sga_max_size
+
+NAME                                 TYPE        VALUE
+------------------------------------ ----------- ------------------------------
+sga_max_size                         big integer 812M
+--Linux查看sga的样子
+[root@oel ~]# ipcs -m | grep ora
+0x00000000 917513     oracle    640        4096       0                       
+0x00000000 950282     oracle    640        4096       0                       
+0xd3ac6c80 983051     oracle    640        4096       0  
+
+SQL> select pool,name,bytes from v$sgastat order by pool,name;
+
+SQL> select * from v$sgainfo;
+
+NAME                                  BYTES RES
+-------------------------------- ---------- ---
+Fixed SGA Size                      1348244 No
+Redo Buffers                        5124096 No
+Buffer Cache Size                 343932928 Yes
+Shared Pool Size                  146800640 Yes
+Large Pool Size                     4194304 Yes
+Java Pool Size                      4194304 Yes
+Streams Pool Size                         0 Yes
+Shared IO Pool Size                       0 Yes
+Granule Size                        4194304 No
+Maximum SGA Size                  849530880 No
+Startup overhead in Shared Pool    58403900 No
+
+NAME                                  BYTES RES
+-------------------------------- ---------- ---
+Free SGA Memory Available         343932928
+
+12 rows selected.
+SQL> show parameter sga_target
+
+NAME                                 TYPE        VALUE
+------------------------------------ ----------- ------------------------------
+sga_target                           big integer 0
+SQL> show parameter memory_target
+
+NAME                                 TYPE        VALUE
+------------------------------------ ----------- ------------------------------
+memory_target                        big integer 812M
+
+实验：查询块大小
+数据库块是Oracle 数据库I/O 的最小单位。
+每个数据库都可以通过参数DB_BLOCK_SIZE 指定标准块大小（2k、4k、8k、16k、32k），默认为8k
+SQL> show parameter db_block_size
+
+NAME                                 TYPE        VALUE
+------------------------------------ ----------- ------------------------------
+db_block_size                        integer     8192
+
+
+实验：
+保留缓冲区和循环缓冲区并非默认缓冲区的子集。可以使用BUFFER_POOL 子句对对象定义默认的缓冲区。
+EXAMPLE:
+CREATE INDEX cust_idx …
+STORAGE (BUFFER_POOL KEEP);
+ALTER TABLE oe.customers
+STORAGE (BUFFER_POOL RECYCLE);
+
+
+实验：
+
+[oracle@oel ~]$ sqlplus / as sysdba　--连接数据库
+SQL> show parameter db_cache_size --显示数据库高速缓冲区的大小
+
+NAME                                 TYPE        VALUE
+------------------------------------ ----------- ------------------------------
+db_cache_size                        big integer 0
+
+SQL> show parameter db_keep_cache_size --显示保留缓冲区的大小
+
+NAME                                 TYPE        VALUE
+------------------------------------ ----------- ------------------------------
+db_keep_cache_size                   big integer 0
+
+SQL> show parameter db_recycle_cache_size --显示循环缓冲区的大小
+
+NAME                                 TYPE        VALUE
+------------------------------------ ----------- ------------------------------
+db_recycle_cache_size                big integer 0
+
+
+SQL> ALTER SYSTEM SET db_cache_size=500m; --修改数据库高速缓冲区的大小 失败????
+
+SQL> alter system flush buffer_cache; --清空数据库高速缓冲区
+
+System altered.
+
+实验：
+--禁用自动内存管理
+alter system set memory_target = 0 scope=both;
+
+--禁用SGA自动内存管理
+alter system set sga_target=0 scope=both;
+
+实验：
+--查看进程
+ ps -ef | grep ora
+ SQL> select paddr,name,description from v$bgprocess where paddr!='00';
+
+PADDR    NAME  DESCRIPTION
+-------- ----- ----------------------------------------------------------------
+52BD2CA4 PMON  process cleanup
+52BD42EC VKTM  Virtual Keeper of TiMe process
+52BD4E10 GEN0  generic0
+52BD5934 DIAG  diagnosibility process
+52BD6458 DBRM  DataBase Resource Manager
+52BD37C8 PSP0  process spawner 0
+52BD6F7C DIA0  diagnosibility process 0
+52BD7AA0 MMAN  Memory Manager
+52BD85C4 DBW0  db writer process 0
+52BD90E8 LGWR  Redo etc.
+52BD9C0C CKPT  checkpoint
+
+PADDR    NAME  DESCRIPTION
+-------- ----- ----------------------------------------------------------------
+52BDA730 SMON  System Monitor Process
+52BDEA08 SMCO  Space Manager Process
+52BDB254 RECO  distributed recovery
+52BE21BC CJQ0  Job Queue Coordinator
+52BDF52C QMNC  AQ Coordinator
+52BDBD78 MMON  Manageability Monitor Process
+52BDC89C MMNL  Manageability Monitor Process 2
+
+18 rows selected.
+SQL> show parameter proc
+
+NAME                                 TYPE        VALUE
+------------------------------------ ----------- ------------------------------
+aq_tm_processes                      integer     1
+cell_offload_processing              boolean     TRUE
+db_writer_processes                  integer     1
+gcs_server_processes                 integer     0
+global_txn_processes                 integer     1
+job_queue_processes                  integer     1000
+log_archive_max_processes            integer     4
+processes                            integer     150
+processor_group_name                 string
+
+--调整数据写进程个数
+SQL> alter system set db_writer_processes=1 scope=spfile;
+
+--检查点
+SQL> show parameter log_checkpoint
+NAME                                 TYPE        VALUE
+------------------------------------ ----------- ------------------------------
+log_checkpoint_interval              integer     0
+log_checkpoint_timeout               integer     1800
+log_checkpoints_to_alert             boolean     FALSE
+
+12/28
