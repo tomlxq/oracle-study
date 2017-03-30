@@ -24,7 +24,7 @@
 	mkdir -p /u01/app/oracle 
 	改变目录权限
 	chown -R oracle.oinstall /u01/ 
-	检查权限发现己属于oralce oinstall
+	检查权限发现己属于oracle oinstall
 	ls -l /u01/
 3.	安装上传工具包
 	cd /mnt/Server/
@@ -131,12 +131,12 @@ Starting with Oracle Database 11g, the Automatic Memory Management feature requi
 		然后再执行  ./configure && make && make check && make install
 
 	3 使用
-	   切换到oracle用户，编辑.bash_profile文件，
-	   #su - oracle
-	   #vi .bash_profile
-	   在后边加上如下内容：
-		  alias sqlplus='rlwrap sqlplus'
-		  alias rman='rlwrap rman'
-		  stty erase ^h 
+		切换到oracle用户，编辑.bash_profile文件，
+		#su - oracle
+		#vi .bash_profile
+		在后边加上如下内容：
+		alias sqlplus='rlwrap sqlplus'
+		alias rman='rlwrap rman'
+		stty erase ^h 
 
 

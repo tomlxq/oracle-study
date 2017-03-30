@@ -854,3 +854,970 @@ E. WITH CHECK OPTION用于限制通过视图显示的列。
 A选项不正确，只要是简单视图，使用别名的列是可以使用UPDATE命令更新的。
 C选项不正确，视图被删除，不影响基表的数据。
 E选项不正确，WITH CHECK OPTION用于限制通过视图更改基表的条件，禁止更改不包含在子查询条件里的行。
+
+39. 
+Evaluate the following command: 
+CREATE TABLE employees
+(employee_id      NUMBER(2) PRIMARY KEY, 
+last_name        VARCHAR2(25) NOT NULL, 
+department_id    NUMBER(2)NOT NULL, 
+job_id           VARCHAR2(8), 
+salary        NUMBER(10,2));
+You issue the following command to create a view that displays the IDs and last names of the sales staff
+in the organization:
+CREATE OR REPLACE VIEW sales_staff_vu AS   
+SELECT employee_id, last_name,job_id
+FROM employees
+WHERE job_id LIKE 'SA_%' 
+WITH CHECK OPTION
+Which two statements are true regarding the above view? (Choose two.)
+A. It allows you to insert rows into the  EMPLOYEES table .
+B. It allows you to delete details of the existing sales staff from the EMPLOYEES table.
+C. It allows you to update job IDs of the existing sales staff to any other job ID in the EMPLOYEES table. 
+D. It allows you to insert IDs, last names, and job IDs of the sales staff from the view if it is used in multitable INSERT statements.
+Answer: BD
+答案解析：
+如果硬要选两个，我觉得应该是BC
+
+SQL> drop table employees;
+
+Table dropped.
+
+SQL> CREATE TABLE employees
+  2  (employee_id NUMBER(6) PRIMARY KEY,
+  3  last_name VARCHAR2(25) NOT NULL,
+  4  department_id NUMBER(4)NOT NULL,
+  5  job_id VARCHAR2(10),
+  6  salary NUMBER(10,2));
+
+Table created.
+SQL> CREATE OR REPLACE VIEW sales_staff_vu AS   
+  2  SELECT employee_id, last_name,job_id
+  3  FROM employees
+  4  WHERE job_id LIKE 'SA_%' 
+  5  WITH CHECK OPTION;
+
+View created.
+SQL> insert into employees select EMPLOYEE_ID,LAST_NAME,DEPARTMENT_ID,JOB_ID,SALARY from hr.employees
+where job_id like 'SA_%' and rownum<6;
+SQL>  select * from employees;
+
+EMPLOYEE_ID LAST_NAME                 DEPARTMENT_ID JOB_ID         SALARY
+----------- ------------------------- ------------- ---------- ----------
+        145 Russell                              80 SA_MAN          14000
+        146 Partners                             80 SA_MAN          13500
+        147 Errazuriz                            80 SA_MAN          12000
+        148 Cambrault                            80 SA_MAN          11000
+        149 Zlotkey                              80 SA_MAN          10500
+SQL>  select * from sales_staff_vu;
+
+EMPLOYEE_ID LAST_NAME                 JOB_ID
+----------- ------------------------- ----------
+        145 Russell                   SA_MAN
+        146 Partners                  SA_MAN
+        147 Errazuriz                 SA_MAN
+        148 Cambrault                 SA_MAN
+        149 Zlotkey                   SA_MAN
+SQL> insert into sales_staff_vu values (501,'lihua','SA_MAN');
+insert into sales_staff_vu values (501,'lihua','SA_MAN')
+*
+ERROR at line 1:
+ORA-01400: cannot insert NULL into ("SYS"."EMPLOYEES"."DEPARTMENT_ID")
+ A答案：A答案错误，DEPARTMENT_ID为非空，不能插入null值。
+SQL> delete from sales_staff_vu where EMPLOYEE_ID=145;
+
+1 row deleted.
+B答案：正确，可以删除
+
+SQL> update sales_staff_vu set JOB_ID='MK_REP' where EMPLOYEE_ID=146;
+update sales_staff_vu set JOB_ID='MK_REP' where EMPLOYEE_ID=146
+       *
+ERROR at line 1:
+ORA-01402: view WITH CHECK OPTION where-clause violation
+
+
+SQL> update sales_staff_vu set JOB_ID='SA_REP' where EMPLOYEE_ID=146;
+
+1 row updated.
+C答案：可以将job_id更新为SA_开头的，不能更新为其他不是SA_开头的。
+SQL> insert into sales_staff_vu 
+   select EMPLOYEE_ID,LAST_NAME,JOB_ID from employees
+   where job_id like 'SA_%';
+insert into sales_staff_vu
+*
+ERROR at line 1:
+ORA-01400: cannot insert NULL into ("SYS"."EMPLOYEES"."DEPARTMENT_ID")
+D答案：multitable INSERT不能插入非空
+SQL> create or replace view sales_staff_vu_new as
+ select employee_id,last_name,job_id,department_id from employees
+where job_id like 'SA_%'
+ with check option
+  5   /
+
+View created.
+SQL>  insert into sales_staff_vu_new
+  select EMPLOYEE_ID,LAST_NAME,JOB_ID,DEPARTMENT_ID from hr.employees where job_id like 'SA_%'
+  and EMPLOYEE_ID in (150,151);
+
+
+2 rows created.
+SQL> select * from sales_staff_vu_new;
+
+EMPLOYEE_ID LAST_NAME                 JOB_ID     DEPARTMENT_ID
+----------- ------------------------- ---------- -------------
+        146 Partners                  SA_REP                80
+        147 Errazuriz                 SA_MAN                80
+        148 Cambrault                 SA_MAN                80
+        149 Zlotkey                   SA_MAN                80
+        150 Tucker                    SA_REP                80
+        151 Bernstein                 SA_REP                80
+
+6 rows selected.
+
+QUESTION 40
+View the Exhibit to examine the description for the SALES and PRODUCTS tables.
+You want to create a SALE_PROD view by executing the following SQL statement:
+CREATE VIEW sale_prod
+AS SELECT p.prod_id, cust_id, SUM(quantity_sold) "Quantity" , SUM(prod_list_price) "Price"
+FROM products p, sales s
+WHERE p.prod_id=s.prod_id
+GROUP BY p.prod_id, cust_id;
+Which statement is true regarding the execution of the above statement?
+A. The view will be created and you can perform DML operations on the view.
+B. The view will be created but no DML operations will be allowed on the view.
+C. The view will not be created because the join statements are not allowed for creating a view.
+D. The view will not be created because the GROUP BY clause is not allowed for creating a view.
+Correct Answer: B
+
+
+答案解析：
+A错误，此视图为复杂视图，带有group by子句，不能对视图进行DML操作，
+B正确，可以创建成功，但不能进行DML操作。
+SQL> select count(*) from sh.products;
+
+  COUNT(*)
+----------
+        72
+SQL> select count(*) from sh.sales;
+
+  COUNT(*)
+----------
+    918843
+SQL> CREATE OR REPLACE VIEW sale_prod
+AS SELECT p.prod_id, cust_id, SUM(quantity_sold) "Quantity" , SUM(prod_list_price) "Price"
+FROM sh.products p, sh.sales s
+  4  WHERE p.prod_id=s.prod_id
+  5  GROUP BY p.prod_id, cust_id;
+
+View created.
+SQL> select * from sale_prod where rownum<5;
+
+   PROD_ID    CUST_ID   Quantity      Price
+---------- ---------- ---------- ----------
+        13          2          4    3599.96
+        13          9          5    4499.95
+        13         11          1     899.99
+        13         23          1     899.99
+ 
+View created.
+C错误，可以通过join来连接两张表创建视图。
+D错误，可以通过group by 子句来创建视图。
+
+QUESTION 41
+Which two statements are true regarding views? (Choose two.)
+A. A subquery that defines a view cannot include the GROUP BY clause.
+B. A view that is created with the subquery having the DISTINCT keyword can be updated.
+C. A view that is created with the subquery having the pseudo column ROWNUM keyword cannot be
+updated.
+D. A data manipulation language ( DML) operation can be performed on a view that is created with the
+subquery having all the NOT NULL columns of a table.
+Correct Answer: CD
+答案解析：
+参考：http://blog.csdn.net/rlhua/article/details/12790467
+A错误，创建视图的子查询可以使用group by子句。
+B错误，子查询中带有DISTINCT 不能对视图进行DML操作。
+C正确，子查询中带有ROWNUM 关键字不能对视图进行DML操作。
+D正确，所有非空列都可以进行DML操作。
+
+QUESTION 42
+Which three statements are true regarding views? (Choose three.)
+A. Views can be created only from tables.
+B. Views can be created from tables or other views.
+C. Only simple views can use indexes existing on the underlying tables.
+D. Both simple and complex views can use indexes existing on the underlying tables.
+E. Complex views can be created only on multiple tables that exist in the same schema.
+F. Complex views can be created on multiple tables that exist in the same or different schemas.
+Correct Answer: BDF
+答案解析：
+参考：http://blog.csdn.net/rlhua/article/details/12790467
+A错误，视图是一种基于表或其它视图的逻辑表。
+B正确，视图是一种基于表或其它视图的逻辑表。
+C错误，简单视图和复杂视图都能使用相关表的索引。
+D正确，同C.
+E错误，可以是不同schema间。
+F正确，复杂视图的子查询可以是相同或者不同的schema间的多张表。
+
+QUESTION 43
+Evaluate the following CREATE SEQUENCE statement:
+CREATE SEQUENCE seq1
+START WITH 100
+INCREMENT BY 10
+MAXVALUE 200
+CYCLE
+NOCACHE;
+The SEQ1 sequence has generated numbers up to the maximum limit of 200. You issue the following
+SQL statement:
+SELECT seq1.nextval FROM dual;
+What is displayed by the SELECT statement?
+A. 1
+B. 10
+C. 100
+D. an error
+Correct Answer: A
+解析：
+指定cycle选项后，如果达到了该序列的最大值（maxvalue)，则会从它的最小值（minvalue)开始，产生下一个值。
+注意，不是从start with开始。如果没指定minvalues，则相当于指定nominvalue选项，则minvalue的值为1。
+SQL> CREATE SEQUENCE seq1
+START WITH 100
+INCREMENT BY 10
+MAXVALUE 200
+CYCLE
+NOCACHE;
+SQL> SELECT seq1.nextval FROM dual;
+
+   NEXTVAL
+----------
+       100
+
+SQL> /
+
+   NEXTVAL
+----------
+       110
+
+SQL> /
+
+   NEXTVAL
+----------
+       120
+
+SQL> /
+
+   NEXTVAL
+----------
+       130
+
+SQL> /
+
+   NEXTVAL
+----------
+       140
+
+SQL> /
+
+   NEXTVAL
+----------
+       150
+
+SQL> /
+
+   NEXTVAL
+----------
+       160
+
+SQL> /
+
+   NEXTVAL
+----------
+       170
+
+SQL> /
+
+   NEXTVAL
+----------
+       180
+
+SQL> /
+
+   NEXTVAL
+----------
+       190
+
+SQL> /
+
+   NEXTVAL
+----------
+       200
+
+SQL> /
+
+   NEXTVAL
+----------
+         1
+
+SQL> /
+
+   NEXTVAL
+----------
+        11
+
+SQL> /
+
+   NEXTVAL
+----------
+        21
+
+SQL> /
+
+   NEXTVAL
+----------
+        31
+如果指定了minvalue
+SQL> drop sequence seq1;
+
+Sequence dropped.
+
+SQL> CREATE SEQUENCE seq1
+  2  START WITH 100
+  3  INCREMENT BY 10
+  4  MAXVALUE 200  MINVALUE 15
+  5  CYCLE  
+  6  NOCACHE;
+
+Sequence created.
+
+SQL> select seq1.nextval from dual;
+
+   NEXTVAL
+----------
+       100
+
+SQL> /
+
+   NEXTVAL
+----------
+       110
+
+SQL> //
+
+   NEXTVAL
+----------
+       120
+
+SQL> /
+
+   NEXTVAL
+----------
+       130
+
+SQL> /
+
+   NEXTVAL
+----------
+       140
+
+SQL> /
+
+   NEXTVAL
+----------
+       150
+
+SQL> /
+
+   NEXTVAL
+----------
+       160
+
+SQL> /
+
+   NEXTVAL
+----------
+       170
+
+SQL> /
+
+   NEXTVAL
+----------
+       180
+
+SQL> /
+
+   NEXTVAL
+----------
+       190
+
+SQL> /
+
+   NEXTVAL
+----------
+       200
+
+SQL> /
+
+   NEXTVAL
+----------
+        15
+
+SQL> /
+
+   NEXTVAL
+----------
+        25
+
+SQL> /
+
+   NEXTVAL
+----------
+        35
+
+
+QUESTION 44
+View the Exhibit and examine the structure of the ORD table.
+Evaluate the following SQL statements that are executed in a user session in the specified order:
+CREATE SEQUENCE ord_seq;
+SELECT ord_seq.nextval
+FROM dual;
+INSERT INTO ord
+VALUES (ord_seq.CURRVAL, '25-jan-2007',101);
+UPDATE ord
+SET ord_no= ord_seq.NEXTVAL
+WHERE cust_id =101;
+What would be the outcome of the above statements?
+A. All the statements would execute successfully and the ORD_NO column would contain the value 2 for
+the CUST_ID 101.
+B. The CREATE SEQUENCE command would not execute because the minimum value and maximum
+value for the sequence have not been specified.
+C. The CREATE SEQUENCE command would not execute because the starting value of the sequence
+and the increment value have not been specified.
+D. All the statements would execute successfully and the ORD_NO column would have the value 20 for
+the CUST_ID 101 because the default CACHE value is 20.
+Correct Answer: A
+验证：
+SQL> create table ord (ord_no number(2) not null, ord_date date,cust_id number(4));
+
+Table created.
+
+SQL> create sequence ord_seq;
+
+Sequence created.
+
+SQL> select ord_seq.nextval from dual;
+
+   NEXTVAL
+----------
+         1
+
+SQL> insert into ord values(ord_seq.currval,'25-jan-2017',101);
+
+1 row created.
+
+SQL> update ord set ord_no=ord_seq.nextval where cust_id=101;
+
+1 row updated.
+
+SQL> select * from ord;
+
+    ORD_NO ORD_DATE     CUST_ID
+---------- --------- ----------
+         2 25-JAN-17        101
+
+QUESTION 45
+Which two statements are true about sequences created in a single instance database? (Choose two.)
+A. The numbers generated by a sequence can be used only for one table.
+B. DELETE <sequencename> would remove a sequence from the database.
+C. CURRVAL is used to refer to the last sequence number that has been generated.
+D. When the MAXVALUE limit for a sequence is reached, you can increase the MAXVALUE limit by using
+the ALTER SEQUENCE statement.
+E. When a database instance shuts down abnormally, the sequence numbers that have been cached but
+not used would be available once again when the database instance is restarted.
+Correct Answer: CD
+二、题目翻译
+在单实例数据库中关于创建序列哪两句话是正确的？（选择两个）
+A. 一个序列生成的值只能用于一个表。
+B. DELETE <sequencename>可以从数据库里移除一个序列。
+C. CURRVAL是指生成的最后的序列值。
+D. 当达到序列的MAXVALUE限制时，你可以使用ALTER SEQUENCE语句增加MAXVALUE。
+E. 当数据库实例非正常关闭，已经缓存到内存里但是没有被使用的序列数当实例再次打开后可以再次使用。
+
+三、题目解析
+A选项不正确，因为一个序列生成的值可以用于多个表。
+B选项不正确，因为删除序列要用 DROP SEQUENCE sequencename。
+E选项不正确，因为如果内存非正常关闭，缓存的数会丢失，不能再继续使用了。
+
+QUESTION 46
+Which statements are correct regarding indexes? (Choose all that apply.)
+A. When a table is dropped, the corresponding indexes are automatically dropped.
+B. A FOREIGN KEY constraint on a column in a table automatically creates a nonunique index.
+C. A nondeferrable PRIMARY KEY or UNIQUE KEY constraint in a table automatically creates a unique
+index.
+D. For each data manipulation language (DML) operation performed, the corresponding indexes are
+automatically updated.
+Correct Answer: ACD
+二、题目翻译
+关于索引哪句话是正确的？（选择所有正确的项）
+A. 当表被删除后，对应的索引也自动删除。
+B. 表中列上的外键约束自动创始一个非唯一索引。
+C. 表中的非延迟PRIMARY KEY或者UNIQUE KEY约束自动创建一个唯一索引。
+D. 对于执行的每一个DML操作，对应的索引也自动更新。
+三、题目解析
+PRIMARY KEY和UNIQUE KEY约束自动创建一个唯一索引，而FOREIGN KEY和NOT NULL、CHECK约束都不会自动创建索引。
+
+QUESTION 47
+View the Exhibit and examine the structure of ORD and ORD_ITEMS tables.
+The ORD_NO column is PRIMARY KEY in the ORD table and the ORD_NO and ITEM_NO columns are
+composite PRIMARY KEY in the ORD_ITEMS table.
+Which two CREATE INDEX statements are valid? (Choose two.)
+A. CREATE INDEX ord_idx1
+ON ord(ord_no);
+B. CREATE INDEX ord_idx2
+ON ord_items(ord_no);
+C. CREATE INDEX ord_idx3
+ON ord_items(item_no);
+D. CREATE INDEX ord_idx4
+ON ord,ord_items(ord_no, ord_date,qty);
+Correct Answer: BC
+二、题目翻译
+看下面ORD和ORD_ITEMS表的结构，
+ORD 表中ORD_NO列是PRIMARY KEY，ORD_ITEMS表中ORD_NO and ITEM_NO是组合PRIMARY KEY。
+哪两个CREATE INDEX语句是有效的？（选择两个）
+三、题目解析
+A选项不正确，因为ORD 表中ORD_NO列是PRIMARY KEY，已经自动创建索引，不能再创建。
+B、C选项正确，虽然这两列已经是组合索引，但是可以在两个列中分别再建立索引
+D选项，语法不正确
+
+SQL> drop table ord;
+
+Table dropped.
+
+SQL> create table ord(ord_no number(2) not null primary key,
+  2  ord_date date,
+  3  cust_id number(4));
+
+Table created.
+
+SQL> create table ord_items(ord_no number(2) not null,
+  2  item_no number(3) not null,
+  3  qty number(8,2));
+
+Table created.
+
+SQL> alter table ord_items add constraint pk_ord_item_no primary key(ord_no,item_no);
+
+Table altered.
+
+SQL> CREATE INDEX ord_idx1
+  2  ON ord(ord_no);
+ON ord(ord_no)
+       *
+ERROR at line 2:
+ORA-01408: such column list already indexed
+
+
+SQL>  CREATE INDEX ord_idx2
+  2  ON ord_items(ord_no);
+
+Index created.
+
+SQL> CREATE INDEX ord_idx3
+  2  ON ord_items(item_no);
+
+Index created.
+
+SQL> CREATE INDEX ord_idx4
+  2  ON ord,ord_items(ord_no, ord_date,qty);
+ON ord,ord_items(ord_no, ord_date,qty)
+      *
+ERROR at line 2:
+ORA-00906: missing left parenthesis
+
+QUESTION 48
+Which two statements are true regarding indexes? (Choose two.)
+A. They can be created on tables and clusters
+B. They can be created on tables and simple views
+C. You can create only one index by using the same columns.
+D. You can create more than one index by using the same columns if you specify distinctly different
+combinations of the columns.
+Correct Answer: AD
+二、题目翻译
+关于索引哪两个句子是正确的？（选择两个）
+A. 可以在表(tables)和簇（clusters）上建立索引
+B. 可以在表和简单视图上创建索引
+C. 同一个列只能创建一个索引
+D. 如果你指定了不同列组合，可以使用相同的列创建多个索引
+三、题目解析
+B不正确因为简单视图上不能创建索引
+C选项不正确，D选项正确
+
+C、D可以参考11g的联机文档的INDEX部分：
+http://docs.oracle.com/cd/E11882_01/server.112/e40540/indexiot.htm#CNCPT88833
+
+摘录如下:
+You can create multiple indexes using the same columns if you specify distinctly different permutations of the columns. For example, the following SQL statements specify valid permutations:
+相同列上可以创建多个索引，如果指定了不同列组合，下面的例子就是有效的：
+CREATE INDEX employee_idx1 ON employees (last_name, job_id);
+CREATE INDEX employee_idx2 ON employees (job_id, last_name);
+
+multiple
+英 ['mʌltɪpl]  美 ['mʌltəpl]
+n. 倍数；[电] 并联
+adj. 多重的；多样的；许多的
+permutation
+英 [pɜːmjʊ'teɪʃ(ə)n]  美 ['pɝmjʊ'teʃən]
+n. [数] 排列；[数] 置换
+
+QUESTION 49
+The ORDERS table belongs to the user OE. OE has granted the SELECT privilege on the ORDERS
+table to the user HR.
+Which statement would create a synonym ORD so that HR can execute the following query successfully?
+SELECT * FROM ord;
+A. CREATE SYNONYM ord FOR orders; This command is issued by OE.
+B. CREATE PUBLIC SYNONYM ord FOR orders; This command is issued by OE.
+C. CREATE SYNONYM ord FOR oe.orders; This command is issued by the database administrator.
+D. CREATE PUBLIC SYNONYM ord FOR oe.orders; This command is issued by the database administrator.
+二、题目翻译
+ORDERS表属于OE用户.OE把ORDERS表的SELECT权限授予HR用户。
+下面哪个语句创建了一个ORD同义词，以便HR能成功执行下面这个查询？
+三、题目解析
+A和C选项，都不正确，因为都创建了一个私有同义词，其它用户不能访问。
+B选项，描述不完整，因为题中没有提到OE用户有CREATE PUBLIC SYNONYM的权限，如果有，就是正确的，如果没有则提示权限不足不能建立。
+SQL> show user
+USER is "SYS"
+SQL> grant select on hr.employees to scott;
+
+Grant succeeded.
+SQL> alter user scott identified by oracle account unlock;
+
+User altered.
+SQL> alter user hr identified by oracle account unlock;
+
+User altered.
+SQL> conn hr/oracle
+Connected.
+SQL> create synonym emp1 for hr.employees;
+
+Synonym created.
+
+SQL> conn scott/oracle
+Connected.
+SQL> select * from emp1;--创建私有的同义词scott用户不能访问
+select * from emp1
+              *
+ERROR at line 1:
+ORA-00942: table or view does not exist
+SQL> conn hr/oracle
+Connected.
+SQL> create public synonym emp1 for hr.employees; --创建共有的同义词hr没有权限
+create public synonym emp1 for hr.employees
+*
+ERROR at line 1:
+ORA-01031: insufficient privileges
+SQL> conn / as sysdba
+Connected.
+SQL> create public synonym emp1 for hr.employees;
+
+Synonym created.
+
+SQL> conn scott/oracle
+Connected.
+SQL> select count(*) from emp1;
+
+  COUNT(*)
+----------
+       107
+	   
+QUESTION 50
+SLS is a private synonym for the SH.SALES table.
+The user SH issues the following command:
+DROP SYNONYM sls;
+Which statement is true regarding the above SQL statement?
+A. Only the synonym would be dropped.
+B. The synonym would be dropped and the corresponding table would become invalid.
+C. The synonym would be dropped and the packages referring to the synonym would be dropped.
+D. The synonym would be dropped and any PUBLIC synonym with the same name becomes invalid.
+Correct Answer: A
+二、题目翻译
+SLS是SH.SALES表的私有同义词。
+SH用户执行下面的命令：
+关于上面的语句哪句话是正确的？
+A. 只删除同义词。
+B. 同义词被删除，并且对应的表也变的无效。
+C. 同义词被删除，并且关联同义词的包也被删除。
+D. 同义词被删除，并且同名的公共同义词也变的无效。
+SQL> conn hr/oracle
+Connected.
+SQL> drop synonym emp1;
+
+Synonym dropped.
+
+SQL> select count(*) from hr.employees;　--删除同义词表仍然可访问
+
+  COUNT(*)
+----------
+       107
+
+SQL> conn scott/oracle
+Connected.
+SQL> select count(*) from emp1;--删除同义词，同名的公共同义词仍然可访问
+
+  COUNT(*)
+----------
+       107
+
+QUESTION 51
+Which statement is true regarding synonyms?
+A. Synonyms can be created only for a table.
+B. Synonyms are used to reference only those tables that are owned by another user.
+C. A public synonym and a private synonym can exist with the same name for the same table.
+D. The DROP SYNONYM statement removes the synonym, and the table on which the synonym has
+been created becomes invalid.
+Correct Answer: C
+二、题目翻译
+关于同义词，下面哪句话是正确的？
+A. 只能为表建立同义词。
+B. 同义词只能用来关联那些属于另一个用户的表。
+C. 对同一个表可以存在同名的public synonym和private synonym。
+D. DROP SYNONYM语句移除同义词，并且创建同义词的表也变的无效。
+三、题目解析
+A选项不正确, 因为同义词是一个schema object的别名，例如可以为table、view、sequence 或者another synonym等等建立同义词。
+B选项不正确，当前自己用户的表，也可以建同义词。
+D选项不正确，DROP SYNONYM仅仅只删除了同义词，不影响相关的表。
+
+QUESTION 52
+View the Exhibit and examine the structure of the PRODUCTS table.
+Using the PRODUCTS table, you issue the following query to generate the names, current list price,
+and discounted list price for all those products whose list price falls below $10 after a discount of 25% is
+applied on it.
+SQL>SELECT prod_name, prod_list_price,
+prod_list_price - (prod_list_price * .25) "DISCOUNTED_PRICE"
+FROM products
+WHERE discounted_price < 10;
+The query generates an error.
+What is the reason for the error?
+A. The parenthesis should be added to enclose the entire expression.
+B. The double quotation marks should be removed from the column alias.
+C. The column alias should be replaced with the expression in the WHERE clause.
+D. The column alias should be put in uppercase and enclosed with in double quotation marks in the
+WHERE clause.
+Correct Answer: C
+二、题目翻译
+下面是PRODUCTS表的结构:
+使用PRODUCTS表，执行下面的查询来获取当产品打折25%之后价格低于$10的产品的名称，当前价格，打折后的价格。
+查询会报错，错误的原因是什么？
+A. 括号应该把整个表达式都括起来。
+B. 双引号应该从列别名中移除。
+C. WHERE子句中的列别名应该使用表达式替换。
+D. WHERE子句中的列别名应该大写并且使用双引号引起来。
+三、题目解析
+WHERE子句中不能使用列别名，所以要用表达式替换掉。
+
+QUESTION 53
+View the Exhibit and examine the data in the PROMOTIONS table.
+PROMO_BEGIN_DATE is stored in the default date format, dd-mon-rr.
+You need to produce a report that provides the name, cost, and start date of all promos in the POST
+category that were launched before January 1, 2000.
+Which SQL statement would you use?
+A. SELECT promo_name, promo_cost, promo_begin_date
+FROM promotions
+WHERE promo_category = 'post' AND promo_begin_date < '01-01-00';
+B. SELECT promo_name, promo_cost, promo_begin_date
+FROM promotions
+WHERE promo_cost LIKE 'post%' AND promo_begin_date < '01-01-2000';
+C. SELECT promo_name, promo_cost, promo_begin_date
+FROM promotions
+WHERE promo_category LIKE 'P%' AND promo_begin_date < '1-JANUARY-00';
+D. SELECT promo_name, promo_cost, promo_begin_date
+FROM promotions
+WHERE promo_category LIKE '%post%' AND promo_begin_date < '1-JAN-00';
+Correct Answer: D
+二、题目翻译
+检查PROMOTIONS表的数据
+PROMO_BEGIN_DATE列使用默认日期格式dd-mon-rr存储.
+要生成一个报表，显示所有2000年1月1日之前的、促销种类为POST的promos的名称，成本和开始日期，
+应该使用哪个SQL语句？
+三、题目解析
+A和B选项都不正确，promo_begin_date条件格式不对。
+C选项不正确，promo_category 条件不对。
+SQL>  SELECT promo_name, promo_cost, promo_begin_date
+  2  FROM sh.promotions
+  3  WHERE promo_category LIKE '%post%' AND promo_begin_date < '1-JAN-00' and rownum<5;
+
+PROMO_NAME                     PROMO_COST PROMO_BEG
+------------------------------ ---------- ---------
+post promotion #20-232                300 25-SEP-98
+post promotion #21-166               2000 25-SEP-98
+post promotion #20-449               4200 10-NOV-98
+post promotion #20-407               6100 16-APR-99
+
+QUESTION 54
+View the Exhibit and examine the structure of the CUSTOMERS table.
+Evaluate the query statement:
+SQL> SELECT cust_last_name, cust_city, cust_credit_limit
+FROM customers
+WHERE cust_last_name BETWEEN 'A' AND 'C' AND cust_credit_limit BETWEEN
+1000 AND 3000;
+What would be the outcome of the above statement?
+A. It executes successfully.
+B. It produces an error because the condition on CUST_LAST_NAME is invalid.
+C. It executes successfully only if the CUST_CREDIT_LIMIT column does not contain any null values.
+D. It produces an error because the AND operator cannot be used to combine multiple BETWEEN
+clauses.
+Correct Answer: A
+二、题目翻译
+查看CUSTOMERS表结构，下面的查询语句的结果是什么？
+A. 上面的语句执行成功。
+B. 报错，因为CUST_LAST_NAME的条件是无效的。
+C. 如果CUST_CREDIT_LIMIT列没有包含任何null值就可以执行成功。
+D. 报错，因为AND操作符不能联合多个BETWEEN子句。
+SQL> desc sh.customers
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ CUST_ID                                   NOT NULL NUMBER
+ CUST_FIRST_NAME                           NOT NULL VARCHAR2(20)
+ CUST_LAST_NAME                            NOT NULL VARCHAR2(40)
+ CUST_GENDER                               NOT NULL CHAR(1)
+ CUST_YEAR_OF_BIRTH                        NOT NULL NUMBER(4)
+ CUST_MARITAL_STATUS                                VARCHAR2(20)
+ CUST_STREET_ADDRESS                       NOT NULL VARCHAR2(40)
+ CUST_POSTAL_CODE                          NOT NULL VARCHAR2(10)
+ CUST_CITY                                 NOT NULL VARCHAR2(30)
+ CUST_CITY_ID                              NOT NULL NUMBER
+ CUST_STATE_PROVINCE                       NOT NULL VARCHAR2(40)
+ CUST_STATE_PROVINCE_ID                    NOT NULL NUMBER
+ COUNTRY_ID                                NOT NULL NUMBER
+ CUST_MAIN_PHONE_NUMBER                    NOT NULL VARCHAR2(25)
+ CUST_INCOME_LEVEL                                  VARCHAR2(30)
+ CUST_CREDIT_LIMIT                                  NUMBER
+ CUST_EMAIL                                         VARCHAR2(30)
+ CUST_TOTAL                                NOT NULL VARCHAR2(14)
+ CUST_TOTAL_ID                             NOT NULL NUMBER
+ CUST_SRC_ID                                        NUMBER
+ CUST_EFF_FROM                                      DATE
+ CUST_EFF_TO                                        DATE
+ CUST_VALID                                         VARCHAR2(1)
+SQL> set linesize 200
+SQL> SELECT cust_last_name, cust_city, cust_credit_limit
+  2  FROM sh.customers
+WHERE cust_last_name BETWEEN 'A' AND 'C' AND cust_credit_limit BETWEEN
+  4  1000 AND 3000 and rownum<5;
+
+CUST_LAST_NAME                           CUST_CITY                      CUST_CREDIT_LIMIT
+---------------------------------------- ------------------------------ -----------------
+Aaron                                    Pune                                        1500
+Aaron                                    Diss                                        3000
+Aaron                                    Hoofddorp                                   1500
+Aaron                                    Stockport                                   3000
+
+QUESTION 55
+Evaluate the following two queries:
+SQL> SELECT cust_last_name, cust_city
+FROM customers
+WHERE cust_credit_limit IN (1000, 2000, 3000);
+SQL> SELECT cust_last_name, cust_city
+FROM customers
+WHERE cust_credit_limit = 1000 OR cust_credit_limit = 2000 OR
+cust_credit_limit = 3000;
+Which statement is true regarding the above two queries?
+A. Performance would improve in query 2.
+B. Performance would degrade in query 2.
+C. There would be no change in performance.
+D. Performance would improve in query 2 only if there are null values in the CUST_CREDIT_LIMIT
+column.
+Correct Answer: C
+二、题目翻译
+评估下面的两个查询：
+关于上面的两条语句哪一个是正确的？
+A. 查询2的性能比较高。
+B. 查询2的性能比较低。
+C. 性能没有变化。
+D. 只要CUST_CREDIT_LIMIT列中有空值，则查询2的性能比较高。
+三、题目解析
+语句1的这种in条件，在oracle执行的时候，也会转成or的形式来执行，所以性能上没什么不同，是一样的。
+
+SQL> show user
+USER is "SYS"
+SQL> alter user sh identified by oracle account unlock;
+
+User altered.
+
+SQL> conn sh/oracle
+Connected.
+SQL> desc customers
+SQL> set autotrace traceonly
+SELECT cust_last_name, cust_city
+FROM customers
+  3  WHERE cust_credit_limit IN (1000, 2000, 3000);
+
+7975 rows selected.
+
+
+Execution Plan
+----------------------------------------------------------
+Plan hash value: 2008213504
+
+-------------------------------------------------------------------------------
+| Id  | Operation         | Name      | Rows  | Bytes | Cost (%CPU)| Time     |
+-------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT  |           | 20556 |   441K|   407   (1)| 00:00:05 |
+|*  1 |  TABLE ACCESS FULL| CUSTOMERS | 20556 |   441K|   407   (1)| 00:00:05 |
+-------------------------------------------------------------------------------
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   1 - filter("CUST_CREDIT_LIMIT"=1000 OR "CUST_CREDIT_LIMIT"=2000 OR
+              "CUST_CREDIT_LIMIT"=3000)
+
+
+Statistics
+----------------------------------------------------------
+          1  recursive calls
+          0  db block gets
+       1978  consistent gets
+          0  physical reads
+          0  redo size
+     204095  bytes sent via SQL*Net to client
+       6260  bytes received via SQL*Net from client
+        533  SQL*Net roundtrips to/from client
+          0  sorts (memory)
+          0  sorts (disk)
+       7975  rows processed
+SQL> SELECT cust_last_name, cust_city
+  2  FROM customers
+  3  WHERE cust_credit_limit = 1000 OR cust_credit_limit = 2000 OR
+  4  cust_credit_limit = 3000;
+
+7975 rows selected.
+
+
+Execution Plan
+----------------------------------------------------------
+Plan hash value: 2008213504
+
+-------------------------------------------------------------------------------
+| Id  | Operation         | Name      | Rows  | Bytes | Cost (%CPU)| Time     |
+-------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT  |           | 20556 |   441K|   407   (1)| 00:00:05 |
+|*  1 |  TABLE ACCESS FULL| CUSTOMERS | 20556 |   441K|   407   (1)| 00:00:05 |
+-------------------------------------------------------------------------------
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   1 - filter("CUST_CREDIT_LIMIT"=1000 OR "CUST_CREDIT_LIMIT"=2000 OR
+              "CUST_CREDIT_LIMIT"=3000)
+
+
+Statistics
+----------------------------------------------------------
+          1  recursive calls
+          0  db block gets
+       1978  consistent gets
+          0  physical reads
+          0  redo size
+     204095  bytes sent via SQL*Net to client
+       6260  bytes received via SQL*Net from client
+        533  SQL*Net roundtrips to/from client
+          0  sorts (memory)
+          0  sorts (disk)
+       7975  rows processed
+可以看到两条sql的Cost (%CPU)都一样，性能并没有提升

@@ -1,3 +1,31 @@
+创建目录
+mkdir -p /u02/app
+mkdir -p /u02/app/grid
+mkdir -p /u01/app/oracle
+mkdir -p /u02/app/grid/product/11.2.0.1/grid
+
+chown -R grid:oinstall /u02
+chown -R oracle:oinstall /u01
+
+shutdown -h now
+
+
+配置grid用户的环境变量
+# User specific environment and startup programs
+PATH=$PATH:$HOME/bin
+export ORACLE_SID=+ASM  
+export ORACLE_BASE=/u02/app/grid  
+export ORACLE_HOME=$ORACLE_BASE/product/11.2.0.1/grid  
+export ORACLE_TERM=xterm  
+export TMP=/tmp  
+export TMPDIR=$TMP  
+PATH=$PATH:$HOME/bin  
+export PATH=/usr/sbin:$PATH:$ORACLE_HOME/bin:$PATH  
+export LD_LIBRARY_PATH=$ORACLE_HOME/lib:/lib:/usr/lib  
+export CLASSPATH=$ORACLE_HOME/JRE:$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib
+export PATH
+
+
 SQL> show parameter type
 
 NAME                                 TYPE        VALUE
