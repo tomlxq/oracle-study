@@ -1821,3 +1821,474 @@ Statistics
           0  sorts (disk)
        7975  rows processed
 可以看到两条sql的Cost (%CPU)都一样，性能并没有提升
+
+QUESTION 56
+View the Exhibit and examine the structure of the PROMOTIONS table.
+Using the PROMOTIONS table, you need to find out the names and cost of all the promos done on 'TV'
+and 'internet' that ended in the time interval 15th March '00 to 15th October '00.
+Which two queries would give the required result? (Choose two.)
+A. A. SELECT promo_name, promo_cost
+FROM promotions
+WHERE promo_category IN ('TV', 'internet') AND
+promo_end_date BETWEEN '15-MAR-00' AND '15-OCT-00';
+B. SELECT promo_name, promo_cost
+FROM promotions
+WHERE promo_category = 'TV' OR promo_category ='internet' AND
+promo_end_date >='15-MAR-00' OR promo_end_date <='15-OCT-00';
+C. SELECT promo_name, promo_cost
+FROM promotions
+WHERE (promo_category BETWEEN 'TV' AND 'internet') AND
+(promo_end_date IN ('15-MAR-00','15-OCT-00'));
+D. SELECT promo_name, promo_cost
+FROM promotions
+WHERE (promo_category = 'TV' OR promo_category ='internet') AND
+(promo_end_date >='15-MAR-00' AND promo_end_date <='15-OCT-00');
+Correct Answer: AD
+二、题目翻译
+查看PROMOTIONS表的结构。
+使用PROMOTIONS表，现在要找出所有在15th March 00到15th October 00这一段时间内结束促销，促销类型为'TV'和'internet'的促销产品的名称和成本。
+哪两个查询语句查出的是我们需要的结果？（选择两个）
+三、题目解析
+B选项不正确，因为AND比OR的优先级要高，所以最后的结果会不正确。
+C选项不正确，因为promo_end_date IN ('15-MAR-00','15-OCT-00')不是一个时间段，而只是两个时间点。
+
+
+SQL> SELECT promo_name, promo_cost
+  2  FROM sh.promotions
+  3  WHERE promo_category IN ('TV', 'internet') AND
+  4  promo_end_date BETWEEN '15-MAR-00' AND '15-OCT-00' and rownum<5;
+
+PROMO_NAME                     PROMO_COST
+------------------------------ ----------
+internet promotion #14-471            600
+TV promotion #13-448                 1100
+TV promotion #12-49                  1500
+TV promotion #13-224                 5200
+
+SQL> SELECT promo_name, promo_cost
+  2  FROM sh.promotions
+  3  WHERE (promo_category = 'TV' OR promo_category ='internet') AND
+  4  (promo_end_date >='15-MAR-00' AND promo_end_date <='15-OCT-00') and rownum<5;
+
+PROMO_NAME                     PROMO_COST
+------------------------------ ----------
+internet promotion #14-471            600
+TV promotion #13-448                 1100
+TV promotion #12-49                  1500
+TV promotion #13-224                 5200
+
+QUESTION 57
+The CUSTOMERS table has the following structure:
+name Null Type
+CUST_ID NOT NULL NUMBER
+CUST_FIRST_NAME NOT NULL VARCHAR2(20)
+CUST_LAST_NAME NOT NULL VARCHAR2(30)
+CUST_INCOME_LEVEL VARCHAR2(30)
+CUST_CREDIT_LIMIT NUMBER
+You need to write a query that does the following tasks:
+1. Display the first name and tax amount of the customers. Tax is 5% of their credit limit.
+2. Only those customers whose income level has a value should be considered.
+3. Customers whose tax amount is null should not be considered.
+Which statement accomplishes all the required tasks?
+A. SELECT cust_first_name, cust_credit_limit * .05 AS TAX_AMOUNT
+FROM customers
+WHERE cust_income_level IS NOT NULL AND
+tax_amount IS NOT NULL;
+B. SELECT cust_first_name, cust_credit_limit * .05 AS TAX_AMOUNT
+FROM customers
+WHERE cust_income_level IS NOT NULL AND
+cust_credit_limit IS NOT NULL;
+C. SELECT cust_first_name, cust_credit_limit * .05 AS TAX_AMOUNT
+FROM customers
+WHERE cust_income_level <> NULL AND
+tax_amount <> NULL;
+D. SELECT cust_first_name, cust_credit_limit * .05 AS TAX_AMOUNT
+FROM customers
+WHERE (cust_income_level,tax_amount) IS NOT NULL;
+Correct Answer: B
+二、题目翻译
+CUSTOMERS表结构如下：
+现在要写一个查询完成下面的任务:
+1.显示客户的first name和tax amount，Tax是credit limit的5%。
+2.只考虑income level有值的客户。
+3.不考虑tax amount为空的客户。
+下面哪个语句能完成所需任务？
+三、题目解析
+A选项不正确，因为列别名不能用于WHERE子句
+C选项不正确，因为WHERE子句不能使用别名，而且如果使用<>不等于操作符与NULL运算条件永远为假，所以，判断是否为null，不能使用<>，而应该用is not null。
+D选项的语法不正确。
+
+SQL> SELECT cust_first_name, cust_credit_limit * .05 AS TAX_AMOUNT
+  2  FROM sh.customers
+  3  WHERE cust_income_level IS NOT NULL AND
+  4  cust_credit_limit IS NOT NULL and rownum<5;
+
+CUST_FIRST_NAME      TAX_AMOUNT
+-------------------- ----------
+Abigail                      75
+Abigail                     350
+Abigail                     550
+Abigail                      75
+
+QUESTION 58
+The PART_CODE column in the SPARES table contains the following list of values:
+PART_CODE
+A%_WQ123
+A%BWQ123
+AB_WQ123
+Evaluate the following query:
+SQL> SELECT part_code
+FROM spares
+WHERE part_code LIKE '%\%_WQ12%' ESCAPE '\';
+Which statement is true regarding the outcome of the above query?
+A. It produces an error.
+B. It displays all values.
+C. It displays only the values A%_WQ123 and AB_WQ123 .
+D. It displays only the values A%_WQ123 and A%BWQ123 .
+E. It displays only the values A%BWQ123 and AB_WQ123.
+Correct Answer: D
+二、题目翻译
+SPARES表的PART_CODE列包含下面的值：
+下面的这个查询:
+关于上面查询的结果哪句话是正确的？
+A. 会报错。
+B. 显示所有的结果。
+C. 仅显示A%_WQ123 and AB_WQ123。
+D. 仅显示A%_WQ123 and A%BWQ123。
+E. 仅显示A%BWQ123 and AB_WQ123。
+三、题目解析
+因为LIKE '%\%_WQ12%' ESCAPE '\'里的\为转译字符，把第二个%转义，而_下划线没有转义，代表一个字符，所以答案为D
+SQL> create table spares (part_code varchar2(30));
+
+Table created.
+
+SQL> insert into spares values('AB_WQ123');
+
+1 row created.
+
+SQL> insert into spares values('A%BWQ123');
+
+1 row created.
+
+SQL> insert into spares values('A%_WQ123');
+
+1 row created.
+
+SQL> SELECT part_code
+  2  FROM spares
+  3  WHERE part_code LIKE '%\%_WQ12%' ESCAPE '\';
+
+PART_CODE
+------------------------------
+A%BWQ123
+A%_WQ123
+
+QUESTION 59
+View the Exhibit and examine the data in the PRODUCTS table.
+You need to display product names from the PRODUCTS table that belong to the 'Software/Other '
+category with minimum prices as either $2000 or $4000 and no unit of measure.
+You issue the following query:
+SQL>SELECT prod_name, prod_category, prod_min_price
+FROM products
+WHERE prod_category LIKE '%Other%' AND (prod_min_price = 2000 OR
+prod_min_price = 4000) AND prod_unit_of_measure <> '';
+Which statement is true regarding the above query?
+A. It executes successfully but returns no result.
+B. It executes successfully and returns the required result.
+C. It generates an error because the condition specified for PROD_UNIT_OF_MEASURE is not valid.
+D. It generates an error because the condition specified for the PROD_CATEGORY column is not valid.
+Correct Answer: A
+二、题目翻译
+下面是PRODUCTS表的数据：
+现在要显示PRODUCTS表中产品种类为Software/Other，最低价格为$2000或$4000，并且没有度量单位的产品名称。
+下面的查询语句哪句的正确的？
+A 执行成功但不返回结果。
+B 执行成功并返回所需结果。
+C 报错因为PROD_UNIT_OF_MEASURE条件是无效的。
+D 报错因为PROD_CATEGORY条件是无效的。
+三、题目解析
+因为prod_unit_of_measure <> ''该条件为假，’’和NULL类似，不能用<>这种方式来判断，而应该用is not null,所以会导致该WHERE子句里所有AND连接的值为假，虽然执行成功但不会返回结果，正确的条件应该是prod_unit_of_measure is not null。
+SQL> create table products as select prod_id,prod_name,PROD_CATEGORY,PROD_MIN_PRICE,PROD_UNIT_OF_MEASURE from sh.products where 1<>1;
+
+Table created.
+
+SQL> insert into products values(101,'Envoy 256MB - 40 GB','Hardware',6000,'Nos.');
+
+1 row created.
+
+SQL> insert into products values(102,'Y Box','Electronics',9000,'');
+
+1 row created.
+
+SQL> insert into products values(103,'DVD-R Disc, 4.7 GB','Software/Other',2000,'Nos.');
+
+1 row created.
+
+SQL> insert into products values(104,'Documentation Set - Spanish','Software/Other',4000,'');
+
+1 row created.
+
+SQL> SELECT prod_name, prod_category, prod_min_price
+  2  FROM products
+WHERE prod_category LIKE '%Other%' AND (prod_min_price = 2000 OR
+  4  prod_min_price = 4000) AND prod_unit_of_measure <> '';
+
+no rows selected
+
+SQL> FROM products
+SELECT prod_name, prod_category, prod_min_price
+  2  FROM products
+WHERE prod_category LIKE '%Other%' AND (prod_min_price = 2000 OR
+  4  prod_min_price = 4000) AND prod_unit_of_measure != '';
+
+no rows selected
+
+SQL> set linesize 200
+SQL> SELECT prod_name, prod_category, prod_min_price
+  2  FROM products
+  3  WHERE prod_category LIKE '%Other%' AND (prod_min_price = 2000 OR
+  4  prod_min_price = 4000) AND prod_unit_of_measure is not null;
+
+PROD_NAME                                          PROD_CATEGORY                                      PROD_MIN_PRICE
+-------------------------------------------------- -------------------------------------------------- --------------
+DVD-R Disc, 4.7 GB                                 Software/Other                                               2000
+
+QUESTION 60
+View the Exhibit and examine the structure of CUSTOMERS table.
+Evaluate the following query:
+SQL>SELECT cust_id, cust_city
+FROM customers
+WHERE cust_first_name NOT LIKE 'A_%g_%' AND
+cust_credit_limit BETWEEN 5000 AND 15000 AND
+cust_credit_limit NOT IN (7000, 11000) AND
+cust_city NOT BETWEEN 'A' AND 'B';
+Which statement is true regarding the above query?
+A. It executes successfully.
+B. It produces an error because the condition on the CUST_CITY column is not valid.
+C. It produces an error because the condition on the CUST_FIRST_NAME column is not valid.
+D. It produces an error because conditions on the CUST_CREDIT_LIMIT column are not valid.
+Correct Answer: A
+二、题目翻译
+下面是CUSTOMERS表的结构
+看下面的查询语句：
+关于上面的查询哪句话是正确的？
+A.执行成功。
+B.报错，因为CUST_CITY列的条件无效。
+C.报错，因为CUST_FIRST_NAME的条件无效。
+D.报错，因为CUST_CREDIT_LIMIT的条件无效。
+SQL> SELECT cust_first_name,cust_credit_limit,cust_id, cust_city
+  2  FROM sh.customers
+  3  WHERE cust_first_name NOT LIKE 'A_%g_%' AND
+  4  cust_credit_limit BETWEEN 5000 AND 15000 AND
+  5  cust_credit_limit NOT IN (7000, 11000) AND
+  6  cust_city NOT BETWEEN 'A' AND 'B' and rownum<5;
+
+CUST_FIRST_NAME      CUST_CREDIT_LIMIT    CUST_ID CUST_CITY
+-------------------- ----------------- ---------- ------------------------------
+Abner                            15000      36117 Wolverhampton
+Abner                            15000      25470 Stuttgart
+Abner                            15000       4117 Clermont-l'Herault
+Abner                            15000      14784 Belfast City
+
+
+QUESTION 61
+View the Exhibit and examine the structure of the PROMOTIONS table.
+You need to generate a report of all promos from the PROMOTIONS table based on the following
+conditions:
+1. The promo name should not begin with 'T' or 'N'.
+2. The promo should cost more than $20000.
+3. The promo should have ended after 1st January 2001.
+Which WHERE clause would give the required result?
+A. WHERE promo_name NOT LIKE 'T%' OR promo_name NOT LIKE 'N%' AND promo_cost > 20000
+AND promo_end_date > '1-JAN-01'
+B. WHERE (promo_name NOT LIKE 'T%' AND promo_name NOT LIKE 'N%')OR promo_cost > 20000
+OR promo_end_date > '1-JAN-01'
+C. WHERE promo_name NOT LIKE 'T%' AND promo_name NOT LIKE 'N%' AND promo_cost > 20000
+AND promo_end_date > '1-JAN-01'
+D. WHERE (promo_name NOT LIKE '%T%' OR promo_name NOT LIKE '%N%') AND(promo_cost >
+20000 AND promo_end_date > '1-JAN-01')
+Correct Answer: C
+二、题目翻译
+查看PROMOTIONS表结构
+要从PROMOTIONS表获取所有promos的报表，基于如下的条件：
+1.promo name不是以'T’或'N'开头。
+2.promo的成本大于$20000。
+3.在2001年1月1日之后结束的promo。
+哪个WHERE子句能给出所需结果？
+
+三、题目解析
+A选项不正确，AND的优先级大于OR，会导致结果不正确。
+B选项不正确，三个条件是并且(AND)关系，而不是或者(OR)。
+D选项不正确，不是T或N开头，只是包含有T或N。
+
+View the E xhibit and examine the structure of the CUSTOMERS table.
+You want to generate a report showing the last names and credit limits of all customers whose last names
+start with A, B, or C, and credit limit is below 10, 000.
+Evaluate the following two queries:
+SQL> SELECT cust_last_name, cust_credit_limit FROM customers
+WHERE (UPPER(cust_last_name) LIKE 'A%' OR
+UPPER(cust_last_name) LIKE 'B%' OR UPPER(cust_last_name) LIKE 'C%')
+AND cust_credit_limit < 10000;
+SQL>SELECT cust_last_name, cust_credit_limit FROM customers
+WHERE UPPER(cust_last_name) BETWEEN 'A' AND 'C'
+AND cust_credit_limit < 10000;
+Which statement is true regarding the execution of the above queries?
+A. Only the first query gives the correct result.
+B. Only the second query gives the correct result.
+C. Both execute successfully and give the same result.
+D. Both execute successfully but do not give the required result.
+Correct Answer: A
+二、题目翻译
+查看CUSTOMERS表的结构
+现在要生成一个报表，显示所有customers的last names和credit limits，客户的last names以A, B, 或C开头，并且credit limit小于10，000
+下面的两个查询:
+关于上面的查询哪个描述是正确的？
+A.只有第一个查询给出正确结果。
+B.只有第二个查询给出正确结果。
+C.两个都能执行成功，并给出正确结果。
+D.两个都能执行成功，但不能给出所需结果。
+三、题目解析
+因为第二条查询语句里的BETWEEN 'A' AND 'C'，只能查出以A和B开头的，不能查出以C开头的。
+
+具体测试如下，只出现A和B开头的，并没有出现C开头的:
+
+SQL> SELECT cust_last_name, cust_credit_limit FROM sh.customers
+  2  WHERE (UPPER(cust_last_name) LIKE 'A%' OR
+  3  UPPER(cust_last_name) LIKE 'B%' OR UPPER(cust_last_name) LIKE 'C%')
+  4  AND cust_credit_limit < 10000 and rownum<5;
+
+CUST_LAST_NAME                           CUST_CREDIT_LIMIT
+---------------------------------------- -----------------
+Aaron                                                 5000
+Aaron                                                 1500
+Aaron                                                 3000
+Aaron                                                 7000
+
+SQL> SELECT cust_last_name, cust_credit_limit FROM sh.customers
+WHERE UPPER(cust_last_name) BETWEEN 'A' AND 'C'
+  3  AND cust_credit_limit < 10000 and rownum<5;
+
+CUST_LAST_NAME                           CUST_CREDIT_LIMIT
+---------------------------------------- -----------------
+Aaron                                                 5000
+Aaron                                                 1500
+Aaron                                                 3000
+Aaron                                                 7000
+
+QUESTION 63
+View the Exhibit and examine the structure of the PRODUCTS table.
+You want to display only those product names with their list prices where the list price is at least double
+the minimum price. The report should start with the product name having the maximum list price satisfying
+this condition.
+Evaluate the following SQL statement:
+SQL>SELECT prod_name,prod_list_price
+FROM products
+WHERE prod_list_price >= 2 * prod_min_price
+Which ORDER BY clauses can be added to the above SQL statement to get the correct output?
+(Choose all that apply.)
+A. ORDER BY prod_list_price DESC, prod_name;
+B. ORDER BY (2*prod_min_price)DESC, prod_name;
+C. ORDER BY prod_name, (2*prod_min_price)DESC;
+D. ORDER BY prod_name DESC, prod_list_price DESC;
+E. ORDER BY prod_list_price DESC, prod_name DESC;
+Correct Answer: AE
+二、题目翻译
+查看PRODUCTS表的结构：
+现在想显示产品价格是最低价格两倍的产品的名称.报表应该以价格列表中的最高价格的产品名称开始（即先按价格列表的降序排序，再按名称排序，但这里没有说是按升序还是降序）。
+下面的SQL语句:
+哪一个ORDER BY子句加到上面的SQL语句后能得到正确的结果？(选择所有正确的选项)
+
+三、题目解析
+题目的意思，先按prod_list_price降序排序, 再按prod_name排序
+B选项不正确，因为是按2*prod_min_price排序，所以不正确。
+C和D选项不正确，都是先按prod_name排序。
+
+QUESTION 64
+View the E xhibit and examine the data in the PROMO_CATEGORY and PROMO_COST columns of
+the PROMOTIONS table.
+Evaluate the following two queries:
+SQL>SELECT DISTINCT promo_category to_char(promo_cost)"code"
+FROM promotions
+ORDER BY code;
+SQL>SELECT DISTINCT promo_category promo_cost "code"
+FROM promotions
+ORDER BY 1;
+Which statement is true regarding the execution of the above queries?
+A. Only the first query executes successfully.
+B. Only the second query executes successfully.
+C. Both queries execute successfully but give different results.
+D. Both queries execute successfully and give the same result.
+
+二、题目翻译
+查看PROMOTIONS表的PROMO_CATEGORY 和PROMO_COST列的数据
+看下面两个查询
+下面关于执行上面的查询的描述，哪句话是正确的？
+A.只有第一个执行成功。
+B.只有第二个执行成功。
+C.两个都执行成功，但是结果不同。
+D.两个都执行成功，并且结果相同。
+
+三、题目解析
+第一句sql执行时报错，因为ORDER BY使用列别名时要完全匹配，如果别名加了双引号，必须也要加双引号。
+第二句sql执行成功，1表示使用select后的第一列进行排序。
+
+四、测试
+关于order by 后面别名的使用，测试如下：
+SQL> SELECT DISTINCT promo_category,to_char(promo_cost)"code"
+  2  FROM sh.promotions
+  3  ORDER BY code;
+ORDER BY code
+         *
+ERROR at line 3:
+ORA-00904: "CODE": invalid identifier
+SQL> SELECT DISTINCT promo_category, to_char(promo_cost)"code"
+  2  FROM sh.promotions where rownum<5
+  3  ORDER BY "code";
+
+PROMO_CATEGORY                 code
+------------------------------ ----------------------------------------
+NO PROMOTION                   0
+newspaper                      200
+post                           300
+newspaper                      400
+
+SQL> SELECT DISTINCT promo_category, to_char(promo_cost)"code"
+  2  FROM sh.promotions where rownum<5
+  3  ORDER BY 1;
+
+PROMO_CATEGORY                 code
+------------------------------ ----------------------------------------
+NO PROMOTION                   0
+newspaper                      200
+newspaper                      400
+post                           300
+
+QUESTION 65
+View the Exhibit and examine the structure of the CUSTOMERS table.
+You have been asked to produce a report on the CUSTOMERS table showing the customers details
+sorted in descending order of the city and in the descending order of their income level in each city.
+Which query would accomplish this task?
+A. SELECT cust_city, cust_income_level, cust_last_name
+FROM customers
+ORDER BY cust_city desc, cust_income_level DESC ;
+B. SELECT cust_city, cust_income_level, cust_last_name
+FROM customers
+ORDER BY cust_income_level desc, cust_city DESC;
+C. SELECT cust_city, cust_income_level, cust_last_name
+FROM customers
+ORDER BY (cust_city, cust_income_level) DESC;
+D. SELECT cust_city, cust_income_level, cust_last_name
+FROM customers
+ORDER BY cust_city, cust_income_level DESC;
+Correct Answer: A
+二、题目翻译
+查看 CUSTOMERS表的结构
+要根据CUSTOMERS表生成一个报表，显示员工信息，按city降序排列，并且每个city中员工的income level也降序排列显示。
+哪一个查询能完成这个任务？
+
+三、题目解析
+B选项不正确，顺序错误，不是按city降序，再按income level降序排列。
+C选项不正确，语法错误
+D选项不正确，不是按city的降序排列，不写desc,默认是ASC升序排列。
+
+  
