@@ -2291,4 +2291,1406 @@ B选项不正确，顺序错误，不是按city降序，再按income level降序
 C选项不正确，语法错误
 D选项不正确，不是按city的降序排列，不写desc,默认是ASC升序排列。
 
-  
+QUESTION 66
+View the Exhibit and examine the data in the COSTS table.
+You need to generate a report that displays the IDs of all products in the COSTS table whose unit price is
+at least 25% more than the unit cost. The details should be displayed in the descending order of 25% of
+the unit cost.
+You issue the following query:
+SQL>SELECT prod_id
+FROM costs
+WHERE unit_price >= unit_cost * 1.25
+ORDER BY unit_cost * 0.25 DESC;
+Which statement is true regarding the above query?
+A. It executes and produces the required result.
+B. It produces an error because an expression cannot be used in the ORDER BY clause.
+C. It produces an error because the DESC option cannot be used with an expression in the ORDER BY
+clause.
+D. It produces an error because the expression in the ORDER BY clause should also be specified in the
+SELECT clause.
+Correct Answer: A
+ 二、题目翻译
+ 
+查看COSTS 表的数据
+ 要生成一个报表，显示COSTS表中所有产品ID，产品的unit price至少要比unit cost多25%，按unit cost的25%降序显示产品信息。
+ 执行下面的查询
+ 下面关于上面的查询的描述，哪句话是正确的？
+A.获取所需的结果。
+B.报错，因为表达式不能用在ORDER BY子句中。
+C.报错，因为DESC不能用在ORDER BY的表达式中。
+D.报错，因为ORDER BY子句中的表达式也应该在SELECT子句中。
+
+
+三、题目解析
+ 
+B选项不正确，表达式可以出现在ORDER BY子句中。
+C选项不正确，DESC就是用在ORDER BY子句中按降序排序的。
+D选项不正确，是SELECT子句中的表达式，应该出现在GROUP BY中，而不是ORDER BY。
+
+SQL> SELECT prod_id
+  2  FROM sh.costs
+  3  WHERE unit_price >= unit_cost * 1.25 and rownum<5
+  4  ORDER BY unit_cost * 0.25 DESC;
+
+   PROD_ID
+----------
+        14
+        14
+        14
+        13
+		
+QUESTION 67
+Which two statements are true regarding the ORDER BY clause? (Choose two.)
+A. It is executed first in the query execution.
+B. It must be the last clause in the SELECT statement.
+C. It cannot be used in a SELECT statement containin g a HAVING clause.
+D. You cannot specify a column name followed by an expression in this clause.
+E. You can specify a combination of numeric positions and column names in this clause.
+Correct Answer: BE
+解析：
+选项A，应该是得到查询结果，然后在进行排序的
+选项B，order by 应该放在select 语句的最后，所以B选项正确
+选项C:
+SQL> select sal from scott.emp group by sal order by sal;
+
+       SAL
+----------
+       800
+       950
+      1100
+      1250
+      1300
+      1500
+      1600
+      2450
+      2850
+      2975
+      3000
+
+       SAL
+----------
+      5000
+
+12 rows selected.
+所以C选项错误
+D选项，可以指定一个表达式在order by后面进行排序，根据上题可知，所以D选项正确
+SQL> select ename,sal from scott.emp  where rownum<5 order by 1,sal desc;
+
+ENAME             SAL
+---------- ----------
+ALLEN            1600
+JONES            2975
+SMITH             800
+WARD             1250
+所以E选项正确
+
+QUESTION 68
+Which statement is true regarding the default behavior of the ORDER BY clause?
+A. In a character sort, the values are case- sensitive.
+B. NULL values are not considered at all by the sort operation.
+C. Only those columns that are specified in the SELECT list can be used in the ORDER BY clause.
+D. Numeric values are displayed from the maximum to the minimum value if they have decimal positions.
+Correct Answer: A
+解析：
+A选项，在字符排序是，区分大小写，这个是正确的
+B选项，这里oracle做排序的时候会考虑空值
+C选项，order by 排序时，不需要像group by 需要在select中指定，所以C选项错误
+D选项，默认都为升序
+
+QUESTION 69
+You need to generate a list of all customer last names with their credit limits from the CUSTOMERS
+table. Those customers who do not have a credit limit should appear last in the list.
+Which two queries would achieve the required result? (Choose two.)
+A. SELECT cust_last_name, cust_credit_limit
+FROM customers
+ORDER BY cust_credit_limit DESC ;
+B. SELECT cust_last_name, cust_credit_limit
+FROM customers
+ORDER BY cust_credit_limit;
+C. SELECT cust_last_name, cust_credit_limit
+FROM customers
+ORDER BY cust_credit_limit NULLS LAST;
+D. SELECT cust_last_name, cust_credit_limit
+FROM customers
+ORDER BY cust_last_name, cust_credit_limit NULLS LAST;
+Correct Answer: BC
+二、题目翻译
+要根据CUSTOMERS表生成一个列表，显示客户的last name和他们的credit limits，那些没有credit limit的客户显示到列表的后面。（即null值放在最后）
+哪两个查询能获取所需结果(选择两个正确的选项)
+三、题目解析
+A选项不正确，因为默认情况下，cust_credit_limit DESC降序排列后，空值会排列到前面。
+B选项正确，默认升续排列，空值会排列到后面。
+C选项正确，NULLS LAST关键字可以把空值排列到后面。
+D选项不正确，因为排序条件不正确，先按名字排序了
+解析：
+
+题意要求appear last in the list，所以按照cust_credit_limit升序排序 order by 默认为升序，所以B选项正确 asc时， nulls last为默认 所以C选项正确
+
+
+QUESTION 70
+View the E xhibit and examine the structure of the PRODUCTS table.
+You want to display only those product names with their list prices where the list price is at least double
+the minimum price. The report should start with the product name having the maximum list price satisfying
+this condition.
+Evaluate the following SQL statement:
+SQL>SELECT prod_name,prod_list_price
+FROM products
+WHERE prod_list_price >= 2 * prod_min_price
+Which ORDER BY clauses can be added to the above SQL statement to get the correct output?
+(Choose all that apply.)
+A. ORDER BY prod_list_price DESC, prod_name;
+B. ORDER BY (2*prod_min_price)DESC, prod_name;
+C. ORDER BY prod_name, (2*prod_min_price)DESC;
+D. ORDER BY prod_name DESC, prod_list_price DESC;
+E. ORDER BY prod_list_price DESC, prod_name DESC;
+Correct Answer: AE
+二、题目翻译
+查看PRODUCTS表的结构：
+现在想显示产品价格是最低价格两倍的产品的名称.报表应该以价格列表中的最高价格的产品名称开始（即先按价格列表的降序排序，再按名称排序，但这里没有说是按升序还是降序）。
+下面的SQL语句:
+哪一个ORDER BY子句加到上面的SQL语句后能得到正确的结果？(选择所有正确的选项)
+
+三、题目解析
+题目的意思，先按prod_list_price降序排序, 再按prod_name排序
+B选项不正确，因为是按2*prod_min_price排序，所以不正确。
+C和D选项不正确，都是先按prod_name排序。
+答案解析：
+The report should start with the product name having the maximum list price satisfying this condition.
+题意要求按照list price由大到小附加名字来排序，即先保证 prod_list_price是降序的后面按照name来排序，prod_name排序可升序可降序。
+SQL> SELECT prod_name,prod_list_price
+ FROM sh.products
+ WHERE prod_list_price >= 2 * prod_min_price and rownum<5 ORDER BY prod_list_price DESC, prod_name;
+
+no rows selected
+
+QUESTION 71
+Which arithmetic operations can be performed on a column by using a SQL function that is built into
+Oracle database ? (Choose three .)
+A. addition
+B. subtraction
+C. raising to a power
+D. finding the quotient
+E. finding the lowest value
+Correct Answer: ACE
+二、题目翻译
+哪一种算术运算能被Oracle数据库内置SQL函数在一个列上执行？（即哪一种算术运算可以被内置函数替代执行）（选择三个）
+A. 加法
+B. 减法
+C. 乘方
+D. 找商
+E. 找最小值
+三、题目解析
+A选项，例如：sum()
+C选项，例如：power()
+E选项，例如：min()
+
+QUESTION 72
+Which tasks can be performed using SQL functions built into Oracle Database ? (Choose three.)
+A. displaying a date in a nondefault format
+B. finding the number of characters in an expression
+C. substituting a character string in a text expression with a specified string
+D. combining more than two columns or expressions into a single column in the output
+Correct Answer: ABC
+二、题目翻译
+哪一个任务能使用ORACLE内置函数来完成？（选择三个）
+A. 显示一个非默认格式的日期。
+B. 在一个表达式中查找字符的数量。
+C .使用指定的字符串来替换文本表达式中的字符串。
+D. 联合超过两个列或表达式输出为一个列。
+三、题目解析
+A选项正确，例如：to_char()转换日期输出。
+B选项正确，例如：length()，regexp_count()。
+C选项正确，例如：replace()。
+D选项不正确，因为没有能联合超过两个列的函数，CONCAT()只能联合两个列。
+
+QUESTION 73
+Which tasks can be performed using SQL functions that are built into Oracle database ? (Choose
+three .)
+A. finding the remainder of a division
+B. adding a number to a date for a resultant date value
+C. comparing two expressions to check whether they are equal
+D. checking whether a specified character exists in a given string
+E. removing trailing, leading, and embedded characters from a character string
+Correct Answer: ACD
+二、题目翻译
+哪一个任务能使用内置函数完成？（选择三个）
+A. 取余。
+B. 给日期添加一个数字变成一个合成的日期。
+C. 比较两个表达式查看是否相等。
+D. 检查指定的字符串是否存在于一个给定的字符串中。
+E. 从一个字符串中移除尾部、头部、内含的字符。
+三、题目解析
+A选项正确，例如：MOD()。
+C选项正确，例如：nullif函数，decode函数。
+D选项正确，例如：INSTR()或regexp_count()。
+E选项不正确，trim()只能去除前后的字符，中间的字符，可以使用replace()函数完成，但这不只一个函数。
+
+B选项，答案是不正确，但可以用ADD_MONTHS()等这类函数完成，不知是否我理解有误，有不同意见的朋友可以留言。
+QUESTION 74
+Which statements are true regarding single row functions? (Choose all that apply.)
+A. MOD : returns the quotient of a division
+B. TRUNC : can be used with NUMBER and DATE values
+C. CONCAT : can be used to combine any number of values
+D. SYSDATE : returns the database server current date and time
+E. INSTR : can be used to find only the first occurrence of a character in a string
+F. TRIM : can be used to remove all the occurrences of a character from a string
+Correct Answer: BD
+二、题目翻译
+关于单行函数哪句话是正确的？（选择所有正确的答案）
+A. MOD返回一个商。
+B. TRUNC能用于NUMBER和DATE值。
+C. CONCAT能用于连接任意数量的值。
+D. SYSDATE返回数据库服务器当前的日期和时间。
+E. INSTR只能用于查找字符串中第一次出现的字符。
+F. TRIM能用于移除所有字符串中出现的字符。
+三、题目解析
+A选项不正确，MOD是取余，不是求商。
+B选项正确。
+C选项不正确，concat只能联接任意两个值。但可以嵌套使用，比如,concat('abc',concat('def','h'));
+D选项正确。
+E选项不正确，instr函数可以用于查找第N次出现的字符。
+F选项不正确，TRIM函数只能移除左右两侧出现的字符。
+四、测试
+Instr函数：格式：instr(源字符串,目标字符串,起始位置,匹配序号)
+例如：instr('YOU AND SHE ARE ANGEL','AN',3,2)，
+源字符串为'YOU AND SHE ARE ANGEL'，目标字符串为'AN'，从3个字符开始查找，取第2个匹配的字符串的位置。
+默认查找顺序为从左到右，当起始位置为负数的时候，从右边开始查找。上面返回的值为17。
+
+SQL> select instr('YOU AND SHE ARE ANGEL','AN',3,2) from dual;
+
+INSTR('YOUANDSHEAREANGEL','AN',3,2)
+-----------------------------------
+                                 17
+SQL> select instr('YOU AND SHE ARE ANGEL','AN',-3,2) from dual;
+
+INSTR('YOUANDSHEAREANGEL','AN',-3,2)
+------------------------------------
+                                   5
+SQL> select instr('YOU AND SHE ARE ANGEL','AN',-3,1) from dual;
+
+SQL> select instr('YOU AND SHE ARE ANGEL','AN',-3,1) from dual;
+
+INSTR('YOUANDSHEAREANGEL','AN',-3,1)
+------------------------------------
+                                  17
+QUESTION 75
+The following data exists in the PRODUCTS table:
+PROD_ID PROD_LIST_PRICE
+123456 152525.99
+You issue the following query:
+SQL> SELECT RPAD(( ROUND(prod_list_price)), 10,'*')
+FROM products
+WHERE prod_id = 123456;
+What would be the outcome?
+A. 152526 ****
+B. **152525.99
+C. 152525** **
+D. an error message
+Correct Answer: A
+二、题目翻译
+下面是PRODUCTS表中的数据
+执行下面的查询语句:
+结果是什么？
+三、题目解析
+ROUND(prod_list_price)没有第二个参数，即没有小数位，默认保留到整数。
+ROUND是四舍五入，所以ROUND(prod_list_price)＝152526。
+RPAD右填充函数，这里RPAD((ROUND(prod_list_price)), 10,'*')表示，round的结果，保留10个长度，如果不够，在右边用*填充。所以，RPAD((ROUND(prod_list_price)), 10,'*')的结果为152526****							   
+SQL> select RPAD(( ROUND(152525.99)), 10,'*') from dual;
+
+RPAD((ROUN
+----------
+152526****
+
+QUESTION 76
+You need to display the first names of all customers from the CUSTOMERS table that contain the
+character 'e' and have the character 'a' in the second last position.
+Which query would give the required output?
+A. SELECT cust_first_name
+FROM customers
+WHERE INSTR(cust_first_name, 'e')<>0 AND
+SUBSTR(cust_first_name, -2, 1)='a';
+B. SELECT cust_first_name
+FROM customers
+WHERE INSTR(cust_first_name, 'e')<>'' AND
+SUBSTR(cust_first_name, -2, 1)='a';
+C. SELECT cust_first_name
+FROM customers
+WHERE INSTR(cust_first_name, 'e')IS NOT NULL AND
+SUBSTR(cust_first_name, 1,-2)='a';
+D. SELECT cust_first_name
+FROM customers
+WHERE INSTR(cust_first_name, 'e')<>0 AND
+SUBSTR(cust_first_name, LENGTH(cust_first_name),-2)='a';
+Correct Answer: A
+二、题目翻译
+要从CUSTOMERS表中显示所有customers的first names，名字中要包含e，并且倒数第二个字符要包含a
+下面哪个查询语句能给出所需的结果？
+
+三、题目解析
+A选项正确，INSTR如果不包含字符则返回0，不等于0，说明包含了e字符，SUBSTR可以从倒数第二个字符开始截取一个字符。
+B选项不正确，INSTR的结果<>''，永远为false。
+C选项不正确，INSTR的结果不可能为null。
+D选项不正确，SUBSTR不是截取的倒数第二个字符。
+
+SQL> SELECT cust_first_name
+  2  FROM sh.customers
+  3  WHERE INSTR(cust_first_name, 'e')<>0 AND
+  4  SUBSTR(cust_first_name, -2, 1)='a' and rownum<5;
+
+CUST_FIRST_NAME
+--------------------
+Bertram
+Bertram
+Bertram
+Bertram
+
+QUESTION 77
+In the CUSTOMERS table, the CUST_CITY column contains the value 'Paris' for the
+CUST_FIRST_NAME 'ABIGAIL'.
+Evaluate the following query:
+SQL> SELECT INITCAP(cust_first_name|| ' '||
+                         UPPER(SUBSTR(cust_city,-LENGTH(cust_city),2)))
+             FROM customers
+          WHERE cust_first_name = 'ABIGAIL';
+What would be the outcome?
+A. Abigail PA
+B. Abigail Pa
+C. Abigail IS
+D. an error message
+Correct Answer: B
+二、题目翻译
+CUSTOMERS表中，CUST_CITY列值为Paris，对应CUST_FIRST_NAME值为ABIGAIL
+下面的语句的执行结果是什么？
+三、题目解析
+SUBSTR(cust_city,-LENGTH(cust_city),2),将cust_city（即'Paris'）从-5的位置（即右起第五个位置，即左起第一个位置），截取2个字符。
+所以,SUBSTR截取的结果是Pa，UPPER转换后为PA，INITCAP是将首字符大写，后为Abigail Pa
+SQL> SELECT INITCAP('ABIGAIL'|| ' '|| UPPER(SUBSTR('Paris',-LENGTH('Paris'),2))) from dual;
+
+INITCAP('A
+----------
+Abigail Pa
+
+QUESTION 78
+Evaluate the following query:
+SQL> SELECT TRUNC(ROUND(156.00,-1),-1)
+FROM DUAL;
+What would be the outcome?
+A. 16
+B. 100
+C. 160
+D. 200
+E. 150
+Correct Answer: C
+二、题目解析
+ROUND(156.00,-1)也就是说，156.00四舍五入，-1表示保留到小数点左边一位，也就是十位，那么，四舍五入后就是160
+TRUNC是直接截断，截断后也是160。
+SQL> SELECT TRUNC(ROUND(156.00,-1),-1) FROM DUAL;
+
+TRUNC(ROUND(156.00,-1),-1)
+--------------------------
+                       160
+
+SQL> SELECT TRUNC(ROUND(156.00,-1),-2) FROM DUAL;
+
+TRUNC(ROUND(156.00,-1),-2)
+--------------------------
+                       100
+
+SQL> SELECT TRUNC(ROUND(156.00,-1),-3) FROM DUAL;
+
+TRUNC(ROUND(156.00,-1),-3)
+--------------------------
+                         0
+QUESTION 79
+View the Exhibit and examine the structure of the CUSTOMERS table.
+In the CUSTOMERS table, the CUST_LAST_NAME column contains the values 'Anderson' and 'Ausson'.
+You issue the following query:
+SQL> SELECT LOWER(REPLACE(TRIM('son' FROM cust_last_name),'An','O'))
+FROM CUSTOMERS
+WHERE LOWER(cust_last_name) LIKE 'a%n';
+What would be the outcome?
+A. 'Oder' and 'Aus'
+B. an error because the TRIM function specified is not valid
+C. an error because the LOWER function specified is not valid
+D. an error because the REPLACE function specified is not valid
+SQL> select TRIM('son' FROM 'Anderson') from dual;
+select TRIM('son' FROM 'Anderson') from dual
+       *
+ERROR at line 1:
+ORA-30001: trim set should have only one character
+
+SQL> select TRIM('son' FROM 'Ausson') from dual;
+select TRIM('son' FROM 'Ausson') from dual
+       *
+ERROR at line 1:
+ORA-30001: trim set should have only one character
+
+QUESTION 80  ??
+Which two statements are true regarding working with dates? (Choose two.)
+A. The default internal storage of dates is in the numeric format.
+B. The default internal storage of dates is in the character format.
+C. The RR date format automatically calculates the century from the SYSDATE function and does not
+allow the user to enter the century.
+D. The RR date format automatically calculates the century from the SYSDATE function but allows the
+user to enter the century if required.
+Correct Answer: AD
+
+二、题目翻译
+关于处理日期型数据，哪两句话是正确的？
+A. 默认内部存储的日期是使用数字格式。
+B. 默认内部存储的日期是使用字符格式。
+C. RR日期格式自动从SYSDATE函数中计算出世纪，不允许用户输入世纪。
+D. RR日期格式自动从SYSDATE函数中计算出世纪，但是如果需要还允许用户输入世纪。
+三、题目解析
+A选项正确，详见联机文档的DATE Data Type描述部分:
+        http://docs.oracle.com/cd/E11882_01/server.112/e40540/tablecls.htm#CNCPT413
+
+摘录如下：
+        The database stores dates internally as numbers. Dates are stored in fixed-length fields of 7 bytes each, corresponding to century, year, month, day, hour, minute, and second
+RR is similar to YY (the last two digits of the year), but the century of the return value varies according to the specified two-digit year and the last two digits of the current year. Assume that in 1999 the database displays 01-JAN-11. If the date format uses RR, then 11 specifies 2011, whereas if the format uses YY, then 11 specifies 1911. You can change the default date format at both the instance and the session level.
+
+Oracle Database stores time in 24-hour format—HH:MI:SS. If no time portion is entered, then by default the time in a date field is 00:00:00 A.M. In a time-only entry, the date portion defaults to the first day of the current month.
+SQL> select to_char(sysdate,'rr'),to_char(sysdate,'yy'),sysdate from dual;
+
+TO TO SYSDATE
+-- -- ---------
+17 17 31-MAR-17	
+
+QUESTION 81
+You are currently located in Singapore and have connected to a remote database in Chicago.
+You issue the following command:
+SQL> SELECT ROUND(SYSDATE-promo_begin_date,0)
+FROM promotions
+WHERE (SYSDATE-promo_begin_date)/365 > 2;
+PROMOTIONS is the public synonym for the public database link for the PROMOTIONS table.
+What is the outcome?
+A. an error because the ROUND function specified is invalid
+B. an error because the WHERE condition specified is invalid
+C. number of days since the promo started based on the current Chicago date and time
+D. number of days since the promo started based on the current Singapore date and time
+Correct Answer: C
+二、题目翻译
+在Singapore（新加坡），连接到位于Chicago的远程数据库,
+执行下面的命令:
+PROMOTIONS是一个public synonym，通过public database link连接到PROMOTIONS表。
+执行下面的命令，结果是什么？
+A. 报错,因为ROUND函数无效。
+B. 报错,因为WHERE条件无效。
+C. 基于当前Chicago的日期和时间promo开始的天数。
+D. 基于当前Singapore的日期和时间promo开始的天数。
+
+三、题目解析
+A、B选项不正确，这个SQL会执行成功。
+C选项正确，因为sysdate获取的是远程服务器时间，所以D选项不正确。
+
+QUESTION 82
+Examine the data in the CUST_NAME column of the CUSTOMERS table.
+CUST_NAME
+Renske Ladwig
+Jason Mallin
+Samuel McCain
+Allan MCEwen
+Irene Mikkilineni
+Julia Nayer
+You need to display customers' second names where the second name starts with "Mc" or "MC."
+Which query gives the required output?
+A. SELECT SUBSTR(cust_name, INSTR(cust_name,' ')+1)
+FROM customers
+WHERE INITCAP(SUBSTR(cust_name, INSTR(cust_name,' ')+1))='Mc';
+B. SELECT SUBSTR(cust_name, INSTR(cust_name,' ')+1)
+FROM customers
+WHERE INITCAP(SUBSTR(cust_name, INSTR(cust_name,' ')+1)) LIKE 'Mc%';
+C. SELECT SUBSTR(cust_name, INSTR(cust_name,' ')+1)
+FROM customers
+WHERE SUBSTR(cust_name, INSTR(cust_name,' ')+1) LIKE INITCAP('MC%');
+D. SELECT SUBSTR(cust_name, INSTR(cust_name,' ')+1)
+FROM customers
+WHERE INITCAP(SUBSTR(cust_name, INSTR(cust_name,' ')+1)) = INITCAP('MC%');
+Correct Answer: B
+二、题目翻译
+下面是CUSTOMERS表CUST_NAME列的数据，
+要显示第二个名字以"Mc" or "MC"开头的员工第二个名字（第二个名字，也就是空格后的名字）
+
+三、题目解析
+A选项不正确，where条件='Mc',没有第二个名字是Mc的人，所以没结果，而且题目要求包含MC或Mc,而不是等于。
+B选项正确，INSTR找出空格的位置，然后用SUBSTR从空格后开始找，把找出的结果首字母大写，然后用like模糊查询。
+C选项不正确，SUBSTR查找出的结果和INITCAP('MC%')匹配，只能匹配Mc，而无法匹配MC。
+D选项不正确，模糊查询，不能用等号。
+
+四、测试
+以下是ABCD四个选项的测试结果:
+SQL> with customers as (
+select 'Renske Ladwig' CUST_NAME from dual
+  3  union all 
+  4  select 'Jason Mallin' CUST_NAME from dual
+  5  union all
+  6  select 'Samuel McCain' CUST_NAME from dual
+  7  union all
+  8  select 'Allan MCEwen' CUST_NAME from dual
+  9  union all
+ 10  select 'Irene Mikkilineni' CUST_NAME from dual
+ 11  union all
+ 12  select 'Julia Nayer' CUST_NAME from dual
+ 13  )
+ 14  SELECT SUBSTR(cust_name, INSTR(cust_name,' ')+1)
+ 15  FROM customers
+ 16  WHERE INITCAP(SUBSTR(cust_name, INSTR(cust_name,' ')+1))='Mc';
+
+no rows selected
+
+SQL> with customers as (
+  2  select 'Renske Ladwig' CUST_NAME from dual
+  3  union all 
+  4  select 'Jason Mallin' CUST_NAME from dual
+  5  union all
+  6  select 'Samuel McCain' CUST_NAME from dual
+  7  union all
+  8  select 'Allan MCEwen' CUST_NAME from dual
+  9  union all
+ 10  select 'Irene Mikkilineni' CUST_NAME from dual
+ 11  union all
+ 12  select 'Julia Nayer' CUST_NAME from dual
+ 13  )
+ 14  SELECT SUBSTR(cust_name, INSTR(cust_name,' ')+1)
+ 15  FROM customers
+ 16  WHERE INITCAP(SUBSTR(cust_name, INSTR(cust_name,' ')+1)) LIKE 'Mc%';
+
+SUBSTR(CUST_NAME,INSTR(CUST_NAME,'')+1)
+--------------------------------------------------------------------
+McCain
+MCEwen
+
+SQL> with customers as (
+  2  select 'Renske Ladwig' CUST_NAME from dual
+  3  union all 
+  4  select 'Jason Mallin' CUST_NAME from dual
+  5  union all
+  6  select 'Samuel McCain' CUST_NAME from dual
+  7  union all
+  8  select 'Allan MCEwen' CUST_NAME from dual
+  9  union all
+ 10  select 'Irene Mikkilineni' CUST_NAME from dual
+ 11  union all
+ 12  select 'Julia Nayer' CUST_NAME from dual
+ 13  )
+ 14  SELECT SUBSTR(cust_name, INSTR(cust_name,' ')+1)
+ 15  FROM customers
+ 16  WHERE SUBSTR(cust_name, INSTR(cust_name,' ')+1) LIKE INITCAP('MC%');
+
+SUBSTR(CUST_NAME,INSTR(CUST_NAME,'')+1)
+--------------------------------------------------------------------
+McCain
+
+SQL> with customers as (
+  2  select 'Renske Ladwig' CUST_NAME from dual
+  3  union all 
+  4  select 'Jason Mallin' CUST_NAME from dual
+  5  union all
+  6  select 'Samuel McCain' CUST_NAME from dual
+  7  union all
+  8  select 'Allan MCEwen' CUST_NAME from dual
+  9  union all
+ 10  select 'Irene Mikkilineni' CUST_NAME from dual
+ 11  union all
+ 12  select 'Julia Nayer' CUST_NAME from dual
+ 13  )
+ 14  SELECT SUBSTR(cust_name, INSTR(cust_name,' ')+1)
+ 15  FROM customers
+ 16  WHERE INITCAP(SUBSTR(cust_name, INSTR(cust_name,' ')+1)) = INITCAP('MC%');
+
+no rows selected
+
+QUESTION 83
+Examine the data in the CUST_NAME column of the CUSTOMERS table.
+CUST_NAME
+Lex De Haan
+Renske Ladwig
+Jose Manuel Urman
+Jason Mallin
+You want to extract only those customer names that have three names and display the * symbol in place
+of the first name as follows:
+CUST NAME
+*** De Haan
+**** Manuel Urman
+Which two queries give the required output? (Choose two.)
+A. SELECT LPAD(SUBSTR(cust_name,INSTR(cust_name,' ')),LENGTH(cust_name),'*') "CUST NAME"
+FROM customers
+WHERE INSTR(cust_name, ' ',1,2)<>0;
+B. SELECT LPAD(SUBSTR(cust_name,INSTR(cust_name,' ')),LENGTH(cust_name),'*') "CUST NAME"
+FROM customers
+WHERE INSTR(cust_name, ' ',-1,2)<>0;
+C. SELECT LPAD(SUBSTR(cust_name,INSTR(cust_name,' ')),LENGTH(cust_name)-
+INSTR(cust_name,' '),'*') "CUST NAME"
+FROM customers
+WHERE INSTR(cust_name, ' ',-1,-2)<>0;
+D. SELECT LPAD(SUBSTR(cust_name,INSTR(cust_name,' ')),LENGTH(cust_name)-
+INSTR(cust_name,' '),'*') "CUST NAME"
+FROM customers
+WHERE INSTR(cust_name, ' ',1,2)<>0 ;
+Correct Answer: AB
+二、题目翻译
+下面是CUSTOMERS表CUST_NAME列的数据:
+CUST_NAME
+Lex De Haan
+Renske Ladwig
+Jose Manuel Urman
+Jason Mallin
+现在要提取那些有三个名字的客户，第一个名字用*号替换，比如下面这两个:
+CUST NAME
+*** De Haan
+**** Manuel Urman
+哪两个查询能得出想要的结果(选择2个)?
+
+三、题目解析
+A选项和B选项正确，
+      先用INSTR(cust_name,' ')找出第一个空格的位置，
+      然后，SUBSTR(cust_name,INSTR(cust_name,' '))从第一个空格开始往后截取字符串到末尾，结果是第一个空格以后所有的字符,
+      最后，LPAD(SUBSTR(cust_name,INSTR(cust_name,' ')),LENGTH(cust_name),'*')用LPAD左填充到cust_name原来的长度，不足的部分用*填充，也就是将第一个空格前的位置，用*填充。
+      A选项和B选项的区别是where后过滤是否有三个名字的方法不同，
+      A选项INSTR(cust_name, ' ',1,2)从第一个位置，从左往右，查找第二次出现的空格，如果返回非0值，则说明有第二个空格，则有第三个名字，
+      B选项INSTR(cust_name, ' ',-1,2)从最后一个位置，从右往左，查找第二次出现的空格，如果返回非0值，则说明有第二个空格，则有第三个名字。
+
+C选项不正确，INSTR(cust_name, ' ',-1,-2)第四个参数，是第几次出现，这里不能为负。
+D选项不正确，填充长度LENGTH(cust_name)- INSTR(cust_name,' ')，是总长度，减去第一个空格的位置，也就是说，总长度是第一个空格后面的字符串的长度，那就不用*填充了，不满足题目要求。
+
+四、测试
+下面是ABCD四个选项的测试结果：
+SQL> col "CUST NAME" for a20
+with customers as (
+select 'Lex De Haan' CUST_NAME from dual
+union all 
+  4  select 'Renske Ladwig' CUST_NAME from dual
+  5  union all
+  6  select 'Jose Manuel Urman' CUST_NAME from dual
+  7  union all
+  8  select 'Jason Mallin' CUST_NAME from dual
+  9  )
+SELECT LPAD(SUBSTR(cust_name,INSTR(cust_name,' ')),LENGTH(cust_name),'*') "CUST NAME"
+       FROM customers
+ 12      WHERE INSTR(cust_name, ' ',1,2)<>0;
+
+CUST NAME
+--------------------
+*** De Haan
+**** Manuel Urman
+
+SQL> with customers as (
+  2  select 'Lex De Haan' CUST_NAME from dual
+  3  union all 
+  4  select 'Renske Ladwig' CUST_NAME from dual
+  5  union all
+  6  select 'Jose Manuel Urman' CUST_NAME from dual
+  7  union all
+  8  select 'Jason Mallin' CUST_NAME from dual
+  9  )
+ 10  SELECT LPAD(SUBSTR(cust_name,INSTR(cust_name,' ')),LENGTH(cust_name),'*') "CUST NAME"
+ 11  FROM customers
+ 12  WHERE INSTR(cust_name, ' ',-1,2)<>0;
+
+CUST NAME
+--------------------
+*** De Haan
+**** Manuel Urman
+
+SQL> with customers as (
+  2  select 'Lex De Haan' CUST_NAME from dual
+  3  union all 
+  4  select 'Renske Ladwig' CUST_NAME from dual
+  5  union all
+  6  select 'Jose Manuel Urman' CUST_NAME from dual
+  7  union all
+  8  select 'Jason Mallin' CUST_NAME from dual
+  9  )
+ 10  SELECT LPAD(SUBSTR(cust_name,INSTR(cust_name,' ')),LENGTH(cust_name)-
+ 11  INSTR(cust_name,' '),'*') "CUST NAME"
+ 12  FROM customers
+ 13  WHERE INSTR(cust_name, ' ',-1,-2)<>0;
+FROM customers
+     *
+ERROR at line 12:
+ORA-01428: argument '-2' is out of range
+
+
+SQL> with customers as (
+  2  select 'Lex De Haan' CUST_NAME from dual
+  3  union all 
+  4  select 'Renske Ladwig' CUST_NAME from dual
+  5  union all
+  6  select 'Jose Manuel Urman' CUST_NAME from dual
+  7  union all
+  8  select 'Jason Mallin' CUST_NAME from dual
+  9  )
+ 10  SELECT LPAD(SUBSTR(cust_name,INSTR(cust_name,' ')),LENGTH(cust_name)-
+ 11  INSTR(cust_name,' '),'*') "CUST NAME"
+ 12  FROM customers
+ 13  WHERE INSTR(cust_name, ' ',1,2)<>0 ;
+
+CUST NAME
+--------------------
+ De Haa
+ Manuel Urma
+ 
+
+QUESTION 84
+View the Exhibit and examine the structure of the EMPLOYEES table.
+Examine the data in the ENAME and HIREDATE columns of the EMPLOYEES table:
+ENAME HIREDATE
+SMITH 17-DEC-80
+ALLEN 20-FEB-81
+WARD 22-FEB-81
+You want to generate a list of user IDs as follows:
+USERID
+Smi17DEC80
+All20FEB81
+War22FEB81
+You issue the following query:
+SQL>SELECT CONCAT(SUBSTR(INITCAP(ename),1,3), REPLACE(hiredate,'-')) "USERID"
+FROM employees;
+What is the outcome?
+A. It executes successfully and gives the correct output.
+B. It executes successfully but does not give the correct output.
+C. It generates an error because the REPLACE function is not valid.
+D. It generates an error because the SUBSTR function cannot be nested in the CONCAT function.
+Correct Answer: A
+二、题目翻译
+查看EMPLOYEES表的结构
+表中ENAME and HIREDATE两列的数据如下：
+ENAME      HIREDATE
+SMITH       17-DEC-80
+ALLEN       20-FEB-81
+WARD        22-FEB-81
+
+现在要生成如下的一个用户ID的列表：
+USERID
+Smi17DEC80
+All20FEB81
+War22FEB81
+
+执行下面的查询语句：
+SELECT CONCAT(SUBSTR(INITCAP(ename),1,3), REPLACE(hiredate,'-')) "USERID"
+FROM employees;
+执行结果是什么?
+A.执行成功，并且能得出正确的结果。
+B.执行成功，但是结果不正确。
+C.报错,因为REPLACE无效。
+D.报错，因为SUBSTR函数不能被嵌套在CONCAT函数中。
+四、测试
+下面是测试结果：
+SQL> with employees as (
+select 'SMITH' ename,'17-DEC-80' hiredate from dual
+union all 
+select 'ALLEN' ename,'20-FEB-81' hiredate from dual
+union all 
+select 'WARD' ename,'22-FEB-81' hiredate from dual
+)
+SELECT CONCAT(SUBSTR(INITCAP(ename),1,3), REPLACE(hiredate,'-')) "USERID"
+  9  FROM employees;
+
+USERID
+---------------------
+Smi17DEC80
+All20FEB81
+War22FEB81
+
+QUESTION 85
+View the E xhibit and examine the structure and data in the INVOICE table.
+Which statements are true regarding data type conversion in expressions used in queries? (Choose all
+that apply.)
+A. inv_amt ='0255982' : requires explicit conversion
+B. inv_date > '01-02-2008' : uses implicit conversion
+C. CONCAT(inv_amt,inv_date) : requires explicit conversion
+D. inv_date = '15-february-2008' : uses implicit conversion
+E. inv_no BETWEEN '101' AND '110' : uses implicit conversion
+Correct Answer: DE
+
+二、题目翻译
+下面是INVOICE表的结构:
+关于查询中的表达式中的数据类型转换，哪句话是正确的？（选择所有正确的项）
+A.inv_amt ='0255982' : 需要显式转换。
+B.inv_date > '01-02-2008'：使用了隐式转换。
+C. CONCAT(inv_amt,inv_date) ：需要显式转换。
+D. inv_date = '15-february-2008' ：使用了隐式转换。
+E. inv_no BETWEEN '101' AND '110'： 使用了隐式转换。
+
+三、题目解析
+A选项不正确，inv_amt列是nubmer类型，右边是字符类型，这个是隐式转换。
+B选项不正确，inv_date列是date类型，右边的格式和默认格式不一致，需要用to_date显式转换。
+C选项不正确，这里是使用隐式转换，转换成字符型
+
+SQL> create table invoice(inv_no number not null,inv_date date,cust_name varchar2(20) not null,cust_cat char(1),inv_amt number(8,2));
+
+Table created.
+
+SQL> insert into invoice values(101,'15-FEB-08','JAMES',1,255982.55);
+
+1 row created.
+
+SQL> insert into invoice values(102,'18-MAR-08','SMITH',2,100000.00);
+
+1 row created.
+
+SQL> select * from invoice where inv_amt ='0255982';
+
+no rows selected
+
+SQL> select * from invoice where inv_date > '01-02-2008' ;
+select * from invoice where inv_date > '01-02-2008'
+                                       *
+ERROR at line 1:
+ORA-01843: not a valid month
+
+
+SQL> select CONCAT(inv_amt,inv_date) from invoice;
+
+CONCAT(INV_AMT,INV_DATE)
+----------------------------------------------------------
+255982.5515-FEB-08
+10000018-MAR-08
+
+SQL> select * from invoice where inv_date = '15-february-2008';
+
+    INV_NO INV_DATE  CUST_NAME            C    INV_AMT
+---------- --------- -------------------- - ----------
+       101 15-FEB-08 JAMES                1  255982.55
+
+SQL> select * from invoice where inv_no BETWEEN '101' AND '110' ;
+
+    INV_NO INV_DATE  CUST_NAME            C    INV_AMT
+---------- --------- -------------------- - ----------
+       101 15-FEB-08 JAMES                1  255982.55
+       102 18-MAR-08 SMITH                2     100000
+	   
+QUESTION 86
+Examine the structure and data of the CUST_TRANS table:
+CUST_TRANS
+Name Null Type
+CUSTNO NOT NULL CHAR(2)
+TRANSDATE DATE
+TRANSAMT NUMBER(6,2)
+CUSTNO TRANSDATE TRANSAMT
+11 01-JAN-07 1000
+22 01-FEB-07 2000
+33 01-MAR-07 3000
+Dates are stored in the default date format dd-mon-rr in the CUST_TRANS table.
+Which SQL statements would execute successfully? (Choose three .)
+A. SELECT transdate + '10' FROM cust_trans;
+B. SELECT * FROM cust_trans WHERE transdate = '01-01-07';
+C. SELECT transamt FROM cust_trans WHERE custno > '11';
+D. SELECT * FROM cust_trans WHERE transdate='01-JANUARY-07';
+E. SELECT custno + 'A' FROM cust_trans WHERE transamt > 2000;
+Correct Answer: ACD
+
+二、题目翻译
+下面是CUST_TRANS 表的结构和数据：
+表中的日期使用的默认dd-mon-rr格式存储
+哪一个SQL语句能执行成功（选择三个）？
+
+三、题目解析
+A选项正确，使用隐式转换把‘10’转换成了number型。
+B选项不正确，where条件中的=右边，日期格式和默认格式不一致，需要使用to_date显式转换。
+C选项正确，'11'隐式转换成number类型，然后进行比较。
+D选项正确，where条件中的=右边，日期格式和默认格式一致。
+E选项不正确，'A'是字符，不能转换成数值，所以会报错。
+四、测试
+下面是测试结果：
+SQL> create table CUST_TRANS(
+CUSTNO  CHAR(2) NOT NULL,
+TRANSDATE DATE,
+  4  TRANSAMT NUMBER(6,2)
+  5  );
+Table created.
+
+SQL> insert into CUST_TRANS values(11, '01-JAN-07', 1000);
+1 row created.
+
+SQL> insert into CUST_TRANS values(22, '01-FEB-07', 2000);
+1 row created.
+
+SQL> insert into CUST_TRANS values(33, '01-MAR-07', 3000);
+1 row created.
+
+SQL> SELECT transdate + '10' FROM cust_trans;
+
+TRANSDATE
+---------
+11-JAN-07
+11-FEB-07
+11-MAR-07
+
+SQL> SELECT * FROM cust_trans WHERE transdate = '01-01-07';
+SELECT * FROM cust_trans WHERE transdate = '01-01-07'
+                                           *
+ERROR at line 1:
+ORA-01843: not a valid month
+
+
+SQL> SELECT transamt FROM cust_trans WHERE custno > '11';
+
+  TRANSAMT
+----------
+      2000
+      3000
+
+SQL> SELECT * FROM cust_trans WHERE transdate='01-JANUARY-07';
+
+CU TRANSDATE   TRANSAMT
+-- --------- ----------
+11 01-JAN-07       1000
+
+SQL> SELECT custno + 'A' FROM cust_trans WHERE transamt > 2000;
+SELECT custno + 'A' FROM cust_trans WHERE transamt > 2000
+                *
+ERROR at line 1:
+ORA-01722: invalid number
+
+QUESTION 87
+You want to display the date for the first Mon day of the next month and issue the following
+command:
+SQL>SELECT TO_CHAR(NEXT_DAY(LAST_DAY(SYSDATE),'MON'),
+'dd "is the first Monday for" fmmonth rrrr')
+FROM DUAL;
+What is the outcome?
+A. It executes successfully and returns the correct result.
+B. It executes successfully but does not return the correct result.
+C. It generates an error because TO_CHAR should be replaced with TO_DATE.
+D. It generates an error because rrrr should be replaced by rr in the format string.
+E. It generates an error because fm and double quotation marks should not be used in the format string.
+Correct Answer: A
+二、题目翻译
+要显示下个月的第一个星期一的日期，执行下面的命令，结果是什么？
+A.执行成功,并且能得出正确结果。
+B.执行成功，但不能返回正确的结果。
+C.报错，TO_CHAR应该用TO_DATE替换。
+D.报错，格式中，rrrr应该用rr替换。
+E.报错，fm和双引号不能用在格式字符串中。
+
+三、题目解析
+LAST_DAY显示本月的最后一天的日期，
+NEXT_DATE函数返回从第一个参数的日期开始，紧接着下来的指定星期对应的第一个日期。
+
+四、测试
+
+SQL> SELECT TO_CHAR(NEXT_DAY(LAST_DAY(SYSDATE),'MON'),
+  2  'dd "is the first Monday for" fmmonth rrrr')
+  3  FROM DUAL;
+
+TO_CHAR(NEXT_DAY(LAST_DAY(SYSDATE),'MON'),'DD"ISTHEFIRSTMONDAYFOR"FM
+--------------------------------------------------------------------
+03 is the first Monday for april 2017
+
+QUESTION 88
+You need to calculate the number of days from 1st January 2007 till date.
+Dates are stored in the default format of dd-mon-rr.
+Which SQL statements would give the required output? (Choose two .)
+A. SELECT SYSDATE - '01-JAN-2007' FROM DUAL;
+B. SELECT SYSDATE - TO_DATE('01/JANUARY/2007') FROM DUAL;
+C. SELECT SYSDATE - TO_DATE('01-JANUARY-2007') FROM DUAL;
+D. SELECT TO_CHAR(SYSDATE, 'DD-MON-YYYY') - '01-JAN-2007' FROM DUAL;
+E. SELECT TO_DATE(SYSDATE, 'DD/MONTH/YYYY') - '01/JANUARY/2007' FROM DUAL;
+Correct Answer: BC
+二、题目翻译
+要计算从2007.1.1到现在的天数
+日期以默认的格式dd-mon-rr格式存储。
+下面哪个SQL能查出所需的结果（选择2个）：
+
+三、题目解析
+A选项不正确，格式不同，不能直接减，需要显式转才行。
+B，C选项正确，显式转换后，再相减。
+D选项不正确，都转成字符格式了，不能相减了。
+E选项不正确，sysdate本来就是日期格式，不用转换，反而减号是后面的日期需要转换，但却没转。
+四、测试
+SQL> SELECT SYSDATE - '01-JAN-2007' FROM DUAL;
+SELECT SYSDATE - '01-JAN-2007' FROM DUAL
+                 *
+ERROR at line 1:
+ORA-01722: invalid number
+
+
+SQL> SELECT SYSDATE - TO_DATE('01/JANUARY/2007') FROM DUAL;
+
+SYSDATE-TO_DATE('01/JANUARY/2007')
+----------------------------------
+                        3743.21299
+
+SQL> SELECT SYSDATE - TO_DATE('01-JANUARY-2007') FROM DUAL;
+
+SYSDATE-TO_DATE('01-JANUARY-2007')
+----------------------------------
+                        3743.21311
+
+SQL> SELECT TO_CHAR(SYSDATE, 'DD-MON-YYYY') - '01-JAN-2007' FROM DUAL;
+SELECT TO_CHAR(SYSDATE, 'DD-MON-YYYY') - '01-JAN-2007' FROM DUAL
+       *
+ERROR at line 1:
+ORA-01722: invalid number
+
+
+SQL> SELECT TO_DATE(SYSDATE, 'DD/MONTH/YYYY') - '01/JANUARY/2007' FROM DUAL;
+SELECT TO_DATE(SYSDATE, 'DD/MONTH/YYYY') - '01/JANUARY/2007' FROM DUAL
+                                           *
+ERROR at line 1:
+ORA-01722: invalid number
+
+QUESTION 89
+You need to display the date 11-oct-2007 in words as 'Eleventh of October, Two Thousand Seven'.
+Which SQL statement would give the required result?
+A. SELECT TO_CHAR('11-oct-2007', 'fmDdspth "of" Month, Year')
+FROM DUAL;
+B. SELECT TO_CHAR(TO_DATE('11-oct-2007'), 'fmDdspth of month, year')
+FROM DUAL;
+C. SELECT TO_CHAR(TO_DATE('11-oct-2007'), 'fmDdthsp "of" Month, Year')
+FROM DUAL;
+D. SELECT TO_DATE(TO_CHAR('11-oct-2007','fmDdspth ''of'' Month, Year'))
+FROM DUAL;
+Correct Answer: C
+二、题目翻译
+需要把11-oct-2007显示为Eleventh of October, Two Thousand Seven
+下面哪个SQL能得出所需的结果?
+
+三、题目解析
+A选项不正确，'11-oct-2007'本来就是个字符串，还用to_char转换就不对了。
+B选项不正确，日期格式不对，如果不属于转换日期格式标识符需要使用双引号，如"of"
+C选项正确。
+D选项不正确，语法不对，和A类似，本来就是字符串，还转。
+日期格式的详细用法，详见：
+http://blog.csdn.net/holly2008/article/details/25213993
+四、测试
+SQL> SELECT TO_CHAR('11-oct-2007', 'fmDdspth "of" Month, Year') FROM DUAL;
+SELECT TO_CHAR('11-oct-2007', 'fmDdspth "of" Month, Year') FROM DUAL
+               *
+ERROR at line 1:
+ORA-01722: invalid number
+
+
+SQL> SELECT TO_CHAR(TO_DATE('11-oct-2007'), 'fmDdspth of month, year') FROM DUAL;
+SELECT TO_CHAR(TO_DATE('11-oct-2007'), 'fmDdspth of month, year') FROM DUAL
+                                       *
+ERROR at line 1:
+ORA-01821: date format not recognized
+
+
+SQL> SELECT TO_CHAR(TO_DATE('11-oct-2007'), 'fmDdthsp "of" Month, Year') FROM DUAL;
+
+TO_CHAR(TO_DATE('11-OCT-2007'),'FMDDTHS
+---------------------------------------
+Eleventh of October, Two Thousand Seven
+
+SQL> SELECT TO_DATE(TO_CHAR('11-oct-2007','fmDdspth ''of'' Month, Year')) FROM DUAL;
+SELECT TO_DATE(TO_CHAR('11-oct-2007','fmDdspth ''of'' Month, Year')) FROM DUAL
+                       *
+ERROR at line 1:
+ORA-01722: invalid number
+
+QUESTION 90
+Examine the structure and data in the PRICE_LIST table:
+name Null Type
+PROD_ID NOT NULL NUMBER(3)
+PROD_PRICE VARCHAR2(10)
+PROD_ID PROD_PRICE
+100 $234.55
+101 $6,509.75
+102 $1,234
+You plan to give a discount of 25% on the product price and need to display the discount amount in the
+same format as the PROD_PRICE.
+Which SQL statement would give the required result?
+A. SELECT TO_CHAR(prod_price* .25,'$99,999.99')
+FROM PRICE_LIST;
+B. SELECT TO_CHAR(TO_NUMBER(prod_price)* .25,'$99,999.00')
+FROM PRICE_LIST;
+C. SELECT TO_CHAR(TO_NUMBER(prod_price,'$99,999.99')* .25,'$99,999.00')
+FROM PRICE_LIST;
+D. SELECT TO_NUMBER(TO_NUMBER(prod_price,'$99,999.99')* .25,'$99,999.00')
+FROM PRICE_LIST;
+Correct Answer: C
+二、题目翻译
+下面是查看 PRICE_LIST表的结构和数据
+现在计划给product price打折25%，并使用与PROD_PRICE相同格式显示打折后的值
+下面哪句SQL能给出所需的结果?
+
+三、题目解析
+因为PROD_PRICE是vachar2(10)类型，所以不能直接运算，需要先TO_NUMBER转换成数据型后才能进行计算，然后再TO_CHAR转换成字符型显示。
+四、测试
+SQL> create table PRICE_LIST(
+  2  PROD_ID  NUMBER(3) NOT NULL,
+  3  PROD_PRICE VARCHAR2(10)
+  4  );
+
+Table created.
+
+SQL> insert into PRICE_LIST values(100, '$234.55');
+
+1 row created.
+
+SQL> insert into PRICE_LIST values(101, '$6,509.75');
+
+1 row created.
+
+SQL> insert into PRICE_LIST values(102, '$1,234');
+
+1 row created.
+
+SQL> select to_char(to_number(prod_price,'$99,999.99')*0.25,'$99,999.99') from PRICE_LIST;
+
+TO_CHAR(TO_
+-----------
+     $58.64
+  $1,627.44
+    $308.50
+	
+QUESTION 91
+View the Exhibit and examine the structure of the PROMOTIONS table.
+Which two SQL statements would execute successfully? (Choose two.)
+A. UPDATE promotions
+SET promo_cost = promo_cost+ 100
+WHERE TO_CHAR(promo_end_date, 'yyyy') > '2000';
+B. SELECT promo_begin_date
+FROM promotions
+WHERE TO_CHAR(promo_begin_date,'mon dd yy')='jul 01 98';
+C. UPDATE promotions
+SET promo_cost = promo_cost+ 100
+WHERE promo_end_date > TO_DATE(SUBSTR('01-JAN-2000',8));
+D. SELECT TO_CHAR(promo_begin_date,'dd/month')
+FROM promotions
+WHERE promo_begin_date IN (TO_DATE('JUN 01 98'), TO_DATE('JUL 01 98'));
+Correct Answer: AB
+二、题目翻译
+下面是PROMOTIONS表的结构
+哪两个SQL语句能执行成功？（选择两个）
+三、题目解析
+C选项不正确，SUBSTR的结果是字符串'2000',TO_DATE需要第二个参数，日期格式，这里使用YYYY格式符才能转换。
+D选项不正确，TO_DATE函数，不写第二个参数，是转成默认日期格式，但这里的字符串显然不是默认日期格式，这样写是无法进行转换的，需要指定日期格式。
+四、测试
+SQL> UPDATE sh.promotions
+  2  SET promo_cost = promo_cost+ 100
+  3  WHERE TO_CHAR(promo_end_date, 'yyyy') > '2000';
+
+42 rows updated.
+
+SQL> SELECT promo_begin_date
+  2  FROM sh.promotions
+  3  WHERE TO_CHAR(promo_begin_date,'mon dd yy')='jul 01 98';
+
+PROMO_BEG
+---------
+01-JUL-98
+01-JUL-98
+01-JUL-98
+01-JUL-98
+01-JUL-98
+01-JUL-98
+
+6 rows selected.
+
+SQL> UPDATE sh.promotions
+  2  SET promo_cost = promo_cost+ 100
+  3  WHERE promo_end_date > TO_DATE(SUBSTR('01-JAN-2000',8));
+WHERE promo_end_date > TO_DATE(SUBSTR('01-JAN-2000',8))
+                               *
+ERROR at line 3:
+ORA-01861: literal does not match format string
+
+
+SQL> SELECT TO_CHAR(promo_begin_date,'dd/month')
+  2  FROM sh.promotions
+  3  WHERE promo_begin_date IN (TO_DATE('JUN 01 98'), TO_DATE('JUL 01 98'));
+WHERE promo_begin_date IN (TO_DATE('JUN 01 98'), TO_DATE('JUL 01 98'))
+                                   *
+ERROR at line 3:
+ORA-01858: a non-numeric character was found where a numeric was expected
+
+
+SQL> roll back;
+Rollback complete.
+
+QUESTION 92
+View the E xhibit and examine the data in the PROMO_NAME and PROMO_END_DATE columns of
+the PROMOTIONS table, and the required output format.
+Which two queries give the correct result? (Choose two.)
+Which two queries give the correct result? (Choose two.)
+A. SELECT promo_name, TO_CHAR(promo_end_date,'Day')|| ', '||
+                                           TO_CHAR(promo_end_date,'Month') ' '
+                                           TO_CHAR(promo_end_date,'DD, YYYY') AS last_day
+       FROM promotions;
+
+B. SELECT promo_name,TO_CHAR (promo_end_date,'fxDay')|| ', '||
+                                          TO_CHAR(promo_end_date,'fxMonth')|| ' '||
+                                          TO_CHAR(promo_end_date,'fxDD, YYYY') AS last_day
+       FROM promotions;
+
+C. SELECT promo_name, TRIM(TO_CHAR(promo_end_date,'Day')) ||', '||
+                                           TRIM(TO_CHAR(promo_end_date,'Month')) ||' '||
+                                           TRIM(TO_CHAR(promo_end_date,'DD, YYYY')) AS last_day
+       FROM promotions;
+
+D. SELECT promo_name,TO_CHAR(promo_end_date,'fmDay')||','||
+                                         TO_CHAR(promo_end_date,'fmMonth')||' '||
+                                         TO_CHAR(promo_end_date,'fmDD, YYYY') AS last_day
+        FROM promotions;
+Correct Answer: CD
+二、题目翻译
+下面是 PROMOTIONS表的PROMO_NAME and PROMO_END_DATE列的数据 与 PROMO_END_DATE输出的所需格式：
+下面哪两个查询能给出正确结果？（选择两个）
+
+三、题目解析
+A选项不正确，都是默认的，显示长度一样，即显示结果会对齐显示，没有去掉多余的空格。
+B选项不正确，fx加到此处没什么作用,fx为精确匹配格式，和A选项的结果类似，也是会对齐显示，有多余的空格。
+C选项正确，使用trim函数去掉左右多余的空格。
+D选项正确，使用fm去掉多余的空格。
+
+fm的详细使用方法，详见:
+http://blog.csdn.net/holly2008/article/details/25213993
+
+四、测试 
+SQL> SELECT promo_name, TO_CHAR(promo_end_date,'Day')|| ', '||
+  2                                             TO_CHAR(promo_end_date,'Month') ' '
+  3                                             TO_CHAR(promo_end_date,'DD, YYYY') AS last_day
+  4         FROM sh.promotions where rownum<5;
+                                           TO_CHAR(promo_end_date,'Month') ' '
+                                                                           *
+ERROR at line 2:
+ORA-00923: FROM keyword not found where expected
+
+SQL> set linesize 200
+SQL> SELECT promo_name,TO_CHAR (promo_end_date,'fxDay')|| ', '||
+  2                                            TO_CHAR(promo_end_date,'fxMonth')|| ' '||
+  3                                            TO_CHAR(promo_end_date,'fxDD, YYYY') AS last_day
+  4         FROM sh.promotions where rownum<5;
+
+PROMO_NAME                     LAST_DAY
+------------------------------ -----------------------------------------------------------------------------------
+NO PROMOTION #                 Friday   , January   01, 9999
+newspaper promotion #16-108    Tuesday  , January   23, 2001
+post promotion #20-232         Wednesday, November  25, 1998
+newspaper promotion #16-349    Thursday , September 10, 1998
+
+SQL> SELECT promo_name, TRIM(TO_CHAR(promo_end_date,'Day')) ||', '||
+                                           TRIM(TO_CHAR(promo_end_date,'Month')) ||' '||
+                                           TRIM(TO_CHAR(promo_end_date,'DD, YYYY')) AS last_day
+  4         FROM sh.promotions where rownum<5;
+
+PROMO_NAME                     LAST_DAY
+------------------------------ -----------------------------------------------------------------------------------
+NO PROMOTION #                 Friday, January 01, 9999
+newspaper promotion #16-108    Tuesday, January 23, 2001
+post promotion #20-232         Wednesday, November 25, 1998
+newspaper promotion #16-349    Thursday, September 10, 1998
+
+SELECT promo_name,TO_CHAR(promo_end_date,'fmDay')||','||
+                                         TO_CHAR(promo_end_date,'fmMonth')||' '||
+                                         TO_CHAR(promo_end_date,'fmDD, YYYY') AS last_day
+  4          FROM sh.promotions where rownum<5;
+
+PROMO_NAME                     LAST_DAY
+------------------------------ ----------------------------------------------------------------------------------
+NO PROMOTION #                 Friday,January 1, 9999
+newspaper promotion #16-108    Tuesday,January 23, 2001
+post promotion #20-232         Wednesday,November 25, 1998
+newspaper promotion #16-349    Thursday,September 10, 1998
+
+QUESTION 93
+View the Exhibit and examine the structure of the CUSTOMERS table.
+Using the CUSTOMERS table, y ou need to generate a report that shows an increase in the credit limit
+by 15% for all customers. Customers whose credit limit has not been entered should have the message "
+Not Available" displayed.
+Which SQL statement would produce the required result?
+A. SELECT NVL(cust_credit_limit,'Not Available')*.15 "NEW CREDIT"
+FROM customers;
+B. SELECT NVL(cust_credit_limit*.15,'Not Available') "NEW CREDIT"
+FROM customers;
+C. SELECT TO_CHAR(NVL(cust_credit_limit*.15,'Not Available')) "NEW CREDIT"
+FROM customers;
+D. SELECT NVL(TO_CHAR(cust_credit_limit*.15),'Not Available') "NEW CREDIT"
+FROM customers;
+Correct Answer: D
+
+二、题目翻译
+下面是CUSTOMERS表的结构：
+根据CUSTOMERS表生成一个报表，显示所有客户增长15%的credit limit.如果客户没有credit limit则显示Not Available.
+哪个SQL语句给出所需结果？
+
+三、题目解析
+A、B、C选项不正确，原因类似，NVL函数第一个参数是number类型，第二个参数是字符类型，无法隐式转换。
+D选项正确，先将cust_credit_limit * 0.15，这是数值类型，用to_char转成字符类型，nvl的两个参数类型一致，就正确了。
+四、测试
+NVL函数的详细用法，参考：
+http://blog.csdn.net/holly2008/article/details/25251513
+SQL> with customers as (
+  2  select 15 cust_credit_limit from dual
+  3  union all 
+  4  select 188.2 cust_credit_limit from dual
+  5  union all 
+  6  select null cust_credit_limit from dual
+  7  )
+  8  SELECT NVL(cust_credit_limit,'Not Available')*.15 "NEW CREDIT" FROM customers;
+SELECT NVL(cust_credit_limit,'Not Available')*.15 "NEW CREDIT" FROM customers
+                             *
+ERROR at line 8:
+ORA-01722: invalid number
+
+
+SQL> with customers as (
+  2  select 15 cust_credit_limit from dual
+  3  union all 
+  4  select 188.2 cust_credit_limit from dual
+  5  union all 
+  6  select null cust_credit_limit from dual
+  7  )
+  8  SELECT NVL(cust_credit_limit*.15,'Not Available') "NEW CREDIT"
+  9  FROM customers;
+SELECT NVL(cust_credit_limit*.15,'Not Available') "NEW CREDIT"
+                                 *
+ERROR at line 8:
+ORA-01722: invalid number
+
+
+SQL> with customers as (
+  2  select 15 cust_credit_limit from dual
+  3  union all 
+  4  select 188.2 cust_credit_limit from dual
+  5  union all 
+  6  select null cust_credit_limit from dual
+  7  )
+  8  SELECT TO_CHAR(NVL(cust_credit_limit*.15,'Not Available')) "NEW CREDIT"
+  9  FROM customers;
+SELECT TO_CHAR(NVL(cust_credit_limit*.15,'Not Available')) "NEW CREDIT"
+                                         *
+ERROR at line 8:
+ORA-01722: invalid number
+
+
+SQL> with customers as (
+  2  select 15 cust_credit_limit from dual
+  3  union all 
+  4  select 188.2 cust_credit_limit from dual
+  5  union all 
+  6  select null cust_credit_limit from dual
+  7  )
+  8  SELECT NVL(TO_CHAR(cust_credit_limit*.15),'Not Available') "NEW CREDIT"
+  9  FROM customers;
+
+NEW CREDIT
+----------------------------------------
+2.25
+28.23
+Not Available
+
+1.NVL函数
+       NVL(expr1,expr2)
+
+如果expr1和expr2的数据类型一致，则：
+如果expr1为空(null),那么显示expr2，
+如果expr1的值不为空，则显示expr1
+2.NVL2函数
+   NVL2(expr1,expr2, expr3)
+
+如果expr1不为NULL，返回expr2； expr1为NULL，返回expr3。
+expr2和expr3类型不同的话，expr3会转换为expr2的类型，转换不了，则报错。
+3. NULLIF函数
+       NULLIF(expr1,expr2)
+如果expr1和expr2相等则返回空(NULL)，否则返回expr1。
+4.coalesce函数
+     coalesce(expr1, expr2, expr3….. exprn)
+返回表达式中第一个非空表达式，如果都为空则返回空值。
+所有表达式必须是相同类型，或者可以隐式转换为相同的类型，否则报错。
+
+Coalese函数和NVL函数功能类似，只不过选项更多。
