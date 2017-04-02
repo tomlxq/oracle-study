@@ -1,0 +1,442 @@
+
+Xshell设置
+1. 设置静态ＩＰ地址
+ip addr
+ifconfig
+[root@oel vmware-tools-distrib]# cat /etc/sysconfig/network-scripts/ifcfg-eth0 
+DEVICE=eth0
+HWADDR=00:0C:29:37:E6:D6
+TYPE=Ethernet
+UUID=8c9273c1-cfea-4381-933f-f789103a885a
+ONBOOT=yes
+BOOTPROTO=static
+IPADDR=192.168.21.6
+NETWORK=255.255.255.0
+GATEWAY=192.168.21.1
+GROADCAST=192.168.21.255
+service network restart
+2. 安装VMwareTools
+[root@oel ~]# cd /media/VMware\ Tools/
+[root@oel VMware Tools]# ll
+total 61189
+-r-xr-xr-x. 1 root root     1961 Mar 22  2014 manifest.txt
+-r--r--r--. 1 root root     1847 Mar 22  2014 run_upgrader.sh
+-r--r--r--. 1 root root 61260572 Mar 22  2014 VMwareTools-9.6.2-1688356.tar.gz
+-r-xr-xr-x. 1 root root   689456 Mar 22  2014 vmware-tools-upgrader-32
+-r-xr-xr-x. 1 root root   702472 Mar 22  2014 vmware-tools-upgrader-64
+[root@oel VMware Tools]# cp VMwareTools-9.6.2-1688356.tar.gz  /opt/
+[root@oel VMware Tools]# cd /opt/
+[root@oel opt]# cd vmware-tools-distrib/
+[root@oel vmware-tools-distrib]# ./vmware-install.pl 
+3. 搭建yum库
+虚拟机选中你的ISO,勾上Connected,Connect at power on
+[root@oel ~]# mount -o loop /dev/cdrom /mnt/
+[root@oel ~]# cat /etc/yum.repos.d/server.repo
+[server]
+name=oel6.5
+baseurl=file:///mnt/Server
+enabled=1
+gpgcheck=0
+如果有这个要去掉
+[root@oel ~]# mv  /etc/yum.repos.d/public-yum-ol6.repo /etc/yum.repos.d/public-yum-ol6.repo_bak
+[root@oel ~]# yum list all
+4.安装所需要的包
+[root@oel ~]# cat ./yum.sh 
+yum install binutils* -y
+yum install compat* -y
+yum install control* -y
+yum install gcc* -y
+yum install glibc* -y
+yum install gnome* -y
+yum install libstdc* -y
+yum install make* -y
+yum install ksh* -y
+yum install sysstat* -y
+yum install libXp.i686 libXp-devel.i686 libXt.i686 libXt-devel.i686 libXtst.i686 libXtst-devel.i686 make.x86_64 gcc.x86_64 libaio.x86_64 glibc-devel.i686 libgcc.i686 glibc-devel.x86_64 compat-libstdc++-33 -y
+yum install glibc* gcc* make* compat-db* libstdc* libXp* libXtst* compat-libstdc++* -y
+[root@oel ~]# chmod 755 yum.sh 
+[root@oel ~]# ./yum.sh 
+5. 修改相关的系统配置
+1) 在 /etc/sysctl.conf 文件尾部追加以下内容
+[root@oracle ~]# vi /etc/sysctl.conf
+kernel.shmmni = 4096
+kernel.sem = 250 32000 100 128
+fs.file-max = 65536
+net.core.rmem_default=262144
+net.core.rmem_max=262144
+net.core.wmem_default=262144
+net.core.wmem_max=262144
+kernel.shmmax = 2147483648
+kernel.shmall = 2097152
+
+2) 保存并退出，使修改生效
+[root@oracle ~]# /sbin/sysctl -p
+
+3) 修改 /etc/security/limits.conf // 在 /etc/secuirty/limits.conf 文件尾部追加以下内容，以设置用户限制
+[root@oracle ~]# vi /etc/security/limits.conf
+oracle soft nproc 2047
+oracle hard nproc 16384
+oracle soft nofile 1024
+oracle hard nofile 65536
+
+4) /etc/pam.d/login
+// 在 /etc/pam.d/login 文件尾部追加以下内容，以修改登录配置
+[root@oracle ~]# vi /etc/pam.d/login
+session required pam_limits.so
+
+
+6. 关闭SELINUX功能
+[root@oracle ~]# vi /etc/selinux/config
+SELINUX=disabled // 这里设置为 disabled 即关闭 SELINX
+
+7. 修改/etc/hosts文件
+[root@oracle ~]# vi /etc/hosts
+127.0.0.1 localhost.localdomain localhost // 本机 IP 地址 // 长主机名 // 短主机名
+192.168.21.4 oracle.example.com oracle
+8. 创建用户和用户组、创建安装目录 创建用户和用户组、创建安装目录
+1) 创建dba oinstall用户组
+[root@oel ~]# groupadd dba
+[root@oel ~]# groupadd oinstall
+[root@oel ~]# groupadd oper
+[root@oel ~]# useradd -g dba -G oinstall oracle
+[root@oel ~]# passwd oracle
+Changing password for user oracle.
+New password: 
+BAD PASSWORD: it is based on a dictionary word
+BAD PASSWORD: is too simple
+Retype new password: 
+passwd: all authentication tokens updated successfully.
+2)　创建oracle安装目录
+[oracle@oel database]$ su -
+Password: 
+[root@oel ~]# mkdir -p /u01/app/oracle
+[root@oel ~]# chown -R oracle.oinstall /u01/
+[root@oel ~]# ll -l /u01
+9. 修改环境变量
+[root@oel ~]# su - oracle
+[oracle@oel database]$ cat ~/.bash_profile 
+# .bash_profile
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+        . ~/.bashrc
+fi
+
+# User specific environment and startup programs
+
+PATH=$PATH:$HOME/bin
+
+export PATH
+export TMP=/tmp; 
+export TMPDIR=$TMP; 
+
+export ORACLE_SID=prod;
+export ORACLE_BASE=/u01/app/oracle; 
+export ORACLE_HOME=$ORACLE_BASE/product/11.2.0/db_1; 
+export ORACLE_TERM=xterm; 
+export PATH=$ORACLE_HOME/bin:$PATH; 
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ORACLE_HOME/lib; 
+export CLASSPATH=$ORACLE_HOME/JREORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib; 
+
+if [ $USER = "oracle" ]; then
+if [ $SHELL = "/bin/ksh" ]; then
+ulimit -p 16384
+ulimit -n 65536
+else
+ulimit -u 16384 -n 65536
+fi
+fi
+[oracle@oel ~]$ source .bash_profile 
+10. 安装oracle
+安装上传工具
+[root@oel ~]# yum install lrzsz
+上传安装包、解压
+[oracle@oel ~]$ rz
+[oracle@oel ~]$ unzip p10404530_112030_LINUX_1of7.zip 
+[oracle@oel ~]$ unzip p10404530_112030_LINUX_2of7.zip 
+[oracle@oel ~]$ ll
+total 2422144
+drwxr-xr-x. 8 oracle dba       4096 Sep 22  2011 database
+-rw-r--r--. 1 oracle dba 1337967916 Jan 14 02:16 p10404530_112030_LINUX_1of7.zip
+-rw-r--r--. 1 oracle dba 1142289834 Jan 14 02:55 p10404530_112030_LINUX_2of7.zip
+[oracle@oel ~]$ cd database/
+[oracle@oel database]$ export DISPLAY=192.168.21.1:0.0
+[oracle@oel database]$ ./runInstaller 
+SQL> select status from v$instance;
+
+STATUS
+------------
+OPEN
+
+
+安装rlwrap,解决sqlplus里的上下键问题
+[root@oel ~]# cd /opt/
+[root@oel opt]# rz
+[root@oel opt]# tar zxvf rlwrap-0.37.tar.gz
+[root@oel opt]# yum install readline*
+[root@oel opt]# cd rlwrap-0.37
+[root@oel rlwrap-0.37]# ./configure && make && make check && make install
+[oracle@oel ~]$ vi ~/.bash_profile追加
+alias sqlplus='rlwrap sqlplus'
+alias rman='rlwrap rman'
+stty erase ^h
+
+安装asm
+1. 安装 ASM 驱动包
+2. 创建 grid 用户 、asmdba 、asmoper 、asmadmin 组
+[root@oel opt]# groupadd asmdba
+[root@oel opt]# groupadd asmoper
+[root@oel opt]# groupadd asmadmin
+[root@oel opt]# useradd -g oinstall -G asmdba,asmoper,asmadmin grid
+[root@oel opt]# passwd grid
+Changing password for user grid.
+New password: 
+BAD PASSWORD: it is based on a dictionary word
+BAD PASSWORD: is too simple
+Retype new password: 
+passwd: all authentication tokens updated successfully.
+[root@oel opt]# usermod -a -G asmdba oracle
+4．创建目录并授权
+[root@oel ~]# mkdir -p /u02/app/grid
+[root@oel ~]# chown -R grid:oinstall /u02
+[root@oel ~]# chmod -R 775 /u02/app/grid
+5．修改环境变量
+[grid@oel ~]$ cat ~/.bash_profile 追加
+export ORACLE_SID=+ASM  
+export ORACLE_BASE=/u02/app/grid  
+export ORACLE_HOME=$ORACLE_BASE/product/11.2.0/grid  
+export ORACLE_TERM=xterm  
+export TMP=/tmp  
+export TMPDIR=$TMP   
+export PATH=/usr/sbin:$PATH:$ORACLE_HOME/bin:$PATH  
+export LD_LIBRARY_PATH=$ORACLE_HOME/lib:/lib:/usr/lib  
+export CLASSPATH=$ORACLE_HOME/JRE:$ORACLE_HOME/jlib:$ORACLE_HOME/rdbms/jlib
+3. 配置 ASM 
+１）先在虚拟机上增加一个８Ｇ的虚拟磁盘
+[root@oel ~]# fdisk -l
+Disk /dev/sda: 53.7 GB, 53687091200 bytes
+255 heads, 63 sectors/track, 6527 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x0004993d
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sda1   *           1          64      512000   83  Linux
+Partition 1 does not end on cylinder boundary.
+/dev/sda2              64        6528    51915776   8e  Linux LVM
+
+Disk /dev/sdb: 8589 MB, 8589934592 bytes
+255 heads, 63 sectors/track, 1044 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x00000000
+
+
+Disk /dev/mapper/vg_oel-lv_root: 48.9 GB, 48897196032 bytes
+255 heads, 63 sectors/track, 5944 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x00000000
+
+
+Disk /dev/mapper/vg_oel-lv_swap: 4261 MB, 4261412864 bytes
+255 heads, 63 sectors/track, 518 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x00000000
+２）格式化 ASM的磁
+[root@oel ~]# fdisk /dev/sdb
+Device contains neither a valid DOS partition table, nor Sun, SGI or OSF disklabel
+Building a new DOS disklabel with disk identifier 0xb377bf2c.
+Changes will remain in memory only, until you decide to write them.
+After that, of course, the previous content won't be recoverable.
+
+Warning: invalid flag 0x0000 of partition table 4 will be corrected by w(rite)
+
+WARNING: DOS-compatible mode is deprecated. It's strongly recommended to
+         switch off the mode (command 'c') and change display units to
+         sectors (command 'u').
+
+Command (m for help): m
+Command action
+   a   toggle a bootable flag
+   b   edit bsd disklabel
+   c   toggle the dos compatibility flag
+   d   delete a partition
+   l   list known partition types
+   m   print this menu
+   n   add a new partition
+   o   create a new empty DOS partition table
+   p   print the partition table
+   q   quit without saving changes
+   s   create a new empty Sun disklabel
+   t   change a partition's system id
+   u   change display/entry units
+   v   verify the partition table
+   w   write table to disk and exit
+   x   extra functionality (experts only)
+
+Command (m for help): n
+Command action
+   e   extended
+   p   primary partition (1-4)
+p
+Partition number (1-4): 1
+First cylinder (1-1044, default 1): 
+Using default value 1
+Last cylinder, +cylinders or +size{K,M,G} (1-1044, default 1044): 261
+
+Command (m for help): n
+Command action
+   e   extended
+   p   primary partition (1-4)
+p
+Partition number (1-4): 2
+First cylinder (262-1044, default 262): 
+Using default value 262
+Last cylinder, +cylinders or +size{K,M,G} (262-1044, default 1044): 522
+
+Command (m for help): n
+Command action
+   e   extended
+   p   primary partition (1-4)
+p
+Partition number (1-4): 3
+First cylinder (523-1044, default 523): 
+Using default value 523
+Last cylinder, +cylinders or +size{K,M,G} (523-1044, default 1044): 738
+
+Command (m for help): n
+Command action
+   e   extended
+   p   primary partition (1-4)
+p
+Selected partition 4
+First cylinder (739-1044, default 739): 
+Using default value 739
+Last cylinder, +cylinders or +size{K,M,G} (739-1044, default 1044): 
+Using default value 1044
+
+Command (m for help): w
+The partition table has been altered!
+
+Calling ioctl() to re-read partition table.
+Syncing disks.
+[root@oel ~]# fdisk -l
+
+Disk /dev/sda: 53.7 GB, 53687091200 bytes
+255 heads, 63 sectors/track, 6527 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x0004993d
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sda1   *           1          64      512000   83  Linux
+Partition 1 does not end on cylinder boundary.
+/dev/sda2              64        6528    51915776   8e  Linux LVM
+
+Disk /dev/sdb: 8589 MB, 8589934592 bytes
+255 heads, 63 sectors/track, 1044 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0xb377bf2c
+
+   Device Boot      Start         End      Blocks   Id  System
+/dev/sdb1               1         261     2096451   83  Linux
+/dev/sdb2             262         522     2096482+  83  Linux
+/dev/sdb3             523         738     1735020   83  Linux
+/dev/sdb4             739        1044     2457945   83  Linux
+
+Disk /dev/mapper/vg_oel-lv_root: 48.9 GB, 48897196032 bytes
+255 heads, 63 sectors/track, 5944 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x00000000
+
+
+Disk /dev/mapper/vg_oel-lv_swap: 4261 MB, 4261412864 bytes
+255 heads, 63 sectors/track, 518 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x00000000
+３）asm磁盘设置
+[root@oel opt]# /etc/init.d/oracleasm configure
+Configuring the Oracle ASM library driver.
+
+This will configure the on-boot properties of the Oracle ASM library
+driver.  The following questions will determine whether the driver is
+loaded on boot and what permissions it will have.  The current values
+will be shown in brackets ('[]').  Hitting <ENTER> without typing an
+answer will keep that current value.  Ctrl-C will abort.
+
+Default user to own the driver interface []: grid
+Default group to own the driver interface []: asmdba
+Start Oracle ASM library driver on boot (y/n) [n]: y
+Scan for Oracle ASM disks on boot (y/n) [y]: y
+Writing Oracle ASM library driver configuration: done
+Initializing the Oracle ASMLib driver:                     [  OK  ]
+Scanning the system for Oracle ASMLib disks:               [  OK  ]
+４）创建asm磁盘
+[root@oel ~]# /etc/init.d/oracleasm createdisk VOL1 /dev/sdb1
+Marking disk "VOL1" as an ASM disk:                        [  OK  ]
+[root@oel ~]# /etc/init.d/oracleasm createdisk VOL2 /dev/sdb2
+Marking disk "VOL2" as an ASM disk:                        [  OK  ]
+[root@oel ~]# /etc/init.d/oracleasm createdisk VOL3 /dev/sdb3
+Marking disk "VOL3" as an ASM disk:                        [  OK  ]
+[root@oel ~]# /etc/init.d/oracleasm createdisk VOL4 /dev/sdb4
+Marking disk "VOL4" as an ASM disk:                        [  OK  ]
+５）检查asm磁盘状态
+[root@oel ~]# /etc/init.d/oracleasm listdisks
+VOL1
+VOL2
+VOL3
+VOL4
+[root@oel ~]# /etc/init.d/oracleasm status
+Checking if ASM is loaded: yes
+Checking if /dev/oracleasm is mounted: yes
+三、 ASM软件 安装
+1) 上传 ASM安装包、解压、授权 
+[grid@oel ~]$ rz
+[grid@oel ~]$ unzip p10404530_112030_LINUX_3of7.zip
+[grid@oel ~]$ cd grid/
+[grid@oel ~]$ export DISPLAY=192.168.21.1:0.0
+[grid@oel ~]$ ./runInstaller                 
+
+Password: 
+[grid@oel ~]$ sqlplus / as sysasm
+
+SQL*Plus: Release 11.2.0.3.0 Production on Wed Mar 29 19:32:32 2017
+
+Copyright (c) 1982, 2011, Oracle.  All rights reserved.
+
+
+Connected to:
+Oracle Database 11g Enterprise Edition Release 11.2.0.3.0 - Production
+With the Automatic Storage Management option
+
+SQL> select status from v$instance;
+
+STATUS
+------------
+STARTED
+
+[grid@oel ~]$ rm -rf  p10404530_112030_LINUX_3of7.zip
+[grid@oel ~]$ rm -rf  grid/
+
+
+netca（Net Configuration Assistant）配置监听，首次监听配置必须使用netca，netmgr第一次不好使
+(1)   启动服务器端监听器与数据库服务
+Linux/Unix下，启动监听器：
+$ lsnrctl start
+关闭监听器：
+$ lsnrctl stop
+查看监听状态：
+$ lsnrctl status

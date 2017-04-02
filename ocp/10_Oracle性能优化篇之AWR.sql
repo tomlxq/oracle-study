@@ -1,8 +1,26 @@
 v$session
+	当前会话记录保存在v$session中
 v$session_wait
-v$session_wait_history
+	处于等待状态的会话会被复制一份放在v$session_wait中
+v$_session_wait_history
+	保存了每个活动session在v$session_wait中最近10次的等待事件
+
 v$active_session_history
-AWR: auto workload repository
+	ASH（active session history）
+	保存处于等待状态的活动session的信息，每秒从v$session_wait中采样一次，并将采样信息保存在内存中，诊断当前数据库的状态，需要最近的五到十分钟的详细信息
+AWR
+	ASH的采样数据是保存在内存中，而分配给ASH的内存空间是有限的，当所分配空间占满后，旧的记录就会被覆盖掉；
+	而且数据库重启后，所有的ASH信息都会消失。
+	这样，对于长期检测oracle的性能是不可能的。
+	在Oracle中，提供了永久保留ASH信息的方法，这就是AWR（auto workload repository）。
+	ASH中的信息被保存到了AWR中的视图wrh$_active_session_history中。ASH是AWR的真子集。
+	dbms_workload_repository
+wrh$_active_session_history
+	每小时对v$active_session_history进行采样一次，并将信息保存到磁盘中
+dba_hist_active_sess_history
+
+
+
 [oracle@oracle ~]$ cd  /u01/app/oracle/product/11.2.0/db_1/rdbms/admin/
 [oracle@oracle admin]$ ls -l awr*
 -rw-r--r-- 1 oracle oinstall  1148 Dec  1  2006 awrblmig.sql

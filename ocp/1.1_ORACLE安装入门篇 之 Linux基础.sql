@@ -161,5 +161,155 @@ cat /etc/gshadow
 [test@example]$ groups
 test test1
 
-21
+root:x:0:0:root:/root:/bin/bash
+root	账号名称	对应UID 用的
+x 		密码 		表示密码已经被移动到shadow 这个加密过后的档案中了
+0 		UID			Id=0 当UID 是0 时，代表这个账号是系统管理员
+					1~99 会保留给系统预设的账号
+					100~499 则保留给一些服务来使用
+					Id=500~65535给一般使用者使用。
+0 		GID			这个与/etc/group 有关
+root	使用者信息说明栏
+/root	使用者的家目录
+/bin/bash SHELL		所谓的shell 	是用来沟通人类下达的指令与硬件之间真正动作的界面
 
+
+改变用户ID 的实验
+[root@oracle ~]# useradd dmtsai
+[root@oracle ~]# ls -ld /home/
+drwxr-xr-x 5 root root 4096 Mar 21 22:51 /home/
+[root@oracle ~]# ls -ld /home/*
+drwx------  3 dmtsai dmtsai   4096 Mar 21 22:51 /home/dmtsai
+[root@oracle ~]# vi /etc/passwd
+dmtsai:x:3000:503::/home/dmtsai:/bin/bash  502->3000
+[root@oracle ~]# ls -ld /home/*
+drwx------  3    502 dmtsai   4096 Mar 21 22:51 /home/dmtsai  --其实档案记录的是UID
+
+添加用户useradd
+修改用户usermod
+修改密码passwd
+删除用户Userdel
+	通常我们要移除一个账号的时候，你可以手动的将/etc/passwd 与/etc/shadow 里头的该账号取消即可！
+	一般而言，如果该账号只是『暂时不启用』的话，那么将/etc/shadow 里头最后倒数一个字段设定为0 
+	就可以让该账号无法使用，但是所有跟该账号相关的数据都会留下来！
+
+修改密码的试验
+	密码不能与账号相同；
+	密码尽量不要选用字典里面会出现的字符串；
+	密码需要超过8 个字符；
+[root@oracle ~]# passwd test
+Changing password for user test.
+New UNIX password: 
+BAD PASSWORD: it is too short
+Retype new UNIX password: 
+passwd: all authentication tokens updated successfully.
+[root@oracle ~]# su - test
+[test@oracle ~]$ passwd
+Changing password for user test.
+Changing password for test
+(current) UNIX password: test
+New UNIX password: 1qazxsw2
+Retype new UNIX password: 1qazxsw2
+passwd: all authentication tokens updated successfully.
+
+显示用户所属的组groups
+创建组groupadd
+修改组groupmod
+删除组groupdel
+显示用户信息id
+
+权限
+	三种用户
+ 		档案所属用户user u
+ 		档案所属组group g
+ 		其他人other o
+
+[root@oracle ~]# mkdir a
+[root@oracle ~]# chmod o=rw a
+[root@oracle ~]# su - test
+[test@oracle ~]$ cd /root/a
+-bash: cd: /root/a: Permission denied
+chgrp ：修改文档的拥有组。
+
+[root@oracle ~]# cd /usr/bin/
+[root@oracle bin]# chmod u-s passwd 
+[root@oracle bin]# su - test
+[test@oracle ~]$ passwd
+Changing password for user test.
+Changing password for test
+(current) UNIX password: 
+passwd: Authentication token manipulation error
+
+chmod
+who ： u g o
+what： - + =
+which： r w x
+数值法：
+r=4
+w=2
+x=1
+比如说一个文件里面的权限是rwxrwxr-x 那么它的权限数值就等于775（4+2+1=7 4+2+1=7 4+0+1=5）
+如chmod 775 dir
+
+chown 修改文档的拥有者。
+chown -R username dir 对目录里面的东西可以进行一个递归的修改，也就是说该目录下的s文件的拥有者也一样修改成username
+
+通过加入suid
+chmod u+s dir/file
+加入sgid
+chmod g+s dir/file
+加入sticky
+chmod o+t dir/file
+强制位与冒险位的数值表示：
+suid=4 sgid=2 sticky=1
+通过数值的方式加入权限
+如：我要把suid，就是4 加入到权限为775 的dir 里面
+我可以通过
+chmod 4775 dir（4 就是强制位suid）
+如此类推：
+chmod 2775 dir （就把2 的强制位guid 加入到dir 里面）
+chmod 1775 dir （就把1 的冒险位sticky 加入大dir 里面）
+
+VIM
+0 这是数字『0 』：移动到这一行的最前面字符处
+$ 移动到这一行的最后面字符处
+G 移动到这个档案的最后一行
+nG n 为数字。移动到这个档案的第n 行。例如20G 则会移动到这个档案的第
+20 行(可配合:set nu)
+gg 移动到这个档案的第一行，相当于1G 啊！
+n<Enter> n 为数字。光标向下移动n 行
+/word 向光标之下寻找一个字符串名称为word 的字符串。例如要在档案内搜寻
+vbird 这个字符串，就输入/vbird 即可！
+:n1,n2s/word1/word2/g
+n1 与n2 为数字。在第n1 与n2 行之间寻找word1 这个字符串，并将该
+字符串取代为word2 ！举例来说，在100 到200 行之间搜寻vbird 并取代
+为VBIRD 则： 『:100,200s/vbird/VBIRD/g』。
+:1,$s/word1/word2/g
+从第一行到最后一行寻找word1 字符串，并将该字符串取代为word2 ！
+:1,$s/word1/word2/gc
+从第一行到最后一行寻找word1 字符串，并将该字符串取代为word2 ！且
+在取代前显示提示字符给使用者确认(conform) 是否需要取代！
+x, X 在一行字当中，x 为向后删除一个字符(相当于[del] 按键)， X 为向前删除
+一个字符(相当于[backspace] 亦即是退格键)
+dd 删除游标所在的那一整行
+ndd n 为数字。删除光标所在的向下n 行，例如20dd 则是删除20 行
+yy 复制游标所在的那一行
+nyy n 为数字。复制光标所在的向下n 行，例如20yy 则是复制20 行
+p, P p 为将已复制的数据在光标下一行贴上，P 则为贴在游标上一行！
+举例来说，我目前光标在第20 行，且已经复制了10 行数据。
+则按下p 后， 那10 行数据会贴在原本的20 行之后，亦即由21 行开
+始贴。但如果是按下P 呢？ 那么原本的第20 行会被推到变成30 行。
+u 复原前一个动作。
+[Ctrl]+r 重做上一个动作。
+:w 将编辑的数据写入硬盘档案中(常用)
+:w! 若档案属性为『只读』时，强制写入该档案。不过，到底能不能写入， 还是
+跟您对该档案的档案权限有关啊！
+:q 离开vi (常用)
+:q! 若曾修改过档案，又不想储存，使用! 为强制离开不储存档案。
+:wq 储存后离开，若为:wq! 则为强制储存后离开(常用)
+:w [filename] 将编辑的数据储存成另一个档案（类似另存新档）
+:set nu 显示行号，设定之后，会在每一行的前缀显示该行的行号
+:set nonu 与set nu 相反，为取消行号！
+i、a 插入
+. 不要怀疑！这就是小数点！意思是重复前一个动作的意思。如果您想要重复
+删除、重复贴上等等动作，按下小数点『.』就好了！ (常用)
