@@ -160,3 +160,6 @@ cat /etc/gshadow
 [root@example]# su test
 [test@example]$ groups
 test test1
+
+21
+
