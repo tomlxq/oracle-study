@@ -3,8 +3,8 @@
 oracle11g手动建库
 
 1. 设置环境变量
-export ORACLE_BASE=/u01/app/Oracle
-export ORACLE_HOME=/u01/app/oracle/product/11.2.0.3/db_1
+export ORACLE_BASE=/u01/app/oracle
+export ORACLE_HOME=/u01/app/oracle/product/11.2.0/db_1
 export ORACLE_SID=orcl
 export PATH=$ORACLE_HOME/bin:$ORACLE_HOME/OPatch:$PATH
 export PATH
@@ -34,8 +34,11 @@ mkdir -p $ORACLE_BASE/diag/rdbms/$ORACLE_SID/$ORACLE_SID/trace
 chmod -R 750 $ORACLE_BASE/diag/rdbms/$ORACLE_SID  
  
 3. 创建密码文件
+创建密码文件 orapwd file=$ORACLE_HOME/dbs/orapw$ORACLE_SID password=oracle
+cd $ORACLE_HOME/dbs
+
 [oracle@ogg04 dbs]$ pwd
-/u01/app/oracle/product/11.2.0.3/db_1/dbs
+/u01/app/oracle/product/11.2.0/db_1/dbs
 [oracle@ogg04 dbs]$  orapwd file=orapworcl password=oracle entries=5
 
 4.建初始化参数文件
@@ -52,7 +55,7 @@ orcl.__streams_pool_size=0
 *.audit_file_dest='/u01/app/oracle/admin/orcl/adump'
 *.audit_trail='db'
 *.compatible='11.2.0.3.0'
-*.control_files='/oradata/orcl/control01.ctl','/oradata/orcl/control02.ctl'
+*.control_files='/u01/app/oracle/oradata/orcl/control01.ctl','/u01/app/oracle/oradata/orcl/control02.ctl'
 *.db_block_size=8192
 *.db_domain=''
 *.db_name='orcl'
@@ -78,8 +81,8 @@ File created.
 
 7.建库脚本
 su - root
-[root@oracle ~]# mkdir -p /oradata/orcl/
-[root@oracle ~]# chown -R oracle.oinstall /oradata/orcl
+[root@oracle ~]# mkdir -p /u01/app/oracle/oradata/orcl/
+[root@oracle ~]# chown -R oracle.oinstall /u01/app/oracle/oradata/orcl
 
 SQL> create database orcl CONTROLFILE REUSE 
    MAXINSTANCES 8 
@@ -89,13 +92,13 @@ SQL> create database orcl CONTROLFILE REUSE
    MAXLOGMEMBERS 4
    character set ZHS16GBK national character set AL16UTF16
    logfile 
-   group 1 ('/oradata/orcl/redo01.log') size 50M reuse,
-   group 2 ('/oradata/orcl/redo02.log') size 50M reuse,
-   group 3 ('/oradata/orcl/redo03.log') size 50M reuse
-datafile '/oradata/orcl/system01.dbf' size 1000M reuse extent management local
-sysaux datafile '/oradata/orcl/sysaux01.dbf' size 800M
-default temporary tablespace temp tempfile '/oradata/orcl/temp01.dbf' size 500M reuse
-undo tablespace undotbs1 datafile '/oradata/orcl/undotbs01.dbf' size 126M reuse
+   group 1 ('/u01/app/oracle/oradata/orcl/redo01.log') size 50M reuse,
+   group 2 ('/u01/app/oracle/oradata/orcl/redo02.log') size 50M reuse,
+   group 3 ('/u01/app/oracle/oradata/orcl/redo03.log') size 50M reuse
+datafile '/u01/app/oracle/oradata/orcl/system01.dbf' size 1000M reuse extent management local
+sysaux datafile '/u01/app/oracle/oradata/orcl/sysaux01.dbf' size 800M
+default temporary tablespace temp tempfile '/u01/app/oracle/oradata/orcl/temp01.dbf' size 500M reuse
+undo tablespace undotbs1 datafile '/u01/app/oracle/oradata/orcl/undotbs01.dbf' size 126M reuse
 USER SYS IDENTIFIED BY "oracle" USER SYSTEM IDENTIFIED BY "oracle";
  
 Database created.
@@ -114,8 +117,8 @@ SQL> spool off
 SQL> connect system/oracle
 SQL> @?/sqlplus/admin/pupbld.sql
 SQL> @?/sqlplus/admin/help/hlpbld.sql helpus.sql
-SQL> connect /as sysdba
-SQL> CREATE TABLESPACE USERS LOGGING DATAFILE '/oradata/orcl/user01.dbf' SIZE 100M EXTENT MANAGEMENT LOCAL SEGMENT SPACE MANAGEMENT AUTO;
+SQL> connect / as sysdba
+SQL> CREATE TABLESPACE USERS LOGGING DATAFILE '/u01/app/oracle/oradata/orcl/user01.dbf' SIZE 100M EXTENT MANAGEMENT LOCAL SEGMENT SPACE MANAGEMENT AUTO;
 SQL> ALTER DATABASE DEFAULT TABLESPACE USERS;
 
 10. 最后修改为归档模式并重启(省略此步骤）

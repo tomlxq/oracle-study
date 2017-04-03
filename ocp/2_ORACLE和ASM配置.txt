@@ -26,9 +26,18 @@ total 61189
 -r-xr-xr-x. 1 root root   702472 Mar 22  2014 vmware-tools-upgrader-64
 [root@oel VMware Tools]# cp VMwareTools-9.6.2-1688356.tar.gz  /opt/
 [root@oel VMware Tools]# cd /opt/
+[root@example opt]# tar zxvf VMwareTools-10.0.0-2977863.tar.gz 
 [root@oel opt]# cd vmware-tools-distrib/
 [root@oel vmware-tools-distrib]# ./vmware-install.pl 
 3. 搭建yum库
+
+配置文件内容简介：
+[ ]内的是仓库的名字
+name是仓库的描述也可以说是名字
+baseurl 仓库的位置
+enabled 是否启用这个仓库，1为起用，0为禁用
+gpgcheck 是否检查GPG签名（用来验证要安装的包是不是REDHAT官方的）
+
 虚拟机选中你的ISO,勾上Connected,Connect at power on
 [root@oel ~]# mount -o loop /dev/cdrom /mnt/
 [root@oel ~]# cat /etc/yum.repos.d/server.repo
