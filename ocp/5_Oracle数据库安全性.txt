@@ -1,0 +1,155 @@
+select * from user_role_privs;
+select * from user_sys_privs; 
+select * from user_tab_privs; 
+
+【实验1】利用ALTER USER命令可以修改用户的各种信息，如口令、默认表空间、临时表空间、配额和概要文件等。
+SQL> conn / as sysdba
+Connected.
+SQL> alter user lisi quota 0 on users;
+
+User altered.
+
+SQL> conn lisi/oracle
+Connected.
+SQL> create table t(id number);
+
+Table created.
+
+SQL> insert into t values(1);
+insert into t values(1)
+            *
+ERROR at line 1:
+ORA-01536: space quota exceeded for tablespace 'USERS'
+
+
+
+
+SQL> create user u01 identified by oracle account unlock default tablespace users;
+SQL> alter user u01 quota 1m on users;
+
+外部验证
+SQL> show parameter os_authent_prefix
+SQL> select value from v$parameter where name='os_authent_prefix';
+SQL> create user ops$dragon identified externally;
+口令验证
+CONNECT username/password[@db_alias]
+
+
+查看是否允许远程登录使用口令文件进行身份验证
+SHARED 一个或多个数据库可以使用口令文件。可以包含SYS或者非SYS的口令文件。
+EXCLUSIVE 新版本和SHARED功能一致。
+NONE 不允许远程使用口令文件验证，如远程用SYS账号连接 Oracle 将会报错。
+【实例1】禁用远程登录
+[root@ocp ~]# su - oracle
+[oracle@ocp ~]$ sqlplus / as sysdba
+SQL> show parameter remote_login_passwordfile   --EXCLUSIVE允许远程登陆、NONE不允
+SQL> alter system set remote_login_passwordfile='NONE' scope=spfile;
+SQL> startup force
+SQL> conn sys/oracle@orcl as sysdba;  --ORA-01017: invalid username/password; logon denied
+SQL> conn / as sysdba
+SQL> alter system set remote_login_passwordfile='EXCLUSIVE' scope=spfile;
+SQL> startup force;
+SQL> conn sys/oracle@orcl as sysdba;
+Connected.
+查看使用口令文件进行身份验证的用户列表
+SQL> select * from v$pwfile_users;
+
+USERNAME                       SYSDB SYSOP SYSAS
+------------------------------ ----- ----- -----
+SYS                            TRUE  TRUE  FALSE
+
+概要文件
+SQL> conn / as sysdba;
+Connected.
+SQL> CREATE PROFILE lisi_history LIMIT
+  2  PASSWORD_LIFE_TIME 10
+  3  PASSWORD_GRACE_TIME 2
+  4  PASSWORD_REUSE_TIME 10
+  5  PASSWORD_REUSE_MAX UNLIMITED;
+
+
+Profile created.
+
+SQL> ALTER USER lisi PROFILE lisi_history;
+
+SQL> conn / as sysdba;
+SQL> @?/rdbms/admin/utlpwdmg.sql
+SQL> CREATE PROFILE lisi_verify LIMIT
+  2  PASSWORD_LIFE_TIME 10
+  3  PASSWORD_GRACE_TIME 2
+  4  PASSWORD_VERIFY_FUNCTION verify_function;
+SQL> ALTER USER lisi PROFILE lisi_verify;
+
+
+【实例1】为了加强lisi用户的口令安全，要限制其登录失败次数为3。
+QL> conn / as sysdba
+Connected.
+SQL> create profile lisi_lock limit failed_login_attempts 3;
+
+Profile created.
+
+SQL> create user lisi identified by oracle account unlock default tablespace users;
+
+User created.
+
+SQL> alter user lisi profile lisi_lock;
+
+User altered.
+
+SQL> conn lisi
+Enter password: 
+ERROR:
+ORA-01017: invalid username/password; logon denied
+
+
+Warning: You are no longer connected to ORACLE.
+SQL> conn lisi
+Enter password: 
+ERROR:
+ORA-01017: invalid username/password; logon denied
+
+
+SQL> conn lisi
+Enter password: 
+ERROR:
+ORA-01017: invalid username/password; logon denied
+
+
+SQL> conn lisi
+Enter password: 
+ERROR:
+ORA-28000: the account is locked
+---------------------------------------
+【实例31】建立角色：不验证
+SQL> conn / as sysdba
+SQL> CREATE ROLE oe_clerk;
+【实例32】创建数据库验证的角色hr_clerk
+SQL> conn / as sysdba
+SQL> create role hr_clerk identified by bonus;
+【实例33】建立角色：外部验证
+SQL> conn / as sysdba
+SQL> create role hr_manager identified externally;
+4．建立应用角色
+SQL> conn / as sysdba
+SQL> create role admin_role identified using hr.pcrt;
+
+
+SQL> conn / as sysdba
+SQL> CREATE ROLE oe_clerk;
+SQL> GRANT CREATE SESSION,CREATE TABLE,CREATE VIEW TO oe_clerk WITH ADMIN OPTION;--角色授权
+SQL> GRANT oe_clerk TO lisi;
+SQL> alter user lisi account unlock;
+SQL> connect lisi/oracle
+【实例39】把用户lisi的所有角色都设置为默认角色,并查看该用户当前激活的角色。
+SQL> conn / as sysdba
+SQL> alter user lisi default role all;
+SQL> conn lisi/oracle
+SQL> select * from session_roles;
+
+ROLE
+------------------------------
+OE_CLERK
+
+question: 
+1. plsql中如何显示下面的交互窗口
+查看--交相窗口
