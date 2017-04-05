@@ -3694,3 +3694,192 @@ expr2和expr3类型不同的话，expr3会转换为expr2的类型，转换不了
 所有表达式必须是相同类型，或者可以隐式转换为相同的类型，否则报错。
 
 Coalese函数和NVL函数功能类似，只不过选项更多。
+
+coalesce
+
+英 [,kəʊə'les]  美 [,koə'lɛs]
+vi. 合并；结合；联合
+vt. 使…联合；使…合并
+过去式 coalesced过去分词 coalesced现在分词 coalescing
+
+
+QUESTION 94
+Examine the structure of the PROGRAMS table:
+name Null Type
+PROG_ID NOT NULL NUMBER(3)
+PROG_COST NUMBER(8,2)
+START_DATE NOT NULL DATE
+END_DATE DATE
+Which two SQL statements would execute successfully? (Choose two.)
+A. SELECT NVL(ADD_MONTHS(END_DATE,1),SYSDATE)
+FROM programs;
+B. SELECT TO_DATE(NVL(SYSDATE-END_DATE,SYSDATE))
+FROM programs;
+C. SELECT NVL(MONTHS_BETWEEN(start_date,end_date),'Ongoing')
+FROM programs;
+D. SELECT NVL(TO_CHAR(MONTHS_BETWEEN(start_date,end_date)),'Ongoing')
+FROM programs;
+Correct Answer: AD
+二、题目翻译
+查看PROGRAMS表的结构
+哪两个SQL语句执行成功？（选择两个）
+
+三、题目解析
+A选项正确，ADD_MONTHS返回date类型，第二参数sysdate也是date类型，NVL两个参数类型一致。
+B选项不正确，SYSDATE-END_DATE结果是一个number类型，nvl的第二个参数是date类型,会隐式转换为number类型，to_date参数是number类型，会报错。
+C选项不正确，MONTHS_BETWEEN返回一个number类型，nvl第一个参数number类型，第二个参数字符串类型，无法隐式转换，报错。
+D选项正确，MONTHS_BETWEEN返回的是number类型，to_char转成了字符类型，这样nvl的两个参数类型一致。
+
+Months_between函数：返回一个number类型，如果第一个参数的日期大于第二个参数参数的日期，则返回正数，否则返回负数。
+
+四、测试
+SQL> create table PROGRAMS(
+  2  PROG_ID NUMBER(3) NOT NULL primary key ,
+  3  PROG_COST NUMBER(8,2),
+  4  START_DATE  DATE NOT NULL,
+  5  END_DATE DATE);
+
+Table created.
+
+SQL> insert into PROGRAMS values(1,50,sysdate,null);
+SQL> insert into PROGRAMS  values(2,60,'1-february-2008','1-jan-2017');
+SQL> insert into PROGRAMS  values(3,75,'1-march-2016',default);
+
+SQL> SELECT NVL(ADD_MONTHS(END_DATE,1),SYSDATE) FROM programs;
+
+NVL(ADD_M
+---------
+05-APR-17
+01-FEB-17
+05-APR-17
+SQL> SELECT TO_DATE(NVL(SYSDATE-END_DATE,SYSDATE)) FROM programs;
+SELECT TO_DATE(NVL(SYSDATE-END_DATE,SYSDATE)) FROM programs
+               *
+ERROR at line 1:
+ORA-01861: literal does not match format string
+SQL> SELECT NVL(MONTHS_BETWEEN(start_date,end_date),'Ongoing') FROM programs;
+SELECT NVL(MONTHS_BETWEEN(start_date,end_date),'Ongoing') FROM programs
+                                               *
+ERROR at line 1:
+ORA-01722: invalid number
+
+SQL> SELECT NVL(TO_CHAR(MONTHS_BETWEEN(start_date,end_date)),'Ongoing') FROM programs;
+
+NVL(TO_CHAR(MONTHS_BETWEEN(START_DATE,EN
+----------------------------------------
+Ongoing
+-107
+Ongoing
+
+QUESTION 95
+The PRODUCTS table has the following structure:
+name Null Type
+PROD_ID NOT NULL NUMBER(4)
+PROD_NAME VARCHAR2(25)
+PROD_EXPIRY_ DATE DATE
+Evaluate the following two SQL statements:
+SQL>SELECT prod_id, NVL2(prod_expiry_date, prod_expiry_date + 15,'')
+FROM products;
+SQL>SELECT prod_id, NVL(prod_expiry_date, prod_expiry_date + 15)
+FROM products;
+Which statement is true regarding the outcome?
+A. Both the statements execute and give different results.
+B. Both the statements execute and give the same result.
+C. Only the first SQL statement executes successfully.
+D. Only the second SQL statement executes successfully.
+Correct Answer: A
+
+
+MONTH_BETWEETN的用法详见：
+http://blog.csdn.net/holly2008/article/details/23141827
+
+QUESTION 95
+The PRODUCTS table has the following structure:
+name Null Type
+PROD_ID NOT NULL NUMBER(4)
+PROD_NAME VARCHAR2(25)
+PROD_EXPIRY_ DATE DATE
+Evaluate the following two SQL statements:
+SQL>SELECT prod_id, NVL2(prod_expiry_date, prod_expiry_date + 15,'')
+FROM products;
+SQL>SELECT prod_id, NVL(prod_expiry_date, prod_expiry_date + 15)
+FROM products;
+Which statement is true regarding the outcome?
+A. Both the statements execute and give different results.
+B. Both the statements execute and give the same result.
+C. Only the first SQL statement executes successfully.
+D. Only the second SQL statement executes successfully.
+Correct Answer: A
+二、题目翻译
+下面是PRODUCTS表的结构：
+看下面两个SQL语句
+关于结果，下面哪个描述语句是正确的？
+A.两个都执行成功，但给出不同的结果。
+B.两个都执行成功，并给出相同的结果。
+C.只有第一个执行成功。
+D.只有第二个执行成功。
+
+三、题目解析
+第一条语句当prod_expiry_date为null时输出第二个参数’’也是空,不为空时输出和一个prod_expiry_date + 15，
+而第二条语句当prod_expiry_date为null时输出第二个参数，不为空时输出prod_expiry_date。
+MONTHS_BETWEEN (date1, date2)
+用于计算date1和date2之间有几个月。
+
+如果date1在日历中比date2晚，那么MONTHS_BETWEEN()就返回一个正数。
+如果date1在日历中比date2早，那么MONTHS_BETWEEN()就返回一个负数。
+如果date1和date2日期一样，那么MONTHS_BETWEEN()就返回一个0。
+SQL> select months_between(to_date('2014-3-21','yyyy-mm-dd'), to_date('2014-1-10','yyyy-mm-dd')) months from dual;
+
+    MONTHS
+----------
+2.35483871
+
+SQL> select months_between(to_date('2014-1-10','yyyy-mm-dd'), to_date('2014-3-21','yyyy-mm-dd')) months from dual;
+
+    MONTHS
+----------
+-2.3548387
+
+SQL> select months_between(to_date('2014-1-10','yyyy-mm-dd'), to_date('2014-1-10','yyyy-mm-dd')) months from dual;
+
+    MONTHS
+----------
+         0
+SQL> select 11/31 from dual; --2014.3.21和2014.1.10之间，相差2个月加11天，11天按月换算成小数(在oracle里面，以31天为基数):
+
+     11/31
+----------
+ .35483871 
+
+详细参见11.2联机文档:
+http://docs.oracle.com/cd/E11882_01/server.112/e41084/functions102.htm#SQLRF00669
+
+MONTHS_BETWEEN returns number of months between dates date1 and date2. The month and the last day of the month are defined by the parameter NLS_CALENDAR. If date1 is later than date2, then the result is positive. If date1 is earlier than date2, then the result is negative. If date1 and date2 are either the same days of the month or both last days of months, then the result is always an integer.Otherwise Oracle Database calculates the fractional portion of the result based on a31-day month and considers the difference in time components date1 and date2.
+
+QUESTION 96
+Examine the structure of the INVOICE table.
+name Null Type
+INV_NO NOT NULL NUMBER(3)
+INV_DATE DATE
+INV_AMT NUMBER(10,2)
+Which two SQL statements would execute successfully? (Choose two.)
+A. SELECT inv_no,NVL2(inv_date,'Pending','Incomplete')
+FROM invoice;
+B. SELECT inv_no,NVL2(inv_amt,inv_date,'Not Available')
+FROM invoice;
+C. SELECT inv_no,NVL2(inv_date,sysdate-inv_date,sysdate)
+FROM invoice;
+D. SELECT inv_no,NVL2(inv_amt,inv_amt*.25,'Not Available')
+FROM invoice;
+Correct Answer: AC
+二、题目翻译
+下面是INVOICE表的结构:
+下面哪些语句能执行成功(选择2个)？
+
+三、题目解析
+A选项正确，第一个参数是date类型，可以隐式转换成字符类型。
+B选项不正确，inv_amt是number类型,inv_date是日期类型，最后一个参数是字符类型，number类型不能隐式转成日期类型，所以隐式转换时出错。
+C选项正确，第一个参数是date类型，第二个参数是number类型，第三个参数是date类型，都可以隐式转换成number类型。
+D选项不正确，第一，二个参数是number类型，第三个是字符类型，隐式转换时报错。
+
+97

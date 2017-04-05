@@ -32,12 +32,23 @@ oracle database server
 				
 			共享池 share pool(shared_pool_size)
 				库缓存library cache
-					共享sql、共享pl/sql
+					共享SQL区
+						共享SQL 区用来存放最近执行的SQL 语句信息，包括语句文本、解析树及执行计划。
+					共享PL/SQL区
+						共享PL/SQL 区用来存放最近执行的PL/SQL 语句，解析和编译过的程序单元和过程（函数、包和触发器）也存放在此区域。
 				数据字典缓冲区dictionary cache
 					保存的数据的参数信息,(如数据库结构,用户)的表和视图
+					账户、数据文件、表的描述、用户权限等信息，存储在数据字典表中，数据字典表被存放在SYSTEM 表空间的数据文件中。
 				show parameter shared_pool_size
+				数据字典由脚本 $ORACLE_HOME/rdbms/admin/catalog.sql
 			Java 池（Java Pool）
+				SGA 内的Java 池（Java Pool）是供各会话内运行的Java 代码及JVM 内的数据使用的。
+				Java 池是SGA 的可选区域，用来为Java 命令解析提供内存。
+				只有在安装和使用JAVA时才需要JAVA 池。
 			大池（Large Pool）
+				共享服务器（shared server）及Oracle XA 接口（当一个事务与多个数据库交互时使用的接口）使用的会话内存（session memory）
+				I/O 服务进程
+				Oracle 备份与恢复操作
 			流池（Stream Pool）
 			多个缓冲区
 				数据库管理员（DBA ）可以通过创建多个缓冲池来提高数据库缓冲区高速缓存的性能。
@@ -53,16 +64,36 @@ oracle database server
 						此池始终存在,相当于一个实例数据库高速缓冲区保存和循环区以外的部分
 						show parameter DB_CACHE_SIZE
 		进程processes:
-			LGWR:DBWR工作之前，1/3,>1M,每隔3s,commit
-			DBWn(db_writer_processes):ckpt、脏缓冲达到阀值、搜索数据块找不到自由缓冲区、数据写入时间到、表空脱机或进入只读状态、执行删除或截断表，alter tablespace...begin backup
-			CKPT(checkpoint):scn(system change number)　日志切换、关闭实例、手工执行ckpt,参数时间到(log_checkpoint_interval,log_checkpoint_timeout)
-			smon(system monitor):强制对数据库进行恢复操作，主要工作实例恢复，合并数据文件的自由空间，释放数据文件的临时段
-			pmon(process monitor):负责对失败的用户进程或服务进程进行恢复，主要工作回滚当前用户的事务，释放当前用户加的表或行级锁，释放用户的其它资源，重新启动死掉的调度进程
-			ARCn归档进程(Archive)：完成日志的归档备份
-			RECO恢复进程（recover）：负责在分布式数据（distributed database）环境下，自动恢复失败的分布式事务。
-			Dnnnn调度进程
+			用户进程
+				如SQL*Plus
+			服务器进程
+			后台进程
+				LGWR:DBWR工作之前，1/3,>1M,每隔3s,commit
+					运行DML或DDL语句->将事务的变化记载到重做日志缓冲区->写入数据高速缓冲区
+					并且重做日志缓冲区的内容将会被写入联机重做日志文件
+				DBWn(db_writer_processes):ckpt、脏缓冲达到阀值、搜索数据块找不到自由缓冲区、数据写入时间到、表空脱机或进入只读状态、执行删除或截断表，
+					alter tablespace...begin backup
+					数据库写入进程负责将数据库高速缓冲区（脏缓冲区）的内容写入到数据文件
+					show parameter DB_WRITER_PROCESSES 
+					数据库高速缓冲区的块被修改->它被标记为脏缓冲区并添加到以SCN为顺序的LRUW（LRUWriter）列表->这个顺序与重做日志缓冲区的顺序一致
+					
+				CKPT(checkpoint):scn(system change number)　日志切换、关闭实例、手工执行ckpt,参数时间到(log_checkpoint_interval,log_checkpoint_timeout)
+					CKPT 检查点进程的作用是执行一个“检查点”，同步数据库的所有数据文件、控制文件和重做日志文件。
+					在发出检查点时，数据文件、控制文件和重做日志的SCN 值完全一致。
+				smon(system monitor):强制对数据库进行恢复操作，主要工作实例恢复，合并数据文件的自由空间，释放数据文件的临时段
+					SMON 系统监控进程主要作用是强制对数据库进行恢复操作。
+					在实例启动时，如果上一次数据库是非正常关闭，并且重做日志文件和控制文件的SCN 值是不同的，
+					Oracle 将自动在重新打开数据库之前，通过执行重做日志文件的记录，来同步所有数据文件、控制文件和重做日志文件，
+					确保所有数据库文件的一致性，然后才打开数据库。
+				pmon(process monitor):负责对失败的用户进程或服务进程进行恢复，主要工作回滚当前用户的事务，释放当前用户加的表或行级锁，释放用户的其它资源，重新启动死掉的调度进程
+				ARCn归档进程(Archive)：完成日志的归档备份
+					当数据库运行于归档日志模式（ARCHIVELOG）下时，负责将已写满的重做日志文件复制到归档日志目标文件中，这样可以保留所有的重做记录。
+					有了归档日志和数据库早期的物理备份，即使发生磁盘数据丢失，也可以通过原来的数据文件和归档日志进行恢复。
+				RECO恢复进程（recover）：负责在分布式数据（distributed database）环境下，自动恢复失败的分布式事务。
+				Dnnnn调度进程
 	程序全局区pga(pragram global area或process global area)	执行检查点，同步数据库中所有的数据文件，重做日志文件，控制文件
-		当建立服务进程或后台进程时，oracle会自动为其分配pga
+		当客户进程访问Oracle 服务器时，会在Oracle 服务器端为用户进程分配相应的服务进程，并且为该服务进程分配相应的内存空间来存放其数据和控制信息，
+		每一个后台进程也同样需要为其分配专用的存储空间，这块内存空间被称为程序全局区(Program Global Area 或Process Global Area )。
 		私有sql区（private sql area）包括绑定信息以及运行时的内存结构
 			游标的私有sql区
 				持续数据区persistent area
@@ -72,8 +103,10 @@ oracle database server
 	database->存储数据
 		数据文件data file
 			用于存放数据的数据文件（DataFiles）
+			数据文件是用于存储数据库数据的物理文件，它由若干个操作系统文件组成，在数据文件中存储着用户数据(表、索引等)、数据字典以及回滚段数据等。
 		日志文件log file
 			用于保护数据不丢失的联机重做日志文件（Online Redolog Files）
+				重做日志文件是用于记录数据库变化的物理文件，其作用是在发生意外时恢复Oracle数据库。
 				记录了用户对数据的各项操作，用于保护数据不丢失。
 				以日志组的形式存在。
 				每个Oracle 数据库至少包含两个日志组。
@@ -82,11 +115,14 @@ oracle database server
 				记录了数据库的各项信息
 				是连接Oracle 实例和Oracle 数据库的桥梁
 				每个Oracle 数据库包含1-8 个控制文件
-		
 其它文件(颈椎口参鬼)
 	参数文件
-		记录了Oracle 实例的各项信息。
+		记录了Oracle 实例的各项信息,初始化参数文件是打开Oracle 实例必需的文件
+		
+		初始化参数文件一般默认存放在$ORACLE_HOME/dbs
 		分为动态和静态初始化参数文件。
+			静态初始化参数文件为文本格式，默认名为initsid.ora
+			动态初始化参数文件为二进制格式，默认名为spfilesid.ora。
 	口令文件
 		存放特定用户的口令。
 	归档日志
@@ -161,7 +197,8 @@ tail -200f alert_orcl.log
 	select name from v$bgprocess where paddr!='00';
 7. 查看scn
 select current_scn from v$database;	
-/表示重复上面的语句
+/  表示重复上面的语句
+
 Question:
 1. windows下SecureCRT无法使用backspace（空格键）和上下左右键
 	先打开Options–>Session Options–>Terminal–>Emulation(中文：选项–>回话选项–>终端–>仿真) 界面下 ：
@@ -300,7 +337,7 @@ ALTER TABLE oe.customers
 STORAGE (BUFFER_POOL RECYCLE);
 
 
-实验：
+实验：数据库高速缓冲区的大小管理
 
 [oracle@oel ~]$ sqlplus / as sysdba　--连接数据库
 SQL> show parameter db_cache_size --显示数据库高速缓冲区的大小
@@ -390,4 +427,52 @@ log_checkpoint_interval              integer     0
 log_checkpoint_timeout               integer     1800
 log_checkpoints_to_alert             boolean     FALSE
 
-12/28
+
+实验：控制文件（Control Files）
+查看控制文件相关信息
+show parameter control;
+SQL> select name from v$controlfile;
+
+NAME
+--------------------------------------------------
+/u01/app/oracle/oradata/prod/control01.ctl
+/u01/app/oracle/oradata/prod/control02.ctl
+二进制备份控制文件
+alter database backup controlfile to '/u01/app/oracle/oradata/prod/ctl.ctl_bak';
+文本备份控制文件
+alter database backup controlfile to trace as '/u01/app/oracle/oradata/prod/ctl_txt.ctl_bak';
+
+实验：数据文件（Data File）
+SQL> select  Name,FILE#,STATUS from V$DATAFILE;
+
+NAME                                                    FILE# STATUS
+-------------------------------------------------- ---------- -------
+/u01/app/oracle/oradata/prod/system01.dbf                   1 SYSTEM
+/u01/app/oracle/oradata/prod/sysaux01.dbf                   2 ONLINE
+/u01/app/oracle/oradata/prod/undotbs01.dbf                  3 ONLINE
+/u01/app/oracle/oradata/prod/users01.dbf                    4 ONLINE
+/u01/app/oracle/oradata/prod/example01.dbf                  5 ONLINE
+
+SQL> col FILE_NAME for a50
+SQL> select FILE_NAME,FILE_ID,TABLESPACE_NAME,ONLINE_STATUS from DBA_DATA_FILES;
+
+FILE_NAME                                             FILE_ID TABLESPACE_NAME                ONLINE_
+-------------------------------------------------- ---------- ------------------------------ -------
+/u01/app/oracle/oradata/prod/users01.dbf                    4 USERS                          ONLINE
+/u01/app/oracle/oradata/prod/undotbs01.dbf                  3 UNDOTBS1                       ONLINE
+/u01/app/oracle/oradata/prod/sysaux01.dbf                   2 SYSAUX                         ONLINE
+/u01/app/oracle/oradata/prod/system01.dbf                   1 SYSTEM                         SYSTEM
+/u01/app/oracle/oradata/prod/example01.dbf                  5 EXAMPLE                        ONLINE
+
+实验: 初始化参数文件（Initialization Parameter File）
+[oracle@oel ~]$ ll $ORACLE_HOME/dbs
+total 36
+-rw-rw----. 1 oracle dba 1544 Mar 28 23:20 hc_orcl.dat
+-rw-rw----. 1 oracle dba 1544 Mar 29 21:19 hc_prod.dat
+-rw-r--r--  1 oracle dba  853 Mar 29 20:49 initprod.ora
+-rw-r-----. 1 oracle dba   24 Mar 28 23:16 lkORCL
+-rw-r-----. 1 oracle dba   24 Mar 28 23:36 lkPROD
+-rw-r-----. 1 oracle dba 1536 Mar 28 23:20 orapworcl
+-rw-r-----. 1 oracle dba 1536 Mar 28 23:41 orapwprod
+-rw-r-----. 1 oracle dba 2560 Mar 29 06:08 spfileorcl.ora
+-rw-r-----  1 oracle dba 2560 Apr  5 06:33 spfileprod.ora
