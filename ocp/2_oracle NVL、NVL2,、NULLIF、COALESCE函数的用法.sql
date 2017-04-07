@@ -1,0 +1,1 @@
+oracle NVL、NVL2,、NULLIF、COALESCE函数的用法

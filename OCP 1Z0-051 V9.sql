@@ -3882,4 +3882,1061 @@ B选项不正确，inv_amt是number类型,inv_date是日期类型，最后一个
 C选项正确，第一个参数是date类型，第二个参数是number类型，第三个参数是date类型，都可以隐式转换成number类型。
 D选项不正确，第一，二个参数是number类型，第三个是字符类型，隐式转换时报错。
 
-97
+QUESTION 97
+View the Exhibit and evaluate the structure and data in the CUST_STATUS table.
+You issue the following SQL statement:
+SQL> SELECT custno, NVL2(NULLIF(amt_spent, credit_limit), 0, 1000)"BONUS"
+FROM cust_status;
+Which statement is true regarding the execution of the above query?
+A. It produces an error because the AMT_SPENT column contains a null value.
+B. It displays a bonus of 1000 for all customers whose AMT_SPENT is less than CREDIT_LIMIT
+C. It displays a bonus of 1000 for all customers whose AMT_SPENT equals CREDIT_LIMIT, or
+AMT_SPENT is null .
+D. It produces an error because the TO_NUMBER function must be used to convert the result of the
+NULLIF function before it can be used by the NVL2 function.
+Correct Answer: C
+
+二、题目翻译
+查看 CUST_STATUS表结构和数据，
+执行下面的语句：
+关于上面的查询哪句话是正确的？
+A.报错，因为AMT_SPENT包含空值。
+B.显示所有AMT_SPENT小于CREDIT_LIMIT的员工有1000元奖金。
+C.显示所有AMT_SPENT等于CREDIT_LIMIT或AMT_SPENT为空的员工有1000元奖金。
+D.报错，因为在使用NVL2函数之前，需要使用TO_NUMBER函数把NULLIF函数的结果进行转换。
+
+NULLIF(amt_spent, credit_limit) amt_spent, credit_limit相同返回null, 否则返回amt_spent
+NVL2 不为空返回０，为空返回1000
+所以当amt_spent, credit_limit相同或amt_spent为空间NVL2返回第三个参数的值1000
+
+QUESTION 98
+Which statement is true regarding the COALESCE function?
+A. It can have a maximum of five expressions in a list.
+B. It returns the highest NOT NULL value in the list for all rows.
+C. It requires that all expressions in the list must be of the same data type.
+D. It requires that at least one of the expressions in the list must have a NOT NULL value.
+Correct Answer: C
+二、题目翻译
+关于COALESCE函数哪一句话是正确的？
+A. 最大只能包含5个表达式列表。
+B. 返回列表中最高的一个非空值。
+C. 列表中所有表达式的数据类型必须一致。
+D. 列表中至少要有一个表达式为非空。
+
+三、题目解析
+A选项不正确，coalesce函数的参数，可以有多个。
+B选项不正确，是返回列表中第一个非null值。
+C选项正确。
+D选项不正确，如果表达式都为null,则返回null。
+
+coalesce函数
+     coalesce(expr1, expr2, expr3….. exprn)
+返回表达式中第一个非空表达式，如果都为空则返回空值。
+所有表达式必须是相同类型，或者可以隐式转换为相同的类型，否则报错。
+
+QUESTION 99
+View the Exhibit and examine the structure of the PROMOTIONS table.
+Using the PROMOTIONS table, you need to find out the average cost for all promos in the ranges
+$0-2000 and $2000-5000 in category A
+You issue the following SQL statement:
+SQL>SELECT AVG(CASE
+WHEN promo_cost BETWEEN 0 AND 2000 AND promo_category='A'
+then promo_cost
+ELSE null END) "CAT_2000A",
+AVG(CASE
+WHEN promo_cost BETWEEN 2001 AND 5000 AND promo_category='A'
+THEN promo_cost
+ELSE null END) "CAT_5000A"
+FROM promotions;
+What would be the outcome?
+A. It executes successfully and gives the required result.
+B. It generates an error because NULL cannot be specified as a return value.
+C. It generates an error because CASE cannot be used with group functions.
+D. It generates an error because multiple conditions cannot be specified for the WHEN clause.
+Correct Answer: A
+二、题目翻译
+下面是PROMOTIONS表的结构：
+使用PROMOTIONS表，你需要找出category A中在$0-2000范围和$2000-5000范围内的所有promos的平均成本(cost).
+执行下面的SQL语句：
+结果是什么？
+A.执行成功，并得出所需结果。
+B.报错，因为NULL不能作为一个返回值被指定。
+C.报错，因为CASE不能用在组函数中。
+D.报错，因为WHEN子句不能指定多个条件。
+
+三、题目解析
+NULL值在avg函数中不会计算，所以计算平均值时会忽略null值，例如：返回4行，有1行为空，则平均值就是总数/3。
+
+case when
+case when 类似我们的if ...else ,判断语句
+语法如下:
+CASE expr WHEN expr1 THEN return_expr1
+         [WHEN expr2 THEN return_expr2
+          ...
+          WHEN exprn THEN return_exprn
+          ELSE else_expr]
+END
+
+第二种延伸用法:
+CASE
+         WHEN  expr1 THEN return_expr1
+         [WHEN expr2 THEN return_expr2
+          ....
+          WHEN exprn THEN return_exprn
+          ELSE else_expr]
+END
+
+SQL> SELECT ENAME,sal,case deptno when 10 then 'dept10' when 20 then 'dept20' else 'other' end  部门 from scott.emp;
+SQL> SELECT ENAME,sal,case when deptno=10 then 'dept10' when deptno=20 then 'dept20' else 'other' end  部门 from scott.emp;
+
+SQL> SELECT AVG(CASE
+  2  WHEN promo_cost BETWEEN 0 AND 2000 AND promo_category='A'
+  3  then promo_cost
+  4  ELSE null END) "CAT_2000A",
+  5  AVG(CASE
+  6  WHEN promo_cost BETWEEN 2001 AND 5000 AND promo_category='A'
+  7  THEN promo_cost
+  8  ELSE null END) "CAT_5000A"
+  9  FROM sh.promotions;
+
+ CAT_2000A  CAT_5000A
+---------- ----------
+
+QUESTION 100
+View the Exhibit and examine the structure of the PROMOTIONS table.
+Which SQL statements are valid? (Choose all that apply.)
+A. SELECT promo_id, DECODE(NVL(promo_cost,0), promo_cost,
+promo_cost * 0.25, 100) "Discount"
+FROM promotions;
+B. SELECT promo_id, DECODE(promo_cost, 10000,
+DECODE(promo_category, 'G1', promo_cost *.25, NULL),
+NULL) "Catcost"
+FROM promotions;
+C. SELECT promo_id, DECODE(NULLIF(promo_cost, 10000),
+NULL, promo_cost*.25, 'N/A') "Catcost"
+FROM promotions;
+D. SELECT promo_id, DECODE(promo_cost, >10000, 'High',
+<10000, 'Low') "Range"
+FROM promotions;
+Correct Answer: AB
+二、题目翻译
+查看 PROMOTIONS 表的结构
+选择所有有效的SQL语句（选择所有正确的选项）。
+
+三、题目解析
+C选项不正确，前面几个参数都是number类型，最后一个是字符类型，隐式转换数值时不成功。
+D选项语法不正确。
+decode
+语法:
+DECODE(col|expression, search1, result1
+                       [, search2, result2,...,]
+                        ...
+                       [, searchn, resultn,...,]
+                       [, default])
+如果 条件=值1,那么显示结果1
+如果 条件=值2,那么显示结果2
+....
+如果 条件=值n,那么显示结果n
+都不符合，则显示缺省值
+QUESTION 101
+Examine the data in the PROMO_BEGIN_DATE column of the PROMOTIONS table:
+PROMO_BEGIN _DATE
+04-jan-00
+10-jan-00
+15-dec-99
+18-oct-98
+22-aug-99
+You want to display the number of promotions started in 1999 and 2000.
+Which query gives the correct output?
+A. SELECT SUM(DECODE(SUBSTR(promo_begin_date,8),'00',1,0)) "2000",
+SUM(DECODE(SUBSTR(promo_begin_date,8),'99',1,0)) "1999"
+FROM promotions;
+B. SELECT SUM(CASE TO_CHAR(promo_begin_date,'yyyy') WHEN '99' THEN 1
+ELSE 0 END) "1999",SUM(CASE TO_CHAR(promo_begin_date,'yyyy') WHEN '00' THEN 1
+ELSE 0 END) "2000"
+FROM promotions;
+C. SELECT COUNT(CASE TO_CHAR(promo_begin_date,'yyyy') WHEN '99' THEN 1
+ELSE 0 END) "1999",COUNT(CASE TO_CHAR(promo_begin_date,'yyyy') WHEN '00' THEN 1
+ELSE 0 END) "2000"
+FROM promotions;
+D. SELECT COUNT(CASE TO_CHAR(promo_begin_date,'yyyy') WHEN '99' THEN 1
+ELSE 0 END) "1999",COUNT(CASE TO_CHAR(promo_begin_date,'yyyy') WHEN '00' THEN 1
+ELSE 0 END) "2000"
+FROM promotions;
+Correct Answer: A
+二、题目翻译
+查看PROMOTIONS表中PROMO_BEGIN_DATE列的数据
+要显示在1999 和2000年开始的promotions的数量
+下面哪一个查询给出正确结果？
+
+三、题目解析
+B和C选项不正确，TO_CHAR(promo_begin_date, 'yyyy')这个结果就是年显示成四位，但和后面的'00'比较，肯定比对不上。
+D选项不正确，SUBSTR(TO_CHAR(promo_begin_date, 'yyyy'), 8),to_char的结果只有4个字符了，截取字符的时候，从第8位开始，明显不对，超出范围。
+
+SELECT SUM(DECODE(SUBSTR(promo_begin_date,8),'00',1,0)) "2000",
+SUM(DECODE(SUBSTR(promo_begin_date,8),'99',1,0)) "1999"
+  3  FROM sh.promotions;
+
+      2000       1999
+---------- ----------
+       166        168
+	   
+QUESTION 102
+Examine the structure of the TRANSACTIONS table:
+name Null Type
+TRANS_ID NOT NULL NUMBER(3)
+CUST_NAME VARCHAR2(30)
+TRANS_DATE TIMESTAMPTRANS_AMT NUMBER(10,2)
+You want to display the date, time, and transaction amount of transactions that where done before 12
+noon. The value zero should be displayed for transactions where the transaction amount has not been
+entered.
+Which query gives the required result?
+A. SELECT TO_CHAR(trans_date,'dd-mon-yyyy hh24:mi:ss'),
+TO_CHAR(trans_amt,'$99999999D99')
+FROM transactions
+WHERE TO_NUMBER(TO_DATE(trans_date,'hh24')) < 12 AND COALESCE(trans_amt,NULL)
+<>NULL;
+B. SELECT TO_CHAR(trans_date,'dd-mon-yyyy hh24:mi:ss'),
+NVL(TO_CHAR(trans_amt,'$99999999D99'),0)
+FROM transactions
+WHERE TO_CHAR(trans_date,'hh24') < 12;
+C. SELECT TO_CHAR(trans_date,'dd-mon-yyyy hh24:mi:ss'),
+COALESCE(TO_NUMBER(trans_amt,'$99999999.99'),0)
+FROM transactions
+WHERE TO_DATE(trans_date,'hh24') < 12;
+D. SELECT TO_DATE (trans_date,'dd-mon-yyyy hh24:mi:ss'),
+NVL2(trans_amt,TO_NUMBER(trans_amt,'$99999999.99'), 0)
+FROM transactions
+WHERE TO_DATE(trans_date,'hh24') < 12;
+Correct Answer: B
+二、题目翻译
+查看表结构
+要显示在中午12点之前完成的交易的日期、时间和数量。如果transaction数量没有值则显示0。
+哪一个查询给出所需结果？
+
+三、题目解析
+A选项不正确，WHERE条条中，应该是to_char,不是to_date
+CD选项不正确，trans_amt是number类型，TO_NUMBER函数转换会出错。
+QUESTION 103
+Examine the structure of the TRANSACTIONS table:
+name Null Type
+TRANS_ID NOT NULL NUMBER(3)
+CUST_NAME VARCHAR2(30)
+TRANS_DATE DATE
+TRANS_AMT NUMBER(10,2)
+You want to display the transaction date and specify whether it is a weekday or weekend.
+Evaluate the following two queries:
+SQL>SELECT TRANS_DATE,CASE
+WHEN TRIM(TO_CHAR(trans_date,'DAY')) IN ('SATURDAY','SUNDAY') THEN 'weekend'
+ELSE 'weekday'
+END "Day Type"
+FROM transactions;
+SQL>SELECT TRANS_DATE, CASE
+WHEN TO_CHAR(trans_date,'DAY') BETWEEN 'MONDAY' AND 'FRIDAY' THEN 'weekday'
+ELSE 'weekend'
+END "Day Type"FROM transactions;
+Which statement is true regarding the above queries?
+A. Both give wrong results.
+B. Both give the correct result.
+C. Only the first query gives the correct result.
+D. Only the second query gives the correct result.
+Correct Answer: C
+三、题目解析
+第一句正确，用TO_CHAR(trans_date,'DAY')先显示出星期几，然后用trim把多余的空格去掉，然后用case when判断，是否是周六、周日，是的话就显示为周末，否则显示为工作日。
+第二句不正确，TO_CHAR(trans_date,'DAY')转换出来的星期几，是有多余空格的，所以直接是无法匹配的，而且，这里是字符串，这样用BETWEEN..AND无法做出正确的判断，所以是否工作日，都显示成了周末。
+SQL> with  TRANSACTIONS as(
+select 1 TRANS_ID,'jack' CUST_NAME,to_date('08-04-2017','dd-mm-yyyy') TRANS_DATE,18.5 TRANS_AMT from dual
+  union 
+  select 2 TRANS_ID,'tom' CUST_NAME,to_date('07-04-2017','dd-mm-yyyy') TRANS_DATE,19.5 TRANS_AMT from dual
+  union 
+  select 3 TRANS_ID,'meimei' CUST_NAME,to_date('06-04-2017','dd-mm-yyyy') TRANS_DATE,19.5 TRANS_AMT from dual
+  union 
+  select 4 TRANS_ID,'litao' CUST_NAME,to_date('05-04-2017','dd-mm-yyyy') TRANS_DATE,19.5 TRANS_AMT from dual
+  union 
+  select 5 TRANS_ID,'lilei' CUST_NAME,to_date('04-04-2017','dd-mm-yyyy') TRANS_DATE,19.5 TRANS_AMT from dual
+  union 
+  select 6 TRANS_ID,'rose' CUST_NAME,to_date('03-04-2017','dd-mm-yyyy') TRANS_DATE,19.5 TRANS_AMT from dual
+  union 
+  select 6 TRANS_ID,'polly' CUST_NAME,to_date('02-04-2017','dd-mm-yyyy') TRANS_DATE,19.5 TRANS_AMT from dual
+  )
+  SELECT TRANS_DATE,CASE
+  WHEN TRIM(TO_CHAR(trans_date,'DAY')) IN ('SATURDAY','SUNDAY') THEN 'weekend'
+  ELSE 'weekday'
+  END "Day Type",TO_CHAR(trans_date,'DAY')
+  FROM transactions;
+
+TRANS_DAT Day Typ TO_CHAR(TRANS_DATE,'DAY')
+--------- ------- ------------------------------------
+08-APR-17 weekend SATURDAY
+07-APR-17 weekday FRIDAY
+06-APR-17 weekday THURSDAY
+05-APR-17 weekday WEDNESDAY
+04-APR-17 weekday TUESDAY
+02-APR-17 weekend SUNDAY
+03-APR-17 weekday MONDAY
+
+7 rows selected.
+SQL> with  TRANSACTIONS as(
+select 1 TRANS_ID,'jack' CUST_NAME,to_date('08-04-2017','dd-mm-yyyy') TRANS_DATE,18.5 TRANS_AMT from dual
+union 
+select 2 TRANS_ID,'tom' CUST_NAME,to_date('07-04-2017','dd-mm-yyyy') TRANS_DATE,19.5 TRANS_AMT from dual
+union 
+select 3 TRANS_ID,'meimei' CUST_NAME,to_date('06-04-2017','dd-mm-yyyy') TRANS_DATE,19.5 TRANS_AMT from dual
+ union 
+ select 4 TRANS_ID,'litao' CUST_NAME,to_date('05-04-2017','dd-mm-yyyy') TRANS_DATE,19.5 TRANS_AMT from dual
+ union 
+ select 5 TRANS_ID,'lilei' CUST_NAME,to_date('04-04-2017','dd-mm-yyyy') TRANS_DATE,19.5 TRANS_AMT from dual
+ union 
+ select 6 TRANS_ID,'rose' CUST_NAME,to_date('03-04-2017','dd-mm-yyyy') TRANS_DATE,19.5 TRANS_AMT from dual
+ union 
+ select 6 TRANS_ID,'polly' CUST_NAME,to_date('02-04-2017','dd-mm-yyyy') TRANS_DATE,19.5 TRANS_AMT from dual
+ )
+ SELECT TRANS_DATE, CASE
+ WHEN TO_CHAR(trans_date,'DAY') BETWEEN 'MONDAY' AND 'FRIDAY' THEN 'weekday'
+ ELSE 'weekend'
+ END "Day Type",TO_CHAR(trans_date,'DAY') FROM transactions;
+
+TRANS_DAT Day Typ TO_CHAR(TRANS_DATE,'DAY')
+--------- ------- ------------------------------------
+08-APR-17 weekend SATURDAY
+07-APR-17 weekend FRIDAY
+06-APR-17 weekend THURSDAY
+05-APR-17 weekend WEDNESDAY
+04-APR-17 weekend TUESDAY
+02-APR-17 weekend SUNDAY
+03-APR-17 weekend MONDAY
+
+7 rows selected.
+
+QUESTION 104
+Examine the structure of the PROMOS table:
+name Null Type
+PROMO_ID NOT NULL NUMBER(3)
+PROMO_NAME VARCHAR2(30)
+PROMO_START_DATE NOT NULL DATE
+PROMO_END_DATE DATE
+You want to generate a report showing promo names and their duration (number of days). If the
+PROMO_END_DATE has not been entered, the message 'ONGOING' should be displayed.
+Which queries give the correct output? (Choose all that apply.)
+A. SELECT promo_name, TO_CHAR(NVL(promo_end_date -promo_start_date,'ONGOING'))
+FROM promos;
+B. SELECT promo_name,COALESCE(TO_CHAR(promo_end_date - promo_start_date),'ONGOING')
+FROM promos;
+C. SELECT promo_name, NVL(TO_CHAR(promo_end_date -promo_start_date),'ONGOING')
+FROM promos;
+D. SELECT promo_name, DECODE(promo_end_date
+-promo_start_date,NULL,'ONGOING',promo_end_date - promo_start_date)
+FROM promos;
+E. SELECT promo_name, decode(coalesce(promo_end_date,promo_start_date),null,'ONGOING',
+promo_end_date - promo_start_date)
+FROM promos;
+Correct Answer: BCD
+二、题目翻译
+查看表结构
+显示promo names和their duration，如果PROMO_END_DATE没有值，则显示'ONGOING'。
+哪个查询能得出正确的结果(选择所有正确选项)？
+
+三、题目解析
+A选项不正确，因为隐式转换'ONGOING'为数值类型的会报错。
+E选项不正确，不能输出正确的结果。
+SQL> with PROMOS as (
+select 1 PROMO_ID,'tom' PROMO_NAME, to_date('2017-04-06','yyyy-mm-dd') PROMO_START_DATE,to_date('2017-04-05','yyyy-mm-dd') PROMO_END_DATE from dual
+union 
+select 2 PROMO_ID,'jack' PROMO_NAME, to_date('2017-04-06','yyyy-mm-dd') PROMO_START_DATE,null PROMO_END_DATE from dual
+union 
+select 3 PROMO_ID,'monkey' PROMO_NAME, to_date('2017-04-06','yyyy-mm-dd') PROMO_START_DATE,null PROMO_END_DATE from dual
+)SELECT promo_name, TO_CHAR(NVL(promo_end_date -promo_start_date,'ONGOING'))
+  8  FROM promos;
+)SELECT promo_name, TO_CHAR(NVL(promo_end_date -promo_start_date,'ONGOING'))
+                                                                 *
+ERROR at line 7:
+ORA-01722: invalid number
+
+SQL> with PROMOS as (
+select 1 PROMO_ID,'tom' PROMO_NAME, to_date('2017-04-06','yyyy-mm-dd') PROMO_START_DATE,to_date('2017-04-05','yyyy-mm-dd') PROMO_END_DATE from dual
+union 
+select 2 PROMO_ID,'jack' PROMO_NAME, to_date('2017-04-06','yyyy-mm-dd') PROMO_START_DATE,null PROMO_END_DATE from dual
+union 
+  6  select 3 PROMO_ID,'monkey' PROMO_NAME, to_date('2017-04-06','yyyy-mm-dd') PROMO_START_DATE,null PROMO_END_DATE from dual
+  7  )SELECT promo_name,COALESCE(TO_CHAR(promo_end_date - promo_start_date),'ONGOING')
+  8  FROM promos;
+
+PROMO_ COALESCE(TO_CHAR(PROMO_END_DATE-PROMO_ST
+------ ----------------------------------------
+tom    -1
+jack   ONGOING
+monkey ONGOING
+
+SQL> with PROMOS as (
+select 1 PROMO_ID,'tom' PROMO_NAME, to_date('2017-04-06','yyyy-mm-dd') PROMO_START_DATE,to_date('2017-04-05','yyyy-mm-dd') PROMO_END_DATE from dual
+union 
+  4  select 2 PROMO_ID,'jack' PROMO_NAME, to_date('2017-04-06','yyyy-mm-dd') PROMO_START_DATE,null PROMO_END_DATE from dual
+  5  union 
+  6  select 3 PROMO_ID,'monkey' PROMO_NAME, to_date('2017-04-06','yyyy-mm-dd') PROMO_START_DATE,null PROMO_END_DATE from dual
+)SELECT promo_name, NVL(TO_CHAR(promo_end_date -promo_start_date),'ONGOING')
+  8  FROM promos;
+
+PROMO_ NVL(TO_CHAR(PROMO_END_DATE-PROMO_START_D
+------ ----------------------------------------
+tom    -1
+jack   ONGOING
+monkey ONGOING
+
+SQL> with PROMOS as (
+select 1 PROMO_ID,'tom' PROMO_NAME, to_date('2017-04-06','yyyy-mm-dd') PROMO_START_DATE,to_date('2017-04-05','yyyy-mm-dd') PROMO_END_DATE from dual
+union 
+select 2 PROMO_ID,'jack' PROMO_NAME, to_date('2017-04-06','yyyy-mm-dd') PROMO_START_DATE,null PROMO_END_DATE from dual
+  5  union 
+  6  select 3 PROMO_ID,'monkey' PROMO_NAME, to_date('2017-04-06','yyyy-mm-dd') PROMO_START_DATE,null PROMO_END_DATE from dual
+  7  )SELECT promo_name, DECODE(promo_end_date
+  8  -promo_start_date,NULL,'ONGOING',promo_end_date - promo_start_date)
+  9  FROM promos;
+
+PROMO_ DECODE(PROMO_END_DATE-PROMO_START_DATE,N
+------ ----------------------------------------
+tom    -1
+jack   ONGOING
+monkey ONGOING
+
+SQL> with PROMOS as (
+select 1 PROMO_ID,'tom' PROMO_NAME, to_date('2017-04-06','yyyy-mm-dd') PROMO_START_DATE,to_date('2017-04-05','yyyy-mm-dd') PROMO_END_DATE from dual
+union 
+select 2 PROMO_ID,'jack' PROMO_NAME, to_date('2017-04-06','yyyy-mm-dd') PROMO_START_DATE,null PROMO_END_DATE from dual
+union 
+  6  select 3 PROMO_ID,'monkey' PROMO_NAME, to_date('2017-04-06','yyyy-mm-dd') PROMO_START_DATE,null PROMO_END_DATE from dual
+  7  )SELECT promo_name, decode(coalesce(promo_end_date,promo_start_date),null,'ONGOING',
+  8  promo_end_date - promo_start_date)
+  9  FROM promos;
+
+PROMO_ DECODE(COALESCE(PROMO_END_DATE,PROMO_STA
+------ ----------------------------------------
+tom    -1
+jack
+monkey
+
+QUESTION 105
+Examine the structure of the PROMOS table:
+name Null Type
+PROMO_ID NOT NULL NUMBER(3)
+PROMO_NAME VARCHAR2(30)
+PROMO_START_DATE NOT NULL DATE
+PROMO_END_DATE NOT NULL DATE
+You want to display the list of promo names with the message 'Same Day' for promos that started and
+ended on the same day.
+Which query gives the correct output?
+A. SELECT promo_name, NVL(NULLIF(promo_start_date, promo_end_date), 'Same Day')
+FROM promos;
+B. SELECT promo_name, NVL(TRUNC(promo_end_date - promo_start_date), 'Same Day')
+FROM promos;
+C. SELECT promo_name, NVL2(TO_CHAR(TRUNC(promo_end_date-promo_start_date)), NULL,'Same
+Day')
+FROM promos;
+D. SELECT promo_name, DECODE((NULLIF(promo_start_date, promo_end_date)), NULL,'Same day')
+FROM promos;
+Correct Answer: D
+二、题目翻译
+查看PROMOS表结构:
+要显示promos names，如果开始和结束为同一天的promos使用'Same Day'显示.
+哪个给出正确输出？
+
+三、题目解析
+nullif的意思是，如果两个参数相等，则返回null, 如果不相等，则返回第一个参数的值。
+A选项不正确，如果是同一天，则nullif的结果为null,如果不是同一天，则nullif的结果为日期类型，'Same Day'是字符类型，隐式转换成日期时报错。
+B选项不正确，TRUNC的结果是数字，'Same Day'隐式转换成数值时报错。
+C选项不正确，不能得到想要的结果。
+
+QUESTION 106
+Examine the data in the LIST_PRICE and MIN_PRICE columns of the PRODUCTS table:
+LIST_PRICE MIN_PRICE
+10000 8000
+20000
+30000 30000
+Which two expressions give the same output? (Choose two.)
+A. NVL(NULLIF(list_price, min_price), 0)  					1000/2000/0
+B. NVL(COALESCE(list_price, min_price), 0)					1000/2000/30000
+C. NVL2(COALESCE(list_price, min_price), min_price, 0)		8000/null/30000
+D. COALESCE(NVL2(list_price, list_price, min_price), 0)		1000/2000/30000
+Correct Answer: BD
+二、题目翻译
+下面是PRODUCTS表的LIST_PRICE和 MIN_PRICE两列的数据：
+哪两个表达式结果相同？
+
+NVL(expr1,expr2)
+如果expr1和expr2的数据类型一致，则：
+如果expr1的值不为空，则显示expr1
+如果expr1为空(null),那么显示expr2
+
+NVL2(expr1,expr2, expr3)
+如果expr1不为NULL，返回expr2； expr1为NULL，返回expr3。
+expr2和expr3类型不同的话，expr3会转换为expr2的类型，转换不了，则报错。
+
+NULLIF(expr1,expr2)
+如果expr1和expr2相等则返回空(NULL)，否则返回expr1。
+
+coalesce(expr1, expr2, expr3….. exprn)
+返回表达式中第一个非空表达式，如果都为空则返回空值。
+所有表达式必须是相同类型，或者可以隐式转换为相同的类型，否则报错。
+ with PRODUCTS as
+ (
+   select 10000 LIST_PRICE,8000 MIN_PRICE from dual
+   union all
+   select 20000,null from dual
+  6     union all
+  7     select 30000,30000 from dual
+  8   )
+  9   select NVL(NULLIF(list_price, min_price), 0) from products;
+
+NVL(NULLIF(LIST_PRICE,MIN_PRICE),0)
+-----------------------------------
+                              10000
+                              20000
+                                  0
+SQL>  with PRODUCTS as
+  2   (
+  3     select 10000 LIST_PRICE,8000 MIN_PRICE from dual
+  4     union all
+  5     select 20000,null from dual
+  6     union all
+  7     select 30000,30000 from dual
+  8   )
+  9   select NVL(COALESCE(list_price, min_price), 0) from products;
+
+NVL(COALESCE(LIST_PRICE,MIN_PRICE),0)
+-------------------------------------
+                                10000
+                                20000
+                                30000
+SQL>  with PRODUCTS as
+  2   (
+  3     select 10000 LIST_PRICE,8000 MIN_PRICE from dual
+  4     union all
+  5     select 20000,null from dual
+  6     union all
+  7     select 30000,30000 from dual
+  8   )
+  9   select NVL2(COALESCE(list_price, min_price), min_price, 0) from products;
+
+NVL2(COALESCE(LIST_PRICE,MIN_PRICE),MIN_PRICE,0)
+------------------------------------------------
+                                            8000
+
+                                           30000
+SQL>  with PRODUCTS as
+  2   (
+  3     select 10000 LIST_PRICE,8000 MIN_PRICE from dual
+  4     union all
+  5     select 20000,null from dual
+  6     union all
+  7     select 30000,30000 from dual
+  8   )
+  9   select COALESCE(NVL2(list_price, list_price, min_price), 0) from products;
+
+COALESCE(NVL2(LIST_PRICE,LIST_PRICE,MIN_PRICE),0)
+-------------------------------------------------
+                                            10000
+                                            20000
+                                            30000
+
+QUESTION 107
+View the Exhibit and examine the structure and data in the INVOICE table.
+Which two SQL statements would execute successfully? (Choose two.)
+A. SELECT AVG(inv_date )
+FROM invoice;
+B. SELECT MAX(inv_date),MIN(cust_id)
+FROM invoice;
+C. SELECT MAX(AVG(SYSDATE - inv_date))
+FROM invoice;
+D. SELECT AVG( inv_date - SYSDATE), AVG(inv_amt)
+FROM invoice;
+Correct Answer: BD
+二、题目翻译
+下面是INVOICE表的结构和数据：
+下面哪些SQL语句执行成功（选择2个）？
+
+三、题目解析
+A选项不正确，因为AVG的参数为数值类型或能隐式转换成数值类型的，在隐式转换inv_date时会报错。
+C选项不正确，嵌套组函数需要使用group by子句。
+SQL>  with  INVOICE as
+  2   (
+  3     union all
+   select 1 INV_NO,to_date('01-apr-07','dd-mon-yyyy') INV_DATE, 'a10' CUST_ID,1000 INV_AMT from dual
+  4     union all
+  5     select 2 INV_NO,to_date('01-oct-07','dd-mon-yyyy') INV_DATE, 'b1r' CUST_ID,2000 INV_AMT from dual
+  6     union all
+  7     select 3 INV_NO,to_date('01-feb-07','dd-mon-yyyy') INV_DATE, null CUST_ID,3000 INV_AMT from dual
+  8   )
+  9  SELECT AVG(inv_date ) FROM invoice;
+SELECT AVG(inv_date ) FROM invoice
+           *
+ERROR at line 9:
+ORA-00932: inconsistent datatypes: expected NUMBER got DATE
+
+SQL>  with  INVOICE as
+  2   (
+  3     select 1 INV_NO,to_date('01-apr-07','dd-mon-yyyy') INV_DATE, 'a10' CUST_ID,1000 INV_AMT from dual
+  4     union all
+  5     select 2 INV_NO,to_date('01-oct-07','dd-mon-yyyy') INV_DATE, 'b1r' CUST_ID,2000 INV_AMT from dual
+  6     union all
+   select 3 INV_NO,to_date('01-feb-07','dd-mon-yyyy') INV_DATE, null CUST_ID,3000 INV_AMT from dual
+  8   )
+  9  SELECT MAX(inv_date),MIN(cust_id) FROM invoice;
+
+MAX(INV_D MIN
+--------- ---
+01-OCT-07 a10
+
+SQL>  with  INVOICE as
+  2   (
+   select 1 INV_NO,to_date('01-apr-07','dd-mon-yyyy') INV_DATE, 'a10' CUST_ID,1000 INV_AMT from dual
+   union all
+   select 2 INV_NO,to_date('01-oct-07','dd-mon-yyyy') INV_DATE, 'b1r' CUST_ID,2000 INV_AMT from dual
+  6     union all
+  7     select 3 INV_NO,to_date('01-feb-07','dd-mon-yyyy') INV_DATE, null CUST_ID,3000 INV_AMT from dual
+  8   )
+  9  SELECT MAX(AVG(SYSDATE - inv_date)) FROM invoice;
+SELECT MAX(AVG(SYSDATE - inv_date)) FROM invoice
+           *
+ERROR at line 9:
+ORA-00978: nested group function without GROUP BY
+
+SQL>  with  INVOICE as
+  2   (
+   select 1 INV_NO,to_date('01-apr-07','dd-mon-yyyy') INV_DATE, 'a10' CUST_ID,1000 INV_AMT from dual
+  4     union all
+  5     select 2 INV_NO,to_date('01-oct-07','dd-mon-yyyy') INV_DATE, 'b1r' CUST_ID,2000 INV_AMT from dual
+  6     union all
+  7     select 3 INV_NO,to_date('01-feb-07','dd-mon-yyyy') INV_DATE, null CUST_ID,3000 INV_AMT from dual
+  8   )
+  9  SELECT AVG( inv_date - SYSDATE), AVG(inv_amt) FROM invoice;
+
+AVG(INV_DATE-SYSDATE) AVG(INV_AMT)
+--------------------- ------------
+           -734104.63         2000
+QUESTION 108
+Which two statements are true regarding the COUNT function? (Choose two.)
+A. The COUNT function can be used only for CHAR, VARCHAR2, and NUMBER data types.
+B. COUNT(*) returns the number of rows including duplicate rows and rows containing NULL value in
+any of the columns.
+C. COUNT(cust_id) returns the number of rows including rows with duplicate customer IDs and NULL
+value in the CUST_ID column.
+D. COUNT(DISTINCT inv_amt)returns the number of rows excluding rows containing duplicates and
+NULL values in the INV_AMT column.
+E. A SELECT statement using the COUNT function with a DISTINCT keyword cannot have a
+WHERE clause.
+Correct Answer: BD
+二、题目翻译
+关于COUNT函数的描述，哪两个句子是正确的？（选择两个）
+A.COUNT函数只能用于CHAR,VARCHAR2,NUMBER数据类型。
+B.count(*)返回包括重复行和NULL的行。
+C.COUNT(cust_id)返回包括重复行和NULL的行。
+D.COUNT(DISTINCT inv_amt)返回不包括重复值和NULL的行。
+E.使用带有DISTINCT关键字的COUNT函数的SELECT语句不能含有WHERE子句。
+
+三、题目解析
+A选项不正确，因为还可以为DATE型。
+B选项正确，count(*)是所有的行，重复行和有null值的行也包括。
+C选项不正确，同B选项，因为不包括NULL行。
+D选项正确，COUNT本身就不包括null值的行，distinct已经先将重复行去掉了。
+E选项不正确，DISTINCT是去重，可以用where过滤完之后再去重。
+QUESTION 109
+Examine the structure of the MARKS table:
+name Null Type
+STUDENT_ID NOT NULL VARCHAR2(4)
+STUDENT_NAME VARCHAR2(25)
+SUBJECT1 NUMBER(3)
+SUBJECT2 NUMBER(3)
+SUBJECT3 NUMBER(3)
+Which two statements would execute successfully? (Choose two.)
+A. SELECT student_name,subject1
+FROM marks
+WHERE subject1 > AVG(subject1);
+B. SELECT student_name,SUM(subject1)
+FROM marks
+WHERE student_name LIKE 'R%';
+C. SELECT SUM(subject1+subject2+subject3)
+FROM marks
+WHERE student_name IS NULL;
+D. SELECT SUM(DISTINCT NVL(subject1,0)), MAX(subject1)
+FROM marks
+WHERE subject1 > subject2;
+Correct Answer: CD
+二、题目翻译
+查看MARKS表的结构：
+哪两个语句可以执行成功？（选择两个）
+
+三、题目解析
+A选项不正确，组函数不能用于WHERE子句中，如果要用，就要放在having子句中。
+B选项不正确，student_name是正常列显示，sum是聚合函数，需要使用group by子句，否则报错。
+
+QUESTION 110
+View the Exhibit and examine the structure of the CUSTOMERS table.
+Using the CUSTOMERS table, you need to generate a report that shows the average credit limit for
+customers in WASHINGTON and NEW YORK.
+Which SQL statement would produce the required result?
+A. SELECT cust_city, AVG(cust_credit_limit)
+FROM customers
+WHERE cust_city IN ('WASHINGTON','NEW YORK')
+GROUP BY cust_credit_limit, cust_city;
+B. SELECT cust_city, AVG(cust_credit_limit)
+FROM customers
+WHERE cust_city IN ('WASHINGTON','NEW YORK')
+GROUP BY cust_city,cust_credit_limit;
+C. SELECT cust_city, AVG(cust_credit_limit)
+FROM customers
+WHERE cust_city IN ('WASHINGTON','NEW YORK')
+GROUP BY cust_city;
+D. SELECT cust_city, AVG(NVL(cust_credit_limit,0))
+FROM customers
+WHERE cust_city IN ('WASHINGTON','NEW YORK');
+Correct Answer: C
+
+二、题目翻译
+查看CUSTOMERS表的结构
+使用CUSTOMERS表的数据生成一个报表，显示居住在WASHINGTON和NEW YORK的客户的平均credit limit
+哪条SQL语句给出所需结果？
+
+三、题目解析
+AB选项不正确，因为GROUP BY里的分组的列不对，这里应该按cust_city分组。
+D选项不正确，因为要根据城市求平均值，所以需要使用GROUP BY子句分组。
+QUESTION 111
+View the Exhibit and examine the structure of the CUSTOMERS table.
+Which statement would display the highest credit limit available in each income level in each city in the
+CUSTOMERS table?
+A. SELECT cust_city, cust_income_level, MAX(cust_credit_limit )
+FROM customers
+GROUP BY cust_city, cust_income_level, cust_credit_limit;
+B. SELECT cust_city, cust_income_level, MAX(cust_credit_limit)
+FROM customers
+GROUP BY cust_city, cust_income_level;
+C. SELECT cust_city, cust_income_level, MAX(cust_credit_limit)
+FROM customers
+GROUP BY cust_credit_limit, cust_income_level, cust_city ;
+D. SELECT cust_city, cust_income_level, MAX(cust_credit_limit)
+FROM customers
+GROUP BY cust_city, cust_income_level, MAX(cust_credit_limit);
+Correct Answer: B
+二、题目翻译
+查看CUSTOMERS表的结构，
+哪条语句显示每个城市中每个收入水平的最高信用额度？
+
+三、题目解析
+AC选项不正确，按照题目，应该按城市和收入水平分组，这两个都不正确。
+D选项不正确，报错，因为GROUP BY子句中不能使用MAX聚合函数。
+
+View the Exhibit and examine the structure of the PROMOTIONS table.
+Evaluate the following SQL statement:
+SQL>SELECT promo_category, AVG(promo_cost) Avg_Cost, AVG(promo_cost)*.25 Avg_Overhead
+FROM promotions
+WHERE UPPER(promo_category) IN ('TV', 'INTERNET','POST')
+GROUP BY Avg_Cost
+ORDER BY Avg_Overhead;
+The above query generates an error on execution.
+Which clause in the above SQL statement causes the error?
+A. WHERE
+B. SELECT
+C. GROUP BY
+D. ORDER BY
+Correct Answer: C
+二、题目翻译
+看下面PROMOTIONS表的结构:
+下面的SQL语句:
+上面的查询会报错,
+是哪一个子句引起的错误？
+
+三、题目解析
+GROUP BY后面不能使用列别名。
+QUESTION 113
+Examine the structure of the ORDERS table:
+Name Null Type
+ORDER_ID NOT NULL NUMBER(12)
+ORDER_DATE NOT NULL TIMESTAMP(6)
+CUSTOMER_ID NOT NULL NUMBER(6)
+ORDER_STATUS NUMBER(2)
+ORDER_TOTAL NUMBER(8,2)
+You want to find the total value of all the orders for each year and issue the following command:
+SQL>SELECT TO_CHAR(order_date,'rr'), SUM(order_total)
+FROM orders
+GROUP BY TO_CHAR(order_date,'yyyy');
+Which statement is true regarding the outcome?
+A. It executes successfully and gives the correct output.
+B. It gives an error because the TO_CHAR function is not valid.
+C. It executes successfully but does not give the correct output.
+D. It gives an error because the data type conversion in the SELECT list does not match the data type
+conversion in the GROUP BY clause.
+Correct Answer: D
+二、题目翻译
+下面是ORDERS表的结构：
+要查找每年所有orders的total value，执行下面的命令：
+关于结果，下面哪个描述是正确的？
+A.执行成功给出正确结果。
+B.报错,因为TO_CHAR函数无效。
+C.执行成功,但是不能给出正确结果。
+D.报错，因为SELECT列表中的数据类型转换与GROUP BY子句中的数据类型转换不匹配。
+
+三、题目解析
+因为select后面出现的列，必须是在GROUP BY子句出现的列、表达式，或者是聚合函数，所以，这里GROUP BY后是 TO_CHAR(order_date,'yyyy')，SELECT语句中也应该是 TO_CHAR(order_date,'yyyy')。
+QUESTION 114
+View the Exhibit and examine the structure of the SALES table.
+The following query is written to retrieve all those product ID s from the SALES table that have more than
+55000 sold and have been ordered more than 10 times.
+SQL> SELECT prod_id
+FROM sales
+WHERE quantity_sold > 55000 AND COUNT(*)>10
+GROUP BY prod_id
+HAVING COUNT(*)>10;
+Which statement is true regarding this SQL statement?
+A. It executes successfully and generates the required result.
+B. It produces an error because COUNT(*) should be specified in the SELECT clause also.
+C. It produces an error because COUNT(*) should be only in the HAVING clause and not in the WHERE
+clause.
+D. It executes successfully but produces no result because COUNT(prod_id) should be used instead of
+COUNT(*).
+Correct Answer: C
+二、题目翻译
+查看SALES表的结构：
+下面的查询用于检索那些售出了超过55000台,并且已被定购超过10次的所有产品ID。
+关于查询语句的描述，正确的是？
+A.执行成功,并给出正确结果。
+B.报错，因为COUNT(*)也应该指定到SELECT子句中。
+C.报错，因为COUNT(*)只能用在HAVING子句中，不能在WHERE子句中。
+D.执行成功，但是没有返回结果，因为COUNT(prod_id)应该用COUNT(*)代替。
+
+QUESTION 115
+View the Exhibit and examine the structure of the CUSTOMERS table.
+Evaluate the following SQL statement:
+SQL> SELECT cust_city, COUNT(cust_last_name)
+FROM customers
+WHERE cust_credit_limit > 1000
+GROUP BY cust_city
+HAVING AVG(cust_credit_limit) BETWEEN 5000 AND 6000;
+Which statement is true regarding the outcome of the above query?
+A. It executes successfully.
+B. It returns an error because the BETWEEN operator cannot be used in the HAVING clause.
+C. It returns an error because WHERE and HAVING clauses cannot be used in the same SELECT
+statement.
+D. It returns an error because WHERE and HAVING clauses cannot be used to apply conditions on the
+same column.
+Correct Answer: A
+二、题目解析
+下面是CUSTOMERS表的结构
+评估下面的语句：
+关于结果的描述，哪句话是正确的？
+A.执行成功。
+B.报错，因为BETWEEN操作符不能用在HAVING子句中。
+C.报错，因为WHERE and HAVING子句不能同时用于SELECT子句中。
+D.报错，因为WHERE and HAVING子句不能使用同一列作为条件。
+
+QUESTION 116
+Examine the data in the ORD_ITEMS table:
+ORD_NO ITEM_NO QTY
+1 111 10
+1 222 20
+1 333 30
+2 333 30
+2 444 40
+3 111 40
+You want to find out if there is any item in the table for which the average maximum quantity is more than
+50.
+You issue the following query:
+SQL> SELECT AVG(MAX(qty))
+FROM ord_items
+GROUP BY item_no
+HAVING AVG(MAX(qty))>50;
+Which statement is true regarding the outcome of this query?
+A. It executes successfully and gives the correct output.
+B. It gives an error because the HAVING clause is not valid.
+C. It executes successfully but does not give the correct output.
+D. It gives an error because the GROUP BY expression is not valid.
+Correct Answer: B
+二、题目翻译
+查看ORD_ITEMS表的数据
+要找到表中任意item的最大值的平均值是否大于50
+执行下面的查询：
+关于查询结果，下面描述正确的是?
+A.执行成功并给出正确结果。
+B.报错，因为HAVING子句是无效的。
+C.执行成功，但是不能给出正确结果。
+D.报错，因为GROUP BY表达式无效。
+
+三、题目解析
+HAVING子句后面嵌套了2个组函数，只能使用一个组函数，而且，已经是最大值了，只有一个值，再求平均值，完全没意义。
+SQL> WITH  ORD_ITEMS as
+ (           
+select 1 ORD_NO,111 ITEM_NO,10 QTY from dual
+  4     union all
+  5  select 1 ORD_NO,222 ITEM_NO,20 QTY from dual
+  6     union all
+  7  select 1 ORD_NO,333 ITEM_NO,30 QTY from dual
+  8     union all
+  9  select 2 ORD_NO,333 ITEM_NO,30 QTY from dual
+ 10     union all
+ 11  select 2 ORD_NO,444 ITEM_NO,40 QTY from dual
+ 12     union all
+ 13  select 3 ORD_NO,111 ITEM_NO,40 QTY from dual
+ 14   )
+ 15  SELECT AVG(MAX(qty))
+ 16                FROM ord_items
+ 17        GROUP BY item_no
+ 18             HAVING AVG(MAX(qty))>50;
+           HAVING AVG(MAX(qty))>50
+                      *
+ERROR at line 18:
+ORA-00935: group function is nested too deeply
+
+QUESTION 117
+Which statements are true regarding the WHERE and HAVING clauses in a SELECT statement?
+(Choose all that apply.)
+A. The HAVING clause can be used with aggregate functions in subqueries.
+B. The WHERE clause can be used to exclude rows after dividing them into groups.
+C. The WHERE clause can be used to exclude rows before dividing them into groups.
+D. The aggregate functions and columns used in the HAVING clause must be specified in the SELECT list
+of the query.
+E. The WHERE and HAVING clauses can be used in the same statement only if they are applied to
+different columns in the table.
+Correct Answer: AC
+二、题目翻译
+关于WHERE和HAVING子句哪句话是正确的(选择所有正确的选项）
+A.HAVING子句能在子查询中使用聚合函数。
+B.WHERE子句能被用于在划分组之后排除行。
+C.WHERE子句能被用于在划分组之前排除行。
+D.用在HAVING子句中的聚合函数和列必须被指定到SELECT语句的列表中。
+E.只要应用不同的列，WHERE和HAVING子句就能用在相同的语句中。
+
+三、题目解析
+WHERE是在分组之前筛选数据，HAVING是在分组之后筛选数据。
+WHERE子句中不能使用聚合函数，HAVING子句中可以使用聚合函数。
+QUESTION 118
+View the Exhibit and examine the structure of the PROMOTIONS table.
+Examine the following two SQL statements:
+Statement 1
+SQL>SELECT promo_category,SUM(promo_cost)
+FROM promotions
+WHERE promo_end_date-promo_begin_date > 30
+GROUP BY promo_category;
+Statement 2
+SQL>SELECT promo_category,sum(promo_cost)
+FROM promotions
+GROUP BY promo_category
+HAVING MIN(promo_end_date-promo_begin_date)>30;
+Which statement is true regarding the above two SQL statements?
+A. statement 1 gives an error, statement 2 executes successfully
+B. statement 2 gives an error, statement 1 executes successfully
+C. statement 1 and statement 2 execute successfully and give the same output
+D. statement 1 and statement 2 execute successfully and give a different output
+Correct Answer: D
+二、题目翻译
+查看PROMOTIONS表的结构
+评估下面的2个语句
+关于上面两个SQL语句，哪句话是正确的？
+A.语句1报错，语句2执行成功。
+B.语句2报错，语句1执行成功。
+C.都执行成功，并给出相同结果。
+D.都执行成功，但给出不同的结果。
+
+三、题目解析
+WHERE是分组之前筛选数据，HAVING是分组之后筛选数据，所以结果是不一样的。
+
+QUESTION 119
+Examine the data in the ORD_ITEMS table:
+ORD_NO ITEM_NO QTY
+1 111 10
+1 222 20
+1 333 30
+2 333 30
+2 444 40
+3 111 40
+Evaluate the following query:
+SQL>SELECT item_no, AVG(qty)
+FROM ord_items
+HAVING AVG(qty) > MIN(qty) * 2
+GROUP BY item_no;
+Which statement is true regarding the outcome of the above query?
+A. It gives an error because the HAVING clause should be specified after the GROUP BY clause.
+B. It gives an error because all the aggregate functions used in the HAVING clause must be specified in
+the SELECT list.
+C. It displays the item nos with their average quantity where the average quantity is more than double the
+minimum quantity of that item in the table.
+D. It displays the item nos with their average quantity where the average quantity is more than double the
+overall minimum quantity of all the items in the table.
+Correct Answer: C
+二、题目翻译
+查看下面ORD_ITEMS表的数据：
+评估下面的查询:
+关于上面语句的结果哪句话是正确的？
+A.报错，因为HAVING子句应该放在GROUP BY子句之后。
+B.报错，因为所有在HAVING子句中使用的聚合函数必须被指定到SELECT列表中。
+C.显示item_nos和他们的平均数量，平均数量要大于每组item中最小数量的两倍。
+D.显示item_nos和他们的平均数量，平均数量要大于所有item最小值的两倍。
+
+三、题目解析
+A选项不正确，HAVING子句可以放到GROUP BY子句前面。
+B选项不正确，HAVING子句中的聚合函数，不一定要放在SELECT的列表中，这个没有关系的。
+SQL> WITH  ORD_ITEMS as
+  2   (           
+  3  select 1 ORD_NO,111 ITEM_NO,10 QTY from dual
+  4     union all
+  5  select 1 ORD_NO,222 ITEM_NO,20 QTY from dual
+  6     union all
+  7  select 1 ORD_NO,333 ITEM_NO,30 QTY from dual
+  8     union all
+  9  select 2 ORD_NO,333 ITEM_NO,30 QTY from dual
+ 10     union all
+ 11  select 2 ORD_NO,444 ITEM_NO,40 QTY from dual
+ 12     union all
+ 13  select 3 ORD_NO,111 ITEM_NO,40 QTY from dual
+ 14   )
+ 15  SELECT item_no, AVG(qty)
+ 16              FROM ord_items
+ 17           HAVING AVG(qty) > MIN(qty) * 2
+ 18      GROUP BY item_no;
+
+   ITEM_NO   AVG(QTY)
+---------- ----------
+       111         25
+
+QUESTION 120
+View the Exhibits and examine the structures of the PRODUCTS, SALES, and CUSTOMERS
+tables.
+You issue the following query:
+SQL>SELECT p.prod_id,prod_name,prod_list_price,
+quantity_sold,cust_last_name
+FROM products p NATURAL JOIN sales s NATURAL JOIN customers c
+WHERE prod_id =148;
+Which statement is true regarding the outcome of this query?
+A. It executes successfully.
+B. It produces an error because the NATURAL join can be used only with two tables.
+C. It produces an error because a column used in the NATURAL join cannot have a qualifier.
+D. It produces an error because all columns used in the NATURAL join should have a qualifier.
+Correct Answer: C
+
+二、题目翻译
+查看PRODUCTS,  SALES,  and CUSTOMERS表的结构
+执行下面的语句
+关于上面语句的执行结果，下面哪句描述是正确的?
+A.执行成功。
+B.报错，因为NATURAL连接只能连接两个表。
+C.报错，因为NATURAL连接使用的一个列不能有限定词。
+D.报错，因为NATURAL连接使用的所有列应该加一个限定词。
+
+三、题目解析
+因为prod_id是用于NATURAL连接，不能加限定词（即两个表中如果有相同列名的都不能加限定词，即列名前不能带表名）。而对于ORACLE自己语法的join是需要对两个表中相同的列使用限定词的。
+
+联机文档上有详细的描述：
+http://docs.oracle.com/cd/E11882_01/server.112/e41084/statements_10002.htm#BABBAGAH
+The NATURAL keyword indicates that a natural join is being performed. A natural join is based on all columns in the two tables that have the same name. It selects rows from the two tables that have equal values in the relevant columns. If two columns with the same name do not have compatible data types, then an error is raised. When specifying columns that are involved in the natural join, do not qualify the column name with a table name or table alias.
+
+QUESTION 121
+Which two statements are true regarding the USING clause in table joins? (Choose two .)
+A. It can be used to join a maximum of three tables.
+B. It can be used to restrict the number of columns used in a NATURAL join.
+C. It can be used to access data from tables through equijoins as well as nonequijoins
+D. It can be used to join tables that have columns with the same name and compatible data types.
+Correct Answer: BD
+二、题目翻译
+关于表连接中的USING子句的使用，下面的哪两个描述是正确的？(选择两项)
+A.最多可以连接三张表。
+B.可以用来限制NATURAL join(自然连接)中的列的数量。
+C.可以用在等值连接和非等值连接。
+D.可以用来连接有相同名字和一致的数据类型的列。
+自然连接的详细用法，详见：
+http://blog.csdn.net/holly2008/article/details/25501343
