@@ -3967,27 +3967,7 @@ D.报错，因为WHEN子句不能指定多个条件。
 三、题目解析
 NULL值在avg函数中不会计算，所以计算平均值时会忽略null值，例如：返回4行，有1行为空，则平均值就是总数/3。
 
-case when
-case when 类似我们的if ...else ,判断语句
-语法如下:
-CASE expr WHEN expr1 THEN return_expr1
-         [WHEN expr2 THEN return_expr2
-          ...
-          WHEN exprn THEN return_exprn
-          ELSE else_expr]
-END
 
-第二种延伸用法:
-CASE
-         WHEN  expr1 THEN return_expr1
-         [WHEN expr2 THEN return_expr2
-          ....
-          WHEN exprn THEN return_exprn
-          ELSE else_expr]
-END
-
-SQL> SELECT ENAME,sal,case deptno when 10 then 'dept10' when 20 then 'dept20' else 'other' end  部门 from scott.emp;
-SQL> SELECT ENAME,sal,case when deptno=10 then 'dept10' when deptno=20 then 'dept20' else 'other' end  部门 from scott.emp;
 
 SQL> SELECT AVG(CASE
   2  WHEN promo_cost BETWEEN 0 AND 2000 AND promo_category='A'
@@ -4939,4 +4919,4 @@ B.可以用来限制NATURAL join(自然连接)中的列的数量。
 C.可以用在等值连接和非等值连接。
 D.可以用来连接有相同名字和一致的数据类型的列。
 自然连接的详细用法，详见：
-http://blog.csdn.net/holly2008/article/details/25501343
+https://github.com/tomlxq/oracle-study/blob/master/ocp/2_%E8%87%AA%E7%84%B6%E8%BF%9E%E6%8E%A5%EF%BC%88NATURAL%20JOIN%EF%BC%89.sql
