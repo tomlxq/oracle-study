@@ -3967,7 +3967,7 @@ D.报错，因为WHEN子句不能指定多个条件。
 三、题目解析
 NULL值在avg函数中不会计算，所以计算平均值时会忽略null值，例如：返回4行，有1行为空，则平均值就是总数/3。
 
-
+https://github.com/tomlxq/oracle-study/blob/master/ocp/2_case%20when%E5%92%8Cdecode%E7%9A%84%E7%94%A8%E6%B3%95%E4%B8%8E%E5%8C%BA%E5%88%AB.sql
 
 SQL> SELECT AVG(CASE
   2  WHEN promo_cost BETWEEN 0 AND 2000 AND promo_category='A'
@@ -4920,3 +4920,267 @@ C.可以用在等值连接和非等值连接。
 D.可以用来连接有相同名字和一致的数据类型的列。
 自然连接的详细用法，详见：
 https://github.com/tomlxq/oracle-study/blob/master/ocp/2_%E8%87%AA%E7%84%B6%E8%BF%9E%E6%8E%A5%EF%BC%88NATURAL%20JOIN%EF%BC%89.sql
+
+QUESTION 122
+View the Exhibit for the structure of the STUDENT and FACULTY tables.
+You need to display the faculty name followed by the number of students handled by the faculty at the
+base location.
+Examine the following two SQL statements:
+Statement 1
+SQL>SELECT faculty_name,COUNT(student_id)
+FROM student JOIN faculty
+USING (faculty_id, location_id)
+GROUP BY faculty_name;
+Statement 2
+SQL>SELECT faculty_name,COUNT(student_id)
+FROM student NATURAL JOIN faculty
+GROUP BY faculty_name;
+Which statement is true regarding the outcome?
+A. Only s tatement 1 executes successfully and gives the required result.
+B. Only statement 2 executes successfully and gives the required result.
+C. Both statements 1 and 2 execute successfully and give different results.
+D. Both statements 1 and 2 execute successfully and give the same required result.
+Correct Answer: D
+二、题目翻译
+查看STUDENT和FACULTY表的结构
+要显示全体教师的名字及该教师所在位置的学生人数。
+执行下面的两个语句
+关于上面的两个语句，下面描述正确的是：
+A.只有语句1执行成功并给出正确结果。
+B.只有语句2执行成功并给出正确结果。
+C.两个都执行成功，但给出不同结果。
+D.两个都执行成功并给出相同结果。
+
+三、题目解析
+虽然FACULTY_ID在两个表中的数据类型不一致，但是如果两个列的数据是可以隐式转换的话，也能执行成功。
+四、测试
+SQL> create table student(
+  2  student_id number(2) not null,
+  3  student_name varchar2(30),
+  4  faculty_id varchar2(2),
+  5  location_id number(2)
+  6  );
+
+Table created.
+
+SQL> create table faculty(
+  2  faculty_id number(2),
+  3  faculty_name varchar2(30),
+  4  location_id number(2)
+  5  );
+
+Table created.
+
+SQL> insert into faculty values(1,'张老师',1);
+
+1 row created.
+
+SQL> insert into faculty values(2,'李老师',2);
+
+1 row created.
+
+SQL> insert into student values(1,'张同学',1,1);
+
+1 row created.
+
+SQL> insert into student values(2,'李同学',1,1);
+
+1 row created.
+
+SELECT faculty_name,COUNT(student_id)
+  2  FROM student JOIN faculty
+  3  USING (faculty_id, location_id)
+  4  GROUP BY faculty_name;
+
+FACULTY_NAME                   COUNT(STUDENT_ID)
+------------------------------ -----------------
+张老师                                         2
+
+SQL> SELECT faculty_name,COUNT(student_id)
+  2  FROM student NATURAL JOIN faculty
+  3  GROUP BY faculty_name;
+
+FACULTY_NAME                   COUNT(STUDENT_ID)
+------------------------------ -----------------
+张老师                                         2
+
+QUESTION 123
+View the Exhibits and examine the structures of the PRODUCTS, SALES, and CUSTOMERS
+tables.
+You need to generate a report that gives details of the customer's last name, name of the product, and
+the quantity sold for all customers in ' Tokyo' .
+Which two queries give the required result? (Choose two.)
+A. SELECT c.cust_last_name,p.prod_name, s.quantity_sold
+FROM sales s JOIN products p
+USING(prod_id)
+JOIN customers c
+USING(cust_id)
+WHERE c.cust_city='Tokyo';
+B. SELECT c.cust_last_name, p.prod_name, s.quantity_sold
+FROM products p JOIN sales s JOIN customers c
+ON(p.prod_id=s.prod_id)
+ON(s.cust_id=c.cust_id)
+WHERE c.cust_city='Tokyo';
+C. SELECT c.cust_last_name, p.prod_name, s.quantity_sold
+FROM products p JOIN sales s
+ON(p.prod_id=s.prod_id)
+JOIN customers c
+ON(s.cust_id=c.cust_id)
+AND c.cust_city='Tokyo';
+D. SELECT c.cust_id,c.cust_last_name,p.prod_id, p.prod_name, s.quantity_sold
+FROM products p JOIN sales s
+USING(prod_id)
+JOIN customers c
+USING(cust_id)
+WHERE c.cust_city='Tokyo';
+Correct Answer: AC
+
+二、题目翻译
+查看PRODUCTS、SALES和CUSTOMERS表的结构
+要生成一个报表，显示在Tokyo的客户的last name,product name,和the quantity sold（销售数量）的详细信息。
+哪两个给出所需结果？（选择2个）
+
+三、题目解析
+B选项不正确，语法错误。
+D选项不正确，因为有USING子句，不能使用限定词。
+不要对USING子句中使用的列加以限定。
+USING子句中引用的那些列不能在SQL 语句的任何位置使用限定词（表名或别名），如下面的prod_id,cust_id如果要在查询中显示出来，不要再 别名.prod_id,别名.cust_id。
+如果在SQL 语句的另一个位置使用了同一列，则不要对其设置别名。
+四、测试
+SQL> set linesize 200
+SQL> SELECT c.cust_last_name,p.prod_name, s.quantity_sold
+FROM sales s JOIN products p
+  3  USING(prod_id)
+  4  JOIN customers c
+  5  USING(cust_id)
+  6  WHERE c.cust_city='Tokyo' and rownum<5;
+
+CUST_LAST_NAME                           PROD_NAME                                          QUANTITY_SOLD
+---------------------------------------- -------------------------------------------------- -------------
+Thomas                                   Envoy Ambassador                                               1
+Thomas                                   Envoy Ambassador                                               1
+Thomas                                   Envoy Ambassador                                               1
+Thomas                                   Envoy Ambassador                                               1
+SQL> SELECT c.cust_last_name, p.prod_name, s.quantity_sold
+FROM products p JOIN sales s JOIN customers c
+  3  ON(p.prod_id=s.prod_id)
+  4  ON(s.cust_id=c.cust_id)
+  5  WHERE c.cust_city='Tokyo';
+ON(p.prod_id=s.prod_id)
+   *
+ERROR at line 3:
+ORA-00904: "P"."PROD_ID": invalid identifier
+
+SQL> SELECT c.cust_last_name, p.prod_name, s.quantity_sold
+  2  FROM products p JOIN sales s
+  3  ON(p.prod_id=s.prod_id)
+  4  JOIN customers c
+  5  ON(s.cust_id=c.cust_id)
+  6  AND c.cust_city='Tokyo' and rownum<5;
+
+CUST_LAST_NAME                           PROD_NAME                                          QUANTITY_SOLD
+---------------------------------------- -------------------------------------------------- -------------
+Thomas                                   Envoy Ambassador                                               1
+Thomas                                   Envoy Ambassador                                               1
+Thomas                                   Envoy Ambassador                                               1
+Thomas                                   Envoy Ambassador                                               1
+SQL>  SELECT c.cust_id,c.cust_last_name,p.prod_id, p.prod_name, s.quantity_sold
+FROM products p JOIN sales s
+USING(prod_id)
+JOIN customers c
+  5  USING(cust_id)
+  6  WHERE c.cust_city='Tokyo';
+ SELECT c.cust_id,c.cust_last_name,p.prod_id, p.prod_name, s.quantity_sold
+                                   *
+ERROR at line 1:
+ORA-25154: column part of USING clause cannot have qualifier
+
+QUESTION 124
+View the Exhibit and examine the structure of the PROMOTIONS, SALES, and CUSTOMER tables.
+You need to generate a report showing the promo name along with the customer name for all products
+that were sold during their promo campaign and before 30th October 2007.
+You issue the following query:
+SQL> SELECT promo_name,cust_name
+FROM promotions p JOIN sales s
+ON(time_id BETWEEN promo_begin_date AND promo_end_date)
+JOIN customer c
+ON (s.cust_id = c.cust_id) AND time_id < '30-oct-2007';
+Which statement is true regarding the above query?
+A. It executes successfully and gives the required result.
+B. It executes successfully but does not give the required result.
+C. It produces an error because the join order of the tables is incorrect.
+D. It produces an error because equijoin and nonequijoin conditions cannot be used in the same SELECT
+statement.
+Correct Answer: B
+二、题目翻译
+查看PROMOTIONS、SALES和 CUSTOMER表的结构:
+要生成一个报表，显示所有产品的promo name和customer name，销售的产品是在促销活动期间，并且在2007年10月30日以前。
+执行下面的查询
+关于上面的查询哪句话是正确的？
+A.执行成功，并给出正确结果。
+B.执行成功，但不能给出正确结果。
+C.报错，因为表的连接顺序不正确。
+D.报错，因为等值连接与非等值连接不能用在同一个SELECT语句中。
+
+三、题目解析
+这个sql虽然执行成功，但是结果不正确， promotions和sales表之间应该还有一个关联条件是promo_id相等。
+
+四、测试
+drop table promotions;
+drop table customer;
+drop table sales;	
+create table promotions(
+PROMO_ID NUMBER(2) NOT NULL,
+promo_name varchar2(10),
+promo_cat varchar2(10),
+promo_cost number(8,2),
+promo_begin_date date,
+promo_end_date date
+);
+create table sales(
+prod_id number(3) not null,
+promo_id number(3) not null,
+time_id date,
+qty_sold number(6,2),
+cust_id number(2) not null
+);
+create table customer(
+cust_id number(3) not null,
+cust_name varchar2(20),
+cust_address varchar(30)
+);
+insert into promotions values(1,'苹果','水果',500,to_date('2007-1-5','yyyy-mm-dd'),to_date('2007-1-30','yyyy-mm-dd'));
+insert into promotions values(2,'电脑','数码',800,to_date('2007-10-25','yyyy-mm-dd'),to_date('2007-11-5','yyyy-mm-dd'));
+insert into customer values(21,'张三','西贡');
+insert into customer values(22,'李四','纽约');
+insert into customer values(23,'王二','拉美');
+insert into sales values(101,1,to_date('2007-1-10','yyyy-mm-dd'),2,21);
+insert into sales values(102,2,to_date('2007-10-28','yyyy-mm-dd'),5,22);
+insert into sales values(103,2,to_date('2007-11-2','yyyy-mm-dd'),3,23);
+insert into sales values(104,3,to_date('2007-11-8','yyyy-mm-dd'),6,23);
+insert into sales values(105,3,to_date('2007-10-28','yyyy-mm-dd'),4,21);
+
+SQL> set linesize 200
+SELECT promo_name,cust_name,p.promo_id,time_id,promo_begin_date,promo_end_date
+    FROM promotions p JOIN sales s
+    ON(time_id BETWEEN promo_begin_date AND promo_end_date)
+  4      JOIN customer c
+  5      ON (s.cust_id = c.cust_id) AND time_id < '30-oct-2007';
+
+PROMO_NAME CUST_NAME              PROMO_ID TIME_ID            PROMO_BEGIN_DATE   PROMO_END_DATE
+---------- -------------------- ---------- ------------------ ------------------ ------------------
+电脑       张三                          2 28-OCT-07          25-OCT-07          05-NOV-07
+苹果       张三                          1 10-JAN-07          05-JAN-07          30-JAN-07
+电脑       李四                          2 28-OCT-07          25-OCT-07          05-NOV-07
+	
+SQL> SELECT promo_name,cust_name,p.promo_id,time_id,promo_begin_date,promo_end_date
+    FROM promotions p JOIN sales s
+    ON( p.promo_id=s.promo_id and time_id BETWEEN promo_begin_date AND promo_end_date)
+    JOIN customer c
+  5      ON (s.cust_id = c.cust_id) AND time_id < '30-oct-2007';
+
+PROMO_NAME CUST_NAME              PROMO_ID TIME_ID            PROMO_BEGIN_DATE   PROMO_END_DATE
+---------- -------------------- ---------- ------------------ ------------------ ------------------
+苹果       张三                          1 10-JAN-07          05-JAN-07          30-JAN-07
+电脑       李四                          2 28-OCT-07          25-OCT-07          05-NOV-07
+
