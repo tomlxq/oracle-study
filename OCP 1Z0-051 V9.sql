@@ -5183,4 +5183,1488 @@ PROMO_NAME CUST_NAME              PROMO_ID TIME_ID            PROMO_BEGIN_DATE  
 ---------- -------------------- ---------- ------------------ ------------------ ------------------
 苹果       张三                          1 10-JAN-07          05-JAN-07          30-JAN-07
 电脑       李四                          2 28-OCT-07          25-OCT-07          05-NOV-07
+QUESTION 125
+Examine the structure of the CUSTOMERS table:
+name Null Type
+CUSTNO NOT NULL NUMBER(3)
+CUSTNAME NOT NULL VARCHAR2(25)
+CUSTADDRESS VARCHAR2(35)
+CUST_CREDIT_LIMIT NUMBER(5)
+CUSTNO is the PRIMARY KEY in the table. You want to find out if any customers' details have been
+entered more than once using different CUSTNO, by listing all the duplicate names.
+Which two methods can you use to get the required result? (Choose two.)
+A. self-join
+B. subquery
+C. full outer-join with self-join
+D. left outer-join with self-join
+E. right outer-join with self-join
+Correct Answer: AB
+二、题目翻译
+查看CUSTOMERS表的结构
+CUSTNO是表的主键，想找到是否存在客户信息使用不同的CUSTNO录入了多次，显示所有重复的客户名称.
+哪两个方法可以获取所需结果？
 
+三、题目解析
+需要用自连接查出被多次录入的客户的详细信息，
+需要用子查询查出重复的客户。
+
+答案解析：
+题意：找到是否存在客户信息使用不同的CUSTNO录入了多次，显示所有重复的客户名称
+自连接即是查询两次自身的表，首先根据客户信息来查看CUSTNO大于1的记录，然后再根据CUSTNO来显示客户名称。子查询也是一样。
+QUESTION 126
+View the Exhibit and examine the data in the PROJ_TASK_DETAILS table.
+The PROJ_TASK_DETAILS table stores information about tasks involved in a project and the relation
+between them.
+The BASED_ON column indicates dependencies between tasks. Some tasks do not depend on the
+completion of any other tasks.
+You need to generate a report showing all task IDs, the corresponding task ID they are dependent on, and
+the name of the employee in charge of the task it depends on.
+Which query would give the required result?
+A. SELECT p.task_id, p.based_on, d.task_in_charge
+FROM proj_task_details p JOIN proj_task_details d
+ON (p.based_on = d.task_id);
+B. SELECT p.task_id, p.based_on, d.task_in_charge
+FROM proj_task_details p LEFT OUTER JOIN proj_task_details d
+ON (p.based_on = d.task_id);
+C. SELECT p.task_id, p.based_on, d.task_in_charge
+FROM proj_task_details p FULL OUTER JOIN proj_task_details d
+ON (p.based_on = d.task_id);
+D. SELECT p.task_id, p.based_on, d.task_in_charge
+FROM proj_task_details p JOIN proj_task_details d
+ON (p.task_id = d.task_id);
+Correct Answer: B
+二、题目翻译
+查看PROJ_TASK_DETAILS表的数据
+PROJ_TASK_DETAILS表存储项目相关的任务与他们之间的关系的信息
+BASED_ON列代表任务之间的依赖关系，有些任务不依赖于任何其他任务的完成。
+要生成一个报表，显示所有任务的ID，依赖对应任务的ID，和它依赖任务负责的员工姓名。
+哪个查询给出所需结果？
+
+三、题目解析
+A选项不正确，只显示有依赖任务的task_id。
+B选项正确，是LEFT OUTER JOIN也就是左连表的所有task_id全部显示出来，如果右边表没有匹配的信息，则显示空。
+C选项不正确，full outer join是全匹配，也就是p表中有，但d表中没有匹配的，和d表中有，p表中没有匹配的，都会显示出来，显示为null。
+D选项不正确，关联列错误。
+QUESTION 127
+Examine the data in the CUSTOMERS table:
+CUSTNO CUSTNAME CITY
+1 KING SEATTLE
+2 GREEN BOSTON
+3 KOCHAR SEATTLE
+4 SMITH NEW YORK
+You want to list all cities that have more than one customer along with the customer details.
+Evaluate the following query:
+SQL>SELECT c1.custname, c1.city
+FROM Customers c1 __________________ Customers c2
+ON (c1.city=c2.city AND c1.custname<>c2.custname);
+Which two JOIN options can be used in the blank in the above query to give the correct output? (Choose
+two.)
+A. JOIN
+B. NATURAL JOIN
+C. LEFT OUTER JOIN
+D. FULL OUTER JOIN
+E. RIGHT OUTER JOIN
+Correct Answer: AE
+二、题目翻译
+查看CUSTOMERS表的数据：
+列出多于一个客户的城市和客户的信息。
+评估下面的查询
+哪两种JOIN用在上面的空白处能给出正确的结果？
+
+三、题目解析
+B选项不正确，NATURAL JOIN自然连接不需要关联条件，所以下面的ON子句会报错。
+CD选项不正确，LEFT OUTER JOIN和FULL OUTER JOIN都会显示有客户但是没在某个城市的人。
+
+四、测试
+测试结果，A，E正确。
+SQL> Create table customers (CUSTNO NUMBER,CUSTNAME VARCHAR2(20),CITY VARCHAR2(20));
+
+Table created.
+
+SQL> insert into customers values(1,'KING','SEATTLE');
+
+1 row created.
+
+SQL> insert into customers values(2,'GREEN','BOSTON');
+
+1 row created.
+
+SQL> insert into customers values(3,'KOCHAR','SEATTLE');
+
+1 row created.
+
+SQL> insert into customers values(4,'SMITH','NEY YORK');
+
+1 row created.
+
+SQL> commit;
+
+Commit complete.
+
+SQL> select CITY from customers 
+  2      group by city
+  3      having count(CUSTNAME)>1
+  4      order by city;
+
+CITY
+--------------------
+SEATTLE
+
+SQL>  select c1.custname, c1.city 
+  2      from Customers c1 JOIN Customers c2 
+  3     ON (c1.city=c2.city AND c1.custname<>c2.custname);
+
+CUSTNAME             CITY
+-------------------- --------------------
+KOCHAR               SEATTLE
+KING                 SEATTLE
+
+SQL> select c1.custname, c1.city 
+  2      from Customers c1 NATURAL JOIN Customers c2 
+  3      ON (c1.city=c2.city AND c1.custname<>c2.custname);
+    ON (c1.city=c2.city AND c1.custname<>c2.custname)
+    *
+ERROR at line 3:
+ORA-00933: SQL command not properly ended
+
+
+SQL> select c1.custname, c1.city 
+  2      from Customers c1 LEFT OUTER JOIN Customers c2 
+  3      ON (c2.city=c1.city AND c2.custname<>c1.custname); 
+
+CUSTNAME             CITY
+-------------------- --------------------
+KOCHAR               SEATTLE
+KING                 SEATTLE
+GREEN                BOSTON
+SMITH                NEY YORK
+
+SQL> select c1.custname, c1.city 
+  2     from Customers c1 FULL OUTER JOIN Customers c2 
+  3     ON (c2.city=c1.city AND c2.custname<>c1.custname); 
+
+CUSTNAME             CITY
+-------------------- --------------------
+KOCHAR               SEATTLE
+KING                 SEATTLE
+GREEN                BOSTON
+SMITH                NEY YORK
+
+
+
+6 rows selected.
+
+SQL>  select c1.custname, c1.city 
+  2      from Customers c1 RIGHT OUTER JOIN Customers c2 
+  3      ON (c2.city=c1.city AND c2.custname<>c1.custname); 
+
+CUSTNAME             CITY
+-------------------- --------------------
+KING                 SEATTLE
+KOCHAR               SEATTLE
+QUESTION 128
+View the Exhibits and examine the structures of the CUSTOMERS, SALES, and COUNTRIES tables.
+You need to generate a report that shows all country names, with corresponding customers (if any) and
+sales details (if any), for all customers.
+Which FROM clause gives the required result?
+A. FROM sales JOIN customers USING (cust_id)
+FULL OUTER JOIN countries USING (country_id);
+B. FROM sales JOIN customers USING (cust_id)
+RIGHT OUTER JOIN countries USING (country_id);
+C. FROM customers LEFT OUTER JOIN sales USING (cust_id)
+RIGHT OUTER JOIN countries USING (country_id);
+D. FROM customers LEFT OUTER JOIN sales USING (cust_id)
+LEFT OUTER JOIN countries USING (country_id);
+Correct Answer: C
+二、题目翻译
+查看 CUSTOMERS, SALES, and COUNTRIES表的结构。
+要生成一个报表，显示所有客户的所有country names，对应的customers（如果有）和sales details（如果有））
+下面哪个from子句，能得出所需的结果？
+
+三、题目解析
+根据题意要求，要求显示所有的用户的国家名称，而相匹配的用户名和销售信息有可能有，也有可能没有，即为null也要显示，
+所以客户表和销售表左连接，显示所有的用户，不管有没有销售信息匹配，然后再用右连接，关联countries表，这样显示所有的country name,不管有没有客户匹配上，或是销售信息匹配上，都显示出来。
+QUESTION 129
+View the Exhibits and examine the structures of the PROMOTIONS and SALES tables.
+Evaluate the following SQL statement:
+SQL>SELECT p.promo_id, p.promo_name, s.prod_id
+FROM sales s RIGHT OUTER JOIN promotions p
+ON (s.promo_id = p.promo_id);
+Which statement is true regarding the output of the above query?
+A. It gives the details of promos for which there have been sales.
+B. It gives the details of promos for which there have been no sales.
+C. It gives details of all promos irrespective of whether they have resulted in a sale or not.
+D. It gives details of product ID s that have been sold irrespective of whether they had a promo or not.
+Correct Answer: C
+二、题目翻译
+查看PROMOTIONS and SALES表的结构
+评估下面的SQL语句
+关于上面查询的输出哪句话是正确的？
+A.输出已经销售的promos。
+B.输出没有销售的promos。
+C.不管有没有销售，输出所有的promos。
+D.不管有没有promos，输出所有产品ID。
+三、题目解析
+因为使用的是RIGHT OUTER JOIN，所以会以右表promotions为准，输出所有的促销信息,不管有没有销售，没有的话，显示为空。
+QUESTION 130
+View the Exhibit and examine the data in the EMPLOYEES table:
+You want to display all the employee names and their corresponding manager names.
+Evaluate the following query:
+SQL> SELECT e.employee_name "EMP NAME", m.employee_name "MGR NAME"
+FROM employees e ______________ employees m
+ON e.manager_id = m.employee_id;
+Which JOIN option can be used in the blank in the above query to get the required output?
+A. only inner JOIN
+B. only FULL OUTER JOIN
+C. only LEFT OUTER JOIN
+D. only RIGHT OUTER JOIN
+Correct Answer: C
+二、题目翻译
+查看EMPLOYEES表的数据
+要显示所有员工姓名和对应的经理的姓名。
+评估下面的语句
+哪一种JOIN操作能被用于空白处，给出所需结果？
+
+三、题目解析
+上面的SQL语句中，e代表员工表，而m代表经理表，连接条件e.manager_id = m.employee_id,也就是以员工表的员工为基准，找出他们各自的经理
+QUESTION 131
+View the Exhibit and examine the structure of the PRODUCT, COMPONENT, and PDT_COMP
+tables.
+In PRODUCT table, PDTNO is the primary key.
+In COMPONENT table, COMPNO is the primary key.
+In PDT_COMP table, (PDTNO,COMPNO) is the primary key, PDTNO is the foreign key referencing
+PDTNO in PRODUCT table and COMPNO is the foreign key referencing the COMPNO in COMPONENT
+table.
+You want to generate a report listing the product names and their corresponding component names, if the
+component names and product names exist.
+Evaluate the following query:
+SQL>SELECT pdtno,pdtname, compno,compname
+FROM product _____________ pdt_comp
+USING (pdtno) ____________ component USING(compno)
+WHERE compname IS NOT NULL;
+Which combination of joins used in the blanks in the above query gives the correct output?
+A. JOIN; JOIN
+B. FULL OUTER JOIN; FULL OUTER JOIN
+C. RIGHT OUTER JOIN; LEFT OUTER JOIN
+D. LEFT OUTER JOIN; RIGHT OUTER JOIN
+Correct Answer: C
+二、题目翻译
+查看 PRODUCT、COMPONENT和PDT_COMP表的结构：
+PDTNO是表PRODUCT的主键
+COMPNO是表COMPONENT的主键
+PDTNO,COMPNO是表PDT_COMP的组合主键，PDTNO是关联PRODUCT表的外键，COMPNO是关联COMPONENT表的外键
+要生成一个报表，如果component names和product names存在，则显示product names和对应的component names。
+评估下面的语句：
+哪一个join组合填在下面的空格处能得出正确的结果?
+
+三、题目解析
+现在题目的意思是，要根据PDT_COMP表中的数据，来关联PRODUCT、 COMPONENT两张表，
+如果PDT_COMP表中存在的数据，能匹配上PRODUCT、 COMPONENT表中的数据，则显示，
+所以，第一次关联的时候，以右表PDT_COMP为基准，右连接，再以关联后的结果为基准，左连接，然后再去掉null值。
+QUESTION 132
+View the Exhibit and examine the structure of the SALES and PRODUCTS tables.
+In the SALES table, PROD_ID is the foreign key referencing PROD_ID in the PRODUCTS table,
+You want to list each product ID and the number of times it has been sold.
+Evaluate the following query:
+SQL>SELECT p.prod_id, COUNT(s.prod_id)
+FROM products p _____________ sales s
+ON p.prod_id = s.prod_id
+GROUP BY p.prod_id;
+Which two JOIN options can be used in the blank in the above query to get the required output? (Choose
+two.)
+A. JOIN
+B. FULL OUTER JOIN
+C. LEFT OUTER JOIN
+D. RIGHT OUTER JOIN
+Correct Answer: BC
+二、题目翻译
+查看SALES和PRODUCTS表的结构：
+SALES表中，PROD_ID是关联PRODUCTS表的外键。
+列出每一个产品ID和产品已销售的次数。
+评估下面的查询：
+哪两个join填在空格处能得出所需的结果？
+
+三、题目解析
+列出每一个产品ID，应该使用LEFT JOIN，C选项正确，
+由于s表的prod_id是products表的外键，不会出现s表中有，而p表中匹配不上的现象，所以在这里，FULL JOIN的效果和LEFT JOIN一样的。
+
+QUESTION 133
+Which two statements are true regarding subqueries? (Choose two.)
+A. A subquery can retrieve zero or more rows.
+B. Only two subqueries can be placed at one level.
+C. A subquery can be used only in SQL query statements.
+D. A subquery can appear on either side of a comparison operator.
+E. There is no limit on the number of subquery levels in the WHERE clause of a SELECT statement.
+Correct Answer: AD
+二、题目翻译
+关于子查询哪两句话是正确的？
+A.子查询能检索出0行或多行。
+B.只能有两个子查询被放在同一层。
+C.子查询只能在SQL查询语句中使用。
+D.子查询可以出现在比较运算符的任何一边。
+E.在SELECT语句中的WHERE子句里不限制子查询的数量层级。
+
+三、题目解析
+A选项正确。
+B选项不正确，同一层可以放多个子查询。
+C选项不正确，INSERT、UPDATE、DELETE、SELECT、CREATE TABLE等这些语句中都可以使用子查询。
+D选项正确。
+E选项不正确，WHERE子句中的嵌套子查询最多能嵌套255层。
+
+联机文档中有详细说明：
+        http://docs.oracle.com/cd/E11882_01/server.112/e41084/queries007.htm#SQLRF52357
+
+摘录如下：
+        A subquery can contain another subquery. Oracle Database imposes no limit on the number of subquery levels in the FROM clause of the top-level query. You can nest up to 255 levels of subqueries in the WHERE clause.
+QUESTION 134
+Where can subqueries be used? (Choose all that apply.)
+A. field names in the SELECT statement
+B. the FROM clause in the SELECT statement
+C. the HAVING clause in the SELECT statement
+D. the GROUP BY clause in the SELECT statement
+E. the WHERE clause in only the SELECT statement
+F. the WHERE clause in SELECT as well as all DML statements
+Correct Answer: ABCF
+二、题目翻译
+子查询可以在哪里被使用?（选择所有正确的选项）
+A.SELECT语句中的字段名称。
+B.SELECT语句的FROM子句中。
+C.SELECT语句的HAVING子句中。
+D.SELECT语句的GROUP BY子句中。
+E.只能用于WHERE子句。
+F.SELECT与DML语句的WHERE子句中。
+
+三、题目解析
+A选项正确，标量子查询就是的。
+B、C、F选项都正确，子查询可用于FROM、HAVING、WHERE等子句中，并且SELECT也可以使用在UPDATE、DELETE、INSERT等DML语句中。
+对应的，D、E选项就不正确了。
+四、测试
+D选项测试如下：
+SQL> conn scott/oracle
+Connected.
+SQL> select deptno,sum(sal)
+  2      from emp
+  3      group by (select deptno from dept);
+    group by (select deptno from dept)
+              *
+ERROR at line 3:
+ORA-22818: subquery expressions not allowed here
+QUESTION 135
+Which three statements are true regarding subqueries? (Choose three.)
+A. Subqueries can contain GROUP BY and ORDER BY clauses.
+B. Main query and subquery can get data from different tables.
+C. Main query and subquery must get data from the same tables.
+D. Subqueries can contain ORDER BY but not the GROUP BY clause.
+E. Only one column or expression can be compared between the main query and subquery.
+F. Multiple columns or expressions can be compared between the main query and subquery.
+Correct Answer: ABF
+二、题目翻译
+关于子查询哪三个语句是正确的？(选择3项)
+A.子查询可以包含GROUP BY和ORDER BY子句。
+B.主查询和子查询能从不同的表里获取数据。
+C.主查询和子查询必须从同一个表获取数据。
+D.子查询能包含ORDER BY 子句，但是不能包含GROUP BY子句。
+E.主查询与子查询之间只能比较一个列或一个表达式。
+F.主查询与子查询之间可以比较多个列或多个表达式。
+QUESTION 136
+View the Exhibit and examine the structure of the PRODUCTS table.
+Which two tasks would require subqueries? (Choose two.)
+A. Display the minimum list price for each product status.
+B. Display all suppliers whose list price is less than 1000.
+C. Display the number of products whose list price is more than the average list price.
+D. Display the total number of products supplied by supplier 102 and have product status as 'obsolete'.
+E. Display all products whose minimum list price is more than the average list price of products and have
+the status 'orderable'.
+Correct Answer: CE
+二、题目翻译
+查看PRODUCTS表的结构：
+哪两个任务需要使用子查询？（选择两个）
+A.显示每个product status的minimum list price。
+B.显示所有价格低于1000的供应商。
+C.显示产品价格大于平均价格的产品数量。
+D.显示102供应商供应的并且产品状态为'obsolete'的全部产品数量。
+E.显示产品的最低价格大于平均价格并且产品状态是'orderable'的所有产品。
+
+三、题目解析
+A选项，不需要子查询，用GROUP BY  product status，然后min就可以了。
+B选项，用where筛选出价格<1000的就可以了。
+C选项，需要用子查询先查出产品的平均价格，然后才能找出比平均价格高的产品和数量。
+D选项，不需要子查询，用where条件就可以了。
+E选项，需要用子查询先求出产品的平均价格，然后再用where筛选出所需的产品。
+QUESTION 137
+View the Exhibits and examine PRODUCTS and SALES tables.
+You issue the following query to display product name and the number of times the product has been
+sold:
+SQL>SELECT p.prod_name, i.item_cnt
+FROM (SELECT prod_id, COUNT(*) item_cnt
+FROM sales
+GROUP BY prod_id) i RIGHT OUTER JOIN products p
+ON i.prod_id = p.prod_id;
+What happens when the above statement is executed?
+A. The statement executes successfully and produces the required output.
+B. The statement produces an error because ITEM_CNT cannot be displayed in the outer query.
+C. The statement produces an error because a subquery in the FROM clause and outer-joins cannot be
+used together.
+D. The statement produces an error because the GROUP BY clause cannot be used in a subquery in the
+FROM clause
+Correct Answer: A
+二、题目翻译
+查看PRODUCTS和SALES两个表:
+执行下面的查询，显示产品名称与产品销售的次数
+执行上面的语句的结果是什么?
+A.语句执行成功并给出正确结果。
+B.报错，因为ITEM_CNT不能在外层查询显示。
+C.报错，因为FROM子句中的子查询不能与outer-joins一起使用。
+D.报错，因为FROM子句中的子查询不能使用GROUP BY子句。
+
+三、题目解析
+先通过子查询，求出prod_id和销售的次数，然后再和products表右连接，求出产品的名称和销售的次数。
+SQL> conn sh/oracle
+Connected.
+SQL> SELECT p.prod_name, i.item_cnt
+  2  FROM (SELECT prod_id, COUNT(*) item_cnt
+  3  FROM sales
+  4  GROUP BY prod_id) i RIGHT OUTER JOIN products p
+  5  ON i.prod_id = p.prod_id;
+
+PROD_NAME                                            ITEM_CNT
+-------------------------------------------------- ----------
+Envoy External Keyboard                                  3441
+SIMM- 8MB PCMCIAII card                                 19557
+Mouse Pad                                               29282
+External 6X CD-ROM                                      13043
+O/S Documentation Set - French                          12116
+O/S Documentation Set - Spanish                          8340
+DVD-R Discs, 4.7GB, Pack of 5                           13919
+Model NM500X High Yield Toner Cartridge                  7557
+256MB Memory Card                                        5541
+5MP Telephoto Digital Camera                             6002
+Unix/Windows 1-user pack                                16796
+QUESTION 138
+Which statement is true regarding subqueries?
+A. The LIKE operator cannot be used with single- row subqueries.
+B. The NOT IN operator is equivalent to IS NULL with single- row subqueries.
+C. =ANY and =ALL operators have the same functionality in multiple- row subqueries.
+D. The NOT operator can be used with IN, ANY, and ALL operators in multiple- row subqueries.
+Correct Answer: D
+二、题目翻译
+关于子查询哪句话是正确的？
+A.LIKE操作符不能用在单行子查询中。
+B.NOT IN操作符相当于单选子查询的IS NULL。
+C.多行子查询中的=ANY and =ALL操作符具有相同的功能。
+D.NOT操作可以用在多行子查询中的IN,ANY和ALL操作符上。
+
+三、测试
+D选项，进行如下测试：
+SQL> conn scott/oracle
+Connected.
+SQL> select ename,sal
+  2      from emp
+  3     where  sal not IN (select sal from emp where ename='SCOTT' or ename='FORD');
+
+ENAME             SAL
+---------- ----------
+SMITH             800
+BLAKE            2850
+CLARK            2450
+SQL> select ename,sal
+  2      from emp
+  3     where not sal=ANY(select sal from emp where ename='SCOTT' or ename='FORD');
+
+ENAME             SAL
+---------- ----------
+SMITH             800
+BLAKE            2850
+SQL> select ename,sal
+  2      from emp
+  3     where not sal=ALL(select sal from emp where ename='SCOTT' or ename='FORD');
+
+ENAME             SAL
+---------- ----------
+SMITH             800
+ALLEN            1600
+WARD             1250
+QUESTION 139
+Which three statements are true about multiple-row subqueries? (Choose three.)
+A. They can contain a subquery within a subquery.
+B. They can return multiple columns as well as rows.
+C. They cannot contain a subquery within a subquery.
+D. They can return only one column but multiple rows.
+E. They can contain group functions and GROUP BY and HAVING clauses.
+F. They can contain group functions and the GROUP BY clause, but not the HAVING clause.
+Correct Answer: ABE
+二、题目翻译
+关于多行子查询哪三句话是正确的？(选择三项)
+A.子查询中能包含子查询。
+B.能返回多列和多行。
+C.子查询中不能包含子查询。
+D.只能返回一列多行。
+E.可以包含组函数和GROUP BY,HAVING子句。
+QUESTION 140
+Examine the structure of the PRODUCTS table:
+name Null Type
+PROD_ID NOT NULL NUMBER(4)
+PROD_NAME VARCHAR2(20)
+PROD_STATUS VARCHAR2(6)
+QTY_IN_HAND NUMBER(8,2)
+UNIT_PRICE NUMBER(10,2)
+You want to display the names of the products that have the highest total value for UNIT_PRICE *
+QTY_IN_HAND.
+Which SQL statement gives the required output?
+A. SELECT prod_name
+FROM products
+WHERE (unit_price * qty_in_hand) = (SELECT MAX(unit_price * qty_in_hand)
+FROM products);
+B. SELECT prod_name
+FROM products
+WHERE (unit_price * qty_in_hand) = (SELECT MAX(unit_price * qty_in_hand)
+FROM products
+GROUP BY prod_name);
+C. SELECT prod_name
+FROM products
+GROUP BY prod_name
+HAVING MAX(unit_price * qty_in_hand) = (SELECT MAX(unit_price * qty_in_hand)
+FROM products
+GROUP BY prod_name);
+D. SELECT prod_name
+FROM products
+WHERE (unit_price * qty_in_hand) = (SELECT MAX(SUM(unit_price * qty_in_hand))
+FROM products)
+GROUP BY prod_name;
+Correct Answer: A
+二、题目翻译
+看下面PRODUCTS表的结构:
+要显示UNIT_PRICE*QTY_IN_HAND的最高的总价格的产品名称。
+下面哪条语句给出所需结果？
+
+三、题目解析
+B和C选项不正确，子查询使用的GROUP BY子句按产品名称分组后可能会返回多行值，如果返回多行，就会出现语法错误。
+D选项不正确，子查询中，sum汇总之后就只有一条记录了，再求max没意义，所以也会报错。
+QUESTION 141
+View the Exhibit and examine the structure of CUSTOMERS and GRADES tables.
+You need to display names and grades of customers who have the highest credit limit.
+Which two SQL statements would accomplish the task? (Choose two.)
+A. A. SELECT custname, grade
+FROM customers, grades
+WHERE (SELECT MAX(cust_credit_limit)
+FROM customers) BETWEEN startval and endval;
+B. SELECT custname, grade
+FROM customers, grades
+WHERE (SELECT MAX(cust_credit_limit)
+FROM customers) BETWEEN startval and endval
+AND cust_credit_limit BETWEEN startval AND endval;
+C. SELECT custname, grade
+FROM customers, grades
+WHERE cust_credit_limit = (SELECT MAX(cust_credit_limit)
+FROM customers)
+AND cust_credit_limit BETWEEN startval AND endval;
+D. SELECT custname, grade
+FROM customers , grades
+WHERE cust_credit_limit IN (SELECT MAX(cust_credit_limit)
+FROM customers)
+AND MAX(cust_credit_limit) BETWEEN startval AND endval;
+Correct Answer: BC
+二、题目翻译
+看下面CUSTOMERS and GRADES表的结构
+现在要显示有最高credit limit的用户的名称和等级
+哪两个SQL语句能得出想要的结果?（选择两项）
+
+三、题目解析
+要判断等级，就要判断是否在表中的最高值和最低值之间，就要使用的非等值连接，这里是BETWEEN...AND
+A选项不正确，不符合题目要求。
+D选项不正确，有语法错误，WHERE子句里不能使用聚合函数。
+QUESTION 142
+View the Exhibit and examine the structure of the PRODUCTS table.
+Evaluate the following query:
+SQL> SELECT prod_name
+FROM products
+WHERE prod_id IN (SELECT prod_id FROM products
+WHERE prod_list_price =
+(SELECT MAX(prod_list_price)FROM products
+WHERE prod_list_price <
+(SELECT MAX(prod_list_price)FROM products)));
+What would be the outcome of executing the above SQL statement?
+A. It produces an error.
+B. It shows the names of all products in the table.
+C. It shows the names of products whose list price is the second highest in the table.
+D. It shows the names of all products whose list price is less than the maximum list price.
+Correct Answer: C
+二、题目翻译
+看下面PRODUCTS表的结构:
+评估下面的语句
+上面的SQL语句执行后会出现什么结果?
+A.报错。
+B.显示所有产品的名称。
+C.显示表中价格第二高的产品名称。
+D.显示所有小于最高价格的产品名称。
+
+三、题目解析
+先求出最里层的子查询SELECT MAX(prod_list_price) FROM products，得出的是最高的产品价格；
+紧接着外面的子查询，
+SELECT MAX(prod_list_price)
+   FROM products
+ WHERE prod_list_price < (SELECT MAX(prod_list_price) FROM products)
+求出的是小于最大价格的最大价格，也就是第二高的价格；
+然后再求出这个产品的ID，进一步再求出产品的名称。
+
+QUESTION 143
+View the Exhibit and examine the structure of the PROMOTIONS table.
+You have to generate a report that displays the promo name and start date for all promos that started after
+the last promo in the 'INTERNET' category.
+Which query would give you the required output?
+A. SELECT promo_name, promo_begin_date FROM promotions
+WHERE promo_begin_date > ALL (SELECT MAX(promo_begin_date)
+FROM promotions )AND
+promo_category = 'INTERNET';
+B. SELECT promo_name, promo_begin_date FROM promotions
+WHERE promo_begin_date IN (SELECT promo_begin_date
+FROM promotions
+WHERE promo_category='INTERNET');
+C. SELECT promo_name, promo_begin_date FROM promotions
+WHERE promo_begin_date > ALL (SELECT promo_begin_date
+FROM promotions
+WHERE promo_category = 'INTERNET');
+D. SELECT promo_name, promo_begin_date FROM promotions
+WHERE promo_begin_date > ANY (SELECT promo_begin_date
+FROM promotions
+WHERE promo_category = 'INTERNET');
+Correct Answer: C
+二、题目翻译
+查看PROMOTIONS表的结构:
+要生成一个报表，显示在最后一次促销INTERNET商品之后开始的所有促销活动的promo name和start date.
+下面的哪个查询能得出想要的结果?
+
+三、题目解析
+A选项不正确，没结果，促销开始日期大于最大促销日期的（所有活动中最大的），并且种类为INTERNET的商品，很明显，不存在这样的记录。
+B选项不正确，求出来是种类为INTERNET的商品的信息，与题目要求不符。
+C选项正确，先求出种类为INTERNET的开始日期，然后>ALL,表示大于最大的开始日期的活动信息。
+D选面不正确，>ANY，表示大于最小值，不符合题目要求。
+QUESTION 144
+View the Exhibit and examine the structure of the PRODUCTS table.
+You want to display the category with the maximum number of items.
+You issue the following query:
+SQL>SELECT COUNT(*),prod_category_id
+FROM products
+GROUP BY prod_category_id
+HAVING COUNT(*) = (SELECT MAX(COUNT(*)) FROM products);
+What is the outcome?
+A. It executes successfully and gives the correct output.
+B. It executes successfully but does not give the correct output.
+C. It generates an error because the subquery does not have a GROUP BY clause.
+D. It generates an error because = is not valid and should be replaced by the IN operator.
+Correct Answer: C
+二、题目翻译
+看下面PRODUCTS表的结构
+要显示产品数据最多的产品的类别.
+执行下面的语句
+执行结果是什么？
+A.执行成功,并且能得出正确结果。
+B.执行成功,但不能得出正确结果。
+C.报错，因为子查询没有GROUP BY子句。
+D.报错，因为=是无效的，应该使用IN操作符替换。
+
+三、题目解析
+子查询中，因为没有group by 子句，count后的结果就只有一条记录了，再用max，就没意义了，所以报错。
+
+QUESTION 145
+View the Exhibit and examine the structure of the CUSTOMERS table.
+You issue the following SQL statement on the CUSTOMERS table to display the customers who are in the
+same country as customers with the last name 'KING' and whose credit limit is less than the maximum
+credit limit in countries that have customers with the last name 'KING':
+SQL> SELECT cust_id,cust_last_name
+FROM customers
+WHERE country_id IN(SELECT country_id
+FROM customers
+WHERE cust_last_name ='King')
+AND cust_credit_limit < (SELECT MAX(cust_credit_limit)
+FROM customers
+WHERE country_id IN(SELECT country_id
+FROM customers
+WHERE cust_last_name='King'));
+Which statement is true regarding the outcome of the above query?
+A. It executes and shows the required result.
+B. It produces an error and the < operator should be replaced by < ALL to get the required output.
+C. It produces an error and the < operator should be replaced by < ANY to get the required output.
+D. It produces an error and the IN operator should be replaced by = in the WHERE clause of the main
+query to get the required output.
+Correct Answer: A
+二、题目翻译
+看下面的CUSTOMERS表的结构:
+执行下面的SQL语句，显示用户信息：与last name为KING的客户有相同的country，并且用户的credit limit小于KING所在countries的最大的credit limit.
+关于查询哪句话正确:
+A.执行并显示所需结果。
+B.报错，因为<操作符应该被<ALL替换才能得到所需结果。
+C.报错，因为因为<操作符应该被<ANY替换才能得到所需结果。
+D.报错，因为主查询中的WHERE子句中的IN操作符应该被=替换才能得到所需结果。
+
+三、题目解析
+先用子查询
+SELECT country_id
+   FROM customers
+WHERE cust_last_name = 'King'
+求出king所在的国家ID.
+然后，再求出这个国家最大的credit_limit，最后求出和king国家相同，并且credit_limit小于king所在的国家的最大credit_limit的客户的相关信息。
+
+QUESTION 146
+Evaluate the following SQL statement:
+SQL> SELECT cust_id, cust_last_name
+FROM customers
+WHERE cust_credit_limit IN
+(select cust_credit_limit
+FROM customers
+WHERE cust_city ='Singapore');
+Which statement is true regarding the above query if one of the values generated by the subquery is
+NULL?
+A. It produces an error.
+B. It executes but returns no rows.
+C. It generates output for NULL as well as the other values produced by the subquery.
+D. It ignores the NULL value and generates output for the other values produced by the subquery.
+Correct Answer: C
+二、题目翻译
+评估下面的SQL语句
+关于上面的查询如果子查询返回值中其中有一个值为NULL，下面哪句话是正确的？
+A.报错。
+B.执行但不返回行。
+C.对于NULL和子查询的其它值会有输出。
+D.忽略NULL值，并且对于子查询的其它值会有输出。
+
+三、题目解析
+in后面的列表中有null值的，
+比如: id in( null,200),
+那么，变换一下，就变成id = null or id = 200,因为id=null是不成立的，所以相当于 false or id=200
+所以说，没有输出null值，只是因为表达式不成立，并不是忽略了null值。
+
+QUESTION 147
+View the Exhibit and examine the structure of the PROMOTIONS table.
+Evaluate the following SQL statement:
+SQL>SELECT promo_name,CASE
+WHEN promo_cost >=(SELECT AVG(promo_cost)
+FROM promotions
+WHERE promo_category='TV')
+then 'HIGH'
+else 'LOW'
+END COST_REMARK
+FROM promotions;
+Which statement is true regarding the outcome of the above query?
+A. It shows COST_REMARK for all the promos in the table.
+B. It produces an error because the subquery gives an error.
+C. It shows COST_REMARK for all the promos in the promo category 'TV'.
+D. It produces an error because subqueries cannot be used with the CASE expression
+Correct Answer: A
+二、题目翻译
+看下面PROMOTIONS表的结构.
+评估下面的语句:
+关于上面查询的结果哪句话是正确的？
+A.显示所有promos 的COST_REMARK。
+B.报错，因为子查询会出错。
+C.显示promo category为TV的所有产品的COST_REMARK。
+D.报错，因为子查询不能用于CASE表达式。
+
+三、题目解析
+子查询
+SELECT AVG(promo_cost) 
+    FROM promotions 
+WHERE promo_category = 'TV'
+显示了TV的平均促销成本
+CASE..WHEN的结果是，促销成本大于TV的平均促销成本的，显示为HIGH，否则显示为LOW。
+
+QUESTION 148
+View the Exhibit and examine the structure of the PRODUCTS tables.
+You want to generate a report that displays the average list price of product categories where the average
+list price is less than half the maximum in each category.
+Which query would give the correct output?
+A. SELECT prod_category,avg(prod_list_price)
+FROM products
+GROUP BY prod_category
+HAVING avg(prod_list_price) < ALL
+(SELECT max(prod_list_price)/2
+FROM products
+GROUP BY prod_category);
+B. SELECT prod_category,avg(prod_list_price)
+FROM products
+GROUP BY prod_category
+HAVING avg(prod_list_price) > ANY
+(SELECT max(prod_list_price)/2
+FROM products
+GROUP BY prod_category);
+C. SELECT prod_category,avg(prod_list_price)
+FROM products
+HAVING avg(prod_list_price) < ALL
+(SELECT max(prod_list_price)/2
+FROM products
+GROUP BY prod_category);
+D. SELECT prod_category,avg(prod_list_price)
+FROM products
+GROUP BY prod_category
+HAVING avg(prod_list_price) > ANY
+(SELECT max(prod_list_price)/2
+FROM products);
+Correct Answer: A
+二、题目翻译
+查询PRODUCTS表的结构，
+要生成一个报表，显示 平均价格小于每一个category最大值的一半 的product categories的平均价格。
+哪一个查询给出正确结果？
+
+三、题目解析
+A选项正确，<ALL，小于列表中的最小的.
+B选项不正确，> ANY表示大于列表中的最小值，不符合题目的要求。
+C选项不正确，主查询没有使用GROUP BY子句，却使用了HAVING子句，会报错。
+D选项不正确，> ANY表示大于列表中的最小值，并用any值列表子查询中，没分组，只有一个值，不符合题目的要求。
+QUESTION 149
+View the Exhibits and examine the structures of the COSTS and PROMOTIONS tables.
+Evaluate the following SQL statement:
+SQL>SELECT prod_id
+      FROM costs
+     WHERE promo_id IN
+           (SELECT promo_id
+              FROM promotions
+             WHERE promo_cost < ALL
+             (SELECT MAX(promo_cost)
+                      FROM promotions
+                     GROUP BY (promo_end_date - promo_begin_date)));
+What would be the outcome of the above SQL statement?
+A. It displays prod IDs in the promo with the lowest cost.
+B. It displays prod IDs in the promos with the lowest cost in the same time interval.
+C. It displays prod IDs in the promos with the highest cost in the same time interval.
+D. It displays prod IDs in the promos with cost less than the highest cost in the same time interval.
+Correct Answer: D
+二、题目翻译
+查看COSTS and PROMOTIONS表的结构.
+评估下面的SQL语句
+上面SQL的执行结果什么？
+A.显示promo最低的prod IDs。
+B.显示相同时间段内promo最低的prod IDs。
+C.显示相同时间段内promo最高的prod IDs。
+D.显示相同时间段内promo的cost小于最高的cost的prod IDs。
+
+三、题目解析
+子查询
+SELECT MAX(promo_cost)
+  FROM promotions
+ GROUP BY (promo_end_date - promo_begin_date)
+求出来的，是每个促销活动期间内的最大的成本。
+然后 promo_cost < ALL(.. )，表示小于 刚子查询查出来的所有这些最大成本结果集中，最小的那个。
+然后，再根据活动ID，查出产品ID。
+
+D选项中，描述也不是太准确，但是在几个选项的描述中，D是最接近的。
+
+QUESTION 150
+View the Exhibit and examine the data in the PROMOTIONS table.
+You need to display all promo categories that do not have 'discount' in their subcategory.
+Which two SQL statements give the required result? (Choose two.)
+A. SELECT promo_category
+FROM promotions
+MINUS
+SELECT promo_category
+FROM promotions
+WHERE promo_subcategory = 'discount';
+B. SELECT promo_category
+FROM promotions
+INTERSECT
+SELECT promo_category
+FROM promotions
+WHERE promo_subcategory = 'discount';
+C. SELECT promo_category
+FROM promotions
+MINUS
+SELECT promo_category
+FROM promotions
+WHERE promo_subcategory <> 'discount';
+D. SELECT promo_category
+FROM promotions
+INTERSECT
+SELECT promo_category
+FROM promotions
+WHERE promo_subcategory <> 'discount';
+Correct Answer: AD
+二、题目翻译
+查看 PROMOTIONS表的数据
+要显示所有子种类中没有'discount'的促销种类.
+下面哪两个SQL语句能给出正确的结果？（选择2个）
+
+三、题目解析
+MINUS 表示两个结果集相减
+INTERSECT 表示两个结果集的交集，即两个结果集中共有的部分。
+
+A选项正确，从所有种类中，减去子种类= 'discount'的，就表示没有这个子种类的。
+B选项不正确，所有种类和子种类= 'discount'的交集，就是子种类= 'discount'的产品，不符合题目要求。
+C选项不正确，从所有种类中，减去 子种类<> 'discount'的，就是子种类= 'discount'的产品，不符合题目要求。
+D选项正确，所有种类和子种类<> 'discount'的交集，就是子种类<>'discount'的产品。
+QUESTION 151
+View the Exhibit and examine the structure of the CUSTOMERS and CUST_HISTORY tables.
+The CUSTOMERS table contains the current location of all currently active customers. The
+CUST_HISTORY table stores historical details relating to any changes in the location of all current as well
+as previous customers who are no longer active with the company.
+You need to find those customers who have never changed their address.
+Which SET operator would you use to get the required output?
+A. MINUS
+B. UNION
+C. INTERSECT
+D. UNION ALL
+Correct Answer: A
+二、题目翻译
+查看CUSTOMERS and CUST_HISTORY的表结构：
+CUSTOMERS表包含所有当前活动客户的位置,CUST_HISTORY表存储相关的所有当前位置的改变的历史信息和公司中先前不再活动的客户。
+要找到那些从来没有改变过地址的客户.
+哪一个集合操作给出所需结果。
+
+三、题目解析
+一个表中是活动客户的地址信息，一个表中是客户以前地址的历史信息，两张表的差集，就是从来没有改变过地址的客户。
+QUESTION 152
+Which statement is true regarding the UNION operator?
+A. By default, the output is not sorted.
+B. NULL values are not ignored during duplicate checking.
+C. Names of all columns must be identical across all SELECT statements.
+D. The number of columns selected in all SELECT statements need not be the same.
+Correct Answer: B
+二、题目翻译
+关于UNION操作符哪句话正确？
+A.默认输出不排序。
+B.在重复值检查时不忽略NULL值。
+C.列名在所有SELECT语句中必须是相同的。
+D.在所有SELECT语句中选择的列的数量不需要相同。
+
+三、题目解析
+A选项不正确，因为默认输出排序。
+B选项正确，因为集合不忽略null值，并且在去重时会认为null和null是相等的，去重。
+C选项不正确，因为SELECT语句中的列名不必是相同的，但是数据类型是需要匹配的。
+D选项不正确，因为列的数量要相同。
+SQL> create table t1(id int);
+SQL> insert into t1 values(1);
+SQL> insert into t1 values(null);
+SQL> commit;
+SQL> create table t2(id int);
+SQL> insert into t2 values(2);
+SQL> insert into t2 values(null);
+SQL> commit;
+--两行null,已经去掉了一行，表示去重时，不忽略空值。
+SQL> select * from t1
+  2      union
+  3     select * from t2; 
+
+        ID
+----------
+         1
+         2
+-- 列的数量和类型必须一致
+SQL>  select id,null from t1
+  2      union
+  3      select id from t2;
+ select id,null from t1
+ *
+ERROR at line 1:
+ORA-01789: query block has incorrect number of result columns
+--名字可以不一致
+SQL> select id nid from t1
+  2      union
+  3      select id from t2;
+
+       NID
+----------
+         1
+         2
+QUESTION 153
+View the Exhibits and examine the structures of the PRODUCTS and SALES tables.
+Which two SQL statements would give the same output? (Choose two.)
+A. SELECT prod_id FROM products
+INTERSECT
+SELECT prod_id FROM sales;
+B. SELECT prod_id FROM products
+MINUS
+SELECT prod_id FROM sales;
+C. SELECT DISTINCT p.prod_id
+FROM products p JOIN sales s
+ON p.prod_id=s.prod_id;
+D. SELECT DISTINCT p.prod_id
+FROM products p JOIN sales s
+ON p.prod_id <> s.prod_id;
+Correct Answer: AC
+二、题目翻译
+查看PRODUCTS and SALES表的结构：
+哪两个语句给出相同的输出？（选择2个）
+
+三、题目解析
+AC选项，结果是所有销售过的产品的ID，prod_id.
+B和D答案让人容易混淆，B是显示没有销售过的产品ID，但是D答案不等于的连接会导致产品ID全显示出来。
+QUESTION 154
+View the Exhibit and evaluate structures of the SALES, PRODUCTS, and COSTS tables.
+Evaluate the following SQL statement:
+SQL>SELECT prod_id FROM products
+INTERSECT
+SELECT prod_id FROM sales
+MINUS
+SELECT prod_id FROM costs;
+Which statement is true regarding the above compound query?
+A. It produces an error.
+B. It shows products that were sold and have a cost recorded.
+C. It shows products that were sold but have no cost recorded.
+D. It shows products that have a cost recorded irrespective of sales.
+Correct Answer: C
+二、题目翻译
+查看SALES, PRODUCTS, and COSTS表的结构:
+评估下面的SQL语句:
+关于上面的组合查询哪句话是正确的:
+A.报错。
+B.显示已销售并且有cost记录的产品。
+C.显示已销售但是没有cost记录的产品。
+D.显示有cost recorded不管sales的产品。
+
+三、题目解析
+SELECT prod_id FROM products
+INTERSECT
+SELECT prod_id FROM sales
+首先，交集，求出的是已经销售的产品ID
+然后再和costs表和差集，表示已销售但是没有cost记录的产品。
+QUESTION 155
+Evaluate the following SQL statement:
+SQL> SELECT promo_id, promo_category
+FROM promotions
+WHERE promo_category = 'Internet' ORDER BY 2 DESC
+UNION
+SELECT promo_id, promo_category
+FROM promotions
+WHERE promo_category = 'TV'
+UNION
+SELECT promo_id, promo_category
+FROM promotions
+WHERE promo_category ='Radio';
+Which statement is true regarding the outcome of the above query?
+A. It executes successfully and displays rows in the descending order of PROMO_CATEGORY.
+B. It produces an error because positional notation cannot be used in the ORDER BY clause with SET
+operators.
+C. It executes successfully but ignores the ORDER BY clause because it is not located at the end of the
+compound statement.
+D. It produces an error because the ORDER BY clause should appear only at the end of a compound
+query-that is, with the last SELECT statement.
+Correct Answer: D
+二、题目翻译
+评估下面的SQL查询语句:
+关于上面查询的结果，下面说法正确的是哪一个？
+A.执行成功，并降序显示所有PROMO_CATEGORY行。
+B.报错，因为位置记号不能用在带有SET操作的ORDER BY子句中。
+C.执行成功，但是会忽略ORDER BY子句，因为它没有位于复合语句的最后。
+D.报错，因为ORDER BY 子句只能出现在复合查询的最后-最后一个SELECT语句中。
+
+三、题目解析
+集合操作中，ORDER BY只能放在最后，前面的结果集进行集合操作之后，可以看作一个整体，然后在最后再进行排序。
+SQL> SELECT promo_id, promo_category
+  2  FROM promotions
+  3  WHERE promo_category = 'Internet' 
+  4  UNION
+  5  SELECT promo_id, promo_category
+  6  FROM promotions
+  7  WHERE promo_category = 'TV'
+  8  UNION
+  9  SELECT promo_id, promo_category
+ 10  FROM promotions
+ 11  WHERE promo_category ='Radio' ORDER BY 2 DESC;
+
+  PROMO_ID PROMO_CATEGORY
+---------- ------------------------------
+        35 TV
+        42 TV
+        47 TV
+        49 TV
+        54 TV
+        61 TV
+        66 TV
+        81 TV
+        82 TV
+        93 TV
+        94 TV
+QUESTION 156
+Evaluate the following SQL statement:
+SQL> SELECT cust_id, cust_last_name "Last Name"
+FROM customers
+WHERE country_id = 10
+UNION
+SELECT cust_id CUST_NO, cust_last_name
+FROM customers
+WHERE country_id = 30;
+Which ORDER BY clauses are valid for the above query? (Choose all that apply.)
+A. ORDER BY 2,1
+B. ORDER BY CUST_NO
+C. ORDER BY 2,cust_id
+D. ORDER BY "CUST_NO"
+E. ORDER BY "Last Name"
+Correct Answer: ACE
+
+二、题目翻译
+评估下面的语句：
+哪一个ORDER BY子句是有效的(选择所有正确的选项）？
+
+三、题目解析
+ORDER BY后可以使用数字表示select语句后的第几个字段，也可以使用列名。
+B和D选项不正确，因为只能使用第一个查询的列进行排序，包括别名、列名或表达式。
+SQL> SELECT cust_id, cust_last_name "Last Name"
+  2  FROM customers
+  3  WHERE country_id = 10
+  4  UNION
+  5  SELECT cust_id CUST_NO, cust_last_name
+  6  FROM customers
+  7  WHERE country_id = 30 ORDER BY CUST_NO;
+WHERE country_id = 30 ORDER BY CUST_NO
+                               *
+ERROR at line 7:
+ORA-00904: "CUST_NO": invalid identifier 
+SQL> SELECT cust_id, cust_last_name "Last Name"
+  2  FROM customers
+  3  WHERE country_id = 10
+  4  UNION
+  5  SELECT cust_id CUST_NO, cust_last_name
+  6  FROM customers
+  7  WHERE country_id = 30 ORDER BY "CUST_NO";
+WHERE country_id = 30 ORDER BY "CUST_NO"
+                               *
+ERROR at line 7:
+ORA-00904: "CUST_NO": invalid identifier
+
+QUESTION 157
+View the Exhibit and examine the structure of the ORDERS and CUSTOMERS tables.
+Evaluate the following SQL command:
+SQL> SELECT o.order_id, c.cust_name, o.order_total, c.credit_limit
+FROM orders o JOIN customers c
+USING (customer_id)
+WHERE o.order_total > c.credit_limit
+FOR UPDATE
+ORDER BY o.order_id;
+Which two statements are true regarding the outcome of the above query? (Choose two.)
+A. It locks all the rows that satisfy the condition in the statement.
+B. It locks only the columns that satisfy the condition in both the tables.
+C. The locks are released only when a COMMIT or ROLLBACK is issued.
+D. The locks are released after a DML statement is executed on the locked rows.
+Correct Answer: AC
+
+二、题目翻译
+查看ORDERS和CUSTOMERS表的结构
+评估下面的SQL命令:
+关于上面查询的结果哪两句话是正确的？(选择2项)
+A.锁定语句中满足条件的所有行。
+B.只锁定两个表中满足条件的列。
+C.只有执行COMMIT或ROLLBACK后，锁才会释放。
+D.在锁定的行上执行DML语句后，锁被释放。
+
+三、题目解析
+A选项正确，select .. for update语句，就是锁定select出来的所有行，以防止其它会话变更。
+B选项不正确，oracle中有行锁和表锁，没有列锁，会将相关的行都锁住。
+
+C选项，答案中是正确，但是这个说法，个人认为不是太完整。
+            commit和rollback后，锁的确可以被释放，
+            但如果说只有在commit或rollback之后才能释放锁，就有些不恰当，因为只要事务结束，锁就会被释放，而事务结束，不光只有commit和rollback，比如，还有进行DDL操作的时候，或用户正常或不正常退出的时候，都会结束事务，事务结束，锁就会被释放。
+
+D选项不正确，在当前会话中，被锁定的行上可以做DML操作，但仍然不会释放锁，如果在其它会话中在被锁定的行上做DML操作，则会被阻塞。
+
+四、测试
+关于C选项，测试如下，选择其中一种情况，DDL的时候，会自动提交事务，并释放锁。
+SQL> select sid from v$mystat where rownum=1;
+
+       SID
+----------
+        25
+SQL> set linesize 200
+SQL> select * from scott.emp where ename='SCOTT' for update;
+
+     EMPNO ENAME      JOB              MGR HIREDATE                  SAL       COMM     DEPTNO
+---------- ---------- --------- ---------- ------------------ ---------- ---------- ----------
+      7788 SCOTT      ANALYST         7566 19-APR-87                3000                    20
+SQL> select sid,type,id1,id2, 
+  2         decode(lmode,0,'None', 
+  3             1,'Null',
+  4             2,'Row share',
+  5             3,'Row Exclusive',
+  6           4,'Share',
+  7             5,'Share Row Exclusive',
+  8             6,'Exclusive') lock_type,
+  9         request,ctime,block 
+ 10     from v$lock
+ 11     where sid=25;
+
+       SID TY        ID1        ID2 LOCK_TYPE              REQUEST      CTIME      BLOCK
+---------- -- ---------- ---------- ------------------- ---------- ---------- ----------
+        25 AE        100          0 Share                        0        118          0
+        25 TM      75315          0 Row Exclusive                0         95          0
+        25 TX     458779        893 Exclusive                    0         95          0
+
+SQL> create table test_lock(id int);
+
+Table created.
+
+SQL> select sid,type,id1,id2, 
+  2         decode(lmode,0,'None', 
+  3             1,'Null',
+  4             2,'Row share',
+  5             3,'Row Exclusive',
+  6           4,'Share',
+  7             5,'Share Row Exclusive',
+  8             6,'Exclusive') lock_type,
+  9         request,ctime,block 
+ 10     from v$lock
+ 11     where sid=25;
+
+       SID TY        ID1        ID2 LOCK_TYPE              REQUEST      CTIME      BLOCK
+---------- -- ---------- ---------- ------------------- ---------- ---------- ----------
+        25 AE        100          0 Share                        0        139          0
+
+QUESTION 158
+Which statements are true regarding the FOR UPDATE clause in a SELECT statement? (Choose all
+that apply.)
+A. It locks only the columns specified in the SELECT list.
+B. It locks the rows that satisfy the condition in the SELECT statement.
+C. It can be used only in SELECT statements that are based on a single table.
+D. It can be used in SELECT statements that are based on a single or multiple tables.
+E. After it is enforced by a SELECT statement, no other query can access the same rows until a
+COMMIT or ROLLBACK is issued.
+Correct Answer: BD
+二、题目翻译
+关于FOR UPDATE子句哪句话是正确的（选择所有正确的选项）
+A. 只锁定SELECT列表中指定的列。
+B. 锁定SELECT语句中满足条件的行。
+C. 只能用于基于单个表的SELECT语句中。
+D. 可以用于基于单个表或多个表的SELECT语句中。
+E. 使用SELECT语句执行之后，其它查询直到执行COMMIT或ROLLBACK后才能访问相同的行。
+
+三、题目解析
+A选项不正确，oracle中有行锁和表锁，没有列锁，所以，不会只锁定相关的列。
+B选项正确，for update语句，会锁定select出来的相关的行。
+C选项不正确，select ... for update可以用于基于一张表，也可以基于多张表。
+D选项正确。
+E选项，for update语句执行之后，其它查询不能变更这些相关的行，但是不影响查询(select)。
+
+QUESTION 159
+View the Exhibit and examine the structure of the CUSTOMERS table.
+NEW_CUSTOMERS is a new table with the columns CUST_ID, CUST_NAME and CUST_CITY that
+have the same data types and size as the corresponding columns in the CUSTOMERS table.
+Evaluate the following INSERT statement:
+INSERT INTO new_customers (cust_id, cust_name, cust_city)
+VALUES(SELECT cust_id,cust_first_name' 'cust_last_name,cust_city
+FROM customers
+WHERE cust_id > 23004);
+The INSERT statement fails when executed. What could be the reason?
+A. The VALUES clause cannot be used in an INSERT with a subquery.
+B. Column names in the NEW_CUSTOMERS and CUSTOMERS tables do not match.
+C. The WHERE clause cannot be used in a subquery embedded in an INSERT statement.
+D. The total number of columns in the NEW_CUSTOMERS table does not match the total number of
+columns in the CUSTOMERS table.
+Correct Answer: A
+二、题目翻译
+查看CUSTOMERS表的结构
+NEW_CUSTOMERS是一个新表，它的CUST_ID, CUST_NAME and CUST_CITY列的数据类型和大小与CUSTOMERS相同.
+评估下面的INSERT语句
+执行失败的原因是什么?
+A.VALUES子句不能用于带有子查询的INSERT语句。
+B.NEW_CUSTOMERS表中的列名与CUSTOMERS表不匹配。
+C.嵌入在一个INSERT语句中的子查询不能使用WHERE子句。
+D.NEW_CUSTOMERS表中列的全部数量与CUSTOMERS表中列的全部数量不匹配。
+
+三、题目解析
+values后面只能跟确定的值，如果需要使用子查询的结果集插入到表中，就不用带values关键字。
+
+QUESTION 160
+View the Exhibit and examine the structure of ORDERS and CUSTOMERS tables.
+There is only one customer with the cust_last_name column having value Roberts. Which INSERT
+statement should be used to add a row into the ORDERS table for the customer whose
+CUST_LAST_NAME is Roberts and CREDIT_LIMIT is 600?
+A. INSERT INTO orders
+VALUES (1,'10-mar-2007', 'direct',
+(SELECT customer_id
+FROM customers
+WHERE cust_last_name='Roberts' AND
+credit_limit=600), 1000);
+B. INSERT INTO orders (order_id,order_date,order_mode,
+(SELECT customer_id
+FROM customers
+WHERE cust_last_name='Roberts' AND
+credit_limit=600),order_total)
+VALUES(1,'10-mar-2007', 'direct', &&customer_id, 1000);
+C. INSERT INTO(SELECT o.order_id, o.order_date,o.order_mode,c.customer_id, o.order_total
+FROM orders o, customers c
+WHERE o.customer_id = c.customer_id
+AND c.cust_last_name='Roberts' ANDc.credit_limit=600 )
+VALUES (1,'10-mar-2007', 'direct',(SELECT customer_id
+FROM customers
+WHERE cust_last_name='Roberts' AND
+credit_limit=600), 1000);
+D. INSERT INTO orders (order_id,order_date,order_mode,
+(SELECT customer_id
+FROM customers
+WHERE cust_last_name='Roberts' AND
+credit_limit=600),order_total)
+VALUES(1,'10-mar-2007', 'direct', &customer_id, 1000);
+Correct Answer: A
+
+二、题目翻译
+查看ORDERS and CUSTOMERS 表的结构：
+只有一个customer的cust_last_name列的值是Roberts，
+哪一个INSERT语句能被用于给ORDERS添加一行，customer的cust_last_name为Roberts，并且CREDIT_LIMIT为600？
+
+三、题目解析
+A选项正确，因为题目说明了，只有一个customer的cust_last_name列的值是Roberts，所以，子查询
+   SELECT customer_id
+      FROM customers
+     WHERE cust_last_name = 'Roberts'
+       AND credit_limit = 600
+只有一个返回值，这里就能插入成功。
+BCD选项语法不正确，没有这样的用法。
+QUESTION 161
+View the exhibit and examine the description for the SALES and CHANNELS tables.
+You issued the following SQL statement to insert a row in the SALES table:
+INSERT INTO sales VALUES
+(23, 2300, SYSDATE, (SELECT channel_id
+FROM channels
+WHERE channel_desc='Direct Sales'), 12, 1, 500);
+Which statement is true regarding the execution of the above statement?
+A. The statement will execute and the new row will be inserted in the SALES table.
+B. The statement will fail because subquery cannot be used in the VALUES clause.
+C. The statement will fail because the VALUES clause is not required with subquery.
+D. The statement will fail because subquery in the VALUES clause is not enclosed with in single quotation
+marks .
+Correct Answer: A
+二、题目翻译
+查看SALES and CHANNELS表的结构
+执行下面的SQL语句给SALES表插入一行:
+关于执行上面的语句哪句话是正确的？
+A.语句执行成功，并且SALES表会插入一个新行。
+B.语句失败，因为子查询不能用于VALUES子句中。
+C.语句失败，因为VALUES子句不需要使用子查询。
+D.语句失败，因为VALUES子句中的子查询没有使用单引号引起来。
+
+三、题目解析
+A选项，答案是正确的，如果子查询中只返回一行，则这个答案正确，如果子查询中返回多行，就会报错，但相比其它答案，只有这个还算比较正确。
+B选项不正确，values子句中，可以使用子查询，详见下面。
+C选项不正确，需不需要使用子查询，是业务需求决定的。
+D选项不正确，子查询使用括号，而不是单引号。
+四、测试
+SQL> conn scott/oracle
+Connected.
+SQL> create table emp3 as select * from emp where 1=0;
+
+Table created.
+-- values中的子查询如果返回一行，则能插入成功
+SQL> insert into emp3(empno,ename,deptno) values(1234,'aaa',(select deptno from emp where ename='SCOTT'));
+
+1 row created.
+-- values中的子查询如果返回多行，则能插入失败
+SQL>  insert into emp3(empno,ename,deptno) values(1234,'aaa',(select deptno from emp where deptno=10));
+ insert into emp3(empno,ename,deptno) values(1234,'aaa',(select deptno from emp where deptno=10))
+                                                         *
+ERROR at line 1:
+ORA-01427: single-row subquery returns more than one row
+QUESTION 162
+View the Exhibit and examine the structure of the PRODUCTS, SALES, and SALE_SUMMARY
+tables.
+SALE_VW is a view created using the following command :
+SQL>CREATE VIEW sale_vw AS
+SELECT prod_id, SUM(quantity_sold) QTY_SOLD
+FROM sales GROUP BY prod_id;
+You issue the following command to add a row to the SALE_SUMMARY table :
+SQL>INSERT INTO sale_summary
+SELECT prod_id, prod_name, qty_sold FROM sale_vw JOIN products
+USING (prod_id) WHERE prod_id = 16;
+What is the outcome?
+A. It executes successfully.
+B. It gives an error because a complex view cannot be used to add data into the SALE_SUMMARY table.
+C. It gives an error because the column names in the subquery and the SALE_SUMMARY table do not
+match.
+D. It gives an error because the number of columns to be inserted does not match with the number of
+columns in the SALE_SUMMARY table.
+Correct Answer: D
+二、题目翻译
+查看PRODUCTS, SALES, and SALE_SUMMARY表的结构：
+SALE_VW是使用下面命令建立的一个视图：
+执行下面的命令给SALE_SUMMARY添加一新行：
+执行上面命令的结果是什么？
+A.执行成功。
+B.报错，因为复杂视图不能用于向SALE_SUMMARY表里添加数据。
+C.报错，因为子查询中的列名与SALE_SUMMARY表中的列名不匹配。
+D.报错，因为被插入的列的数量与SALE_SUMMARY表中列的数量不匹配。
+
+三、题目解析
+通过实验使用视图也可以与表进行连接操作，此题是由于列的数量不匹配造成的，
+sale_summary后面没有写列名，就表示要插入所有的列(总共4列)，但这里给的值只有3个值，所以会报值不够的错误
+ORA-00947: not enough values
+四、测试
+SQL> conn sh/oracle
+Connected.
+SQL> CREATE VIEW sale_vw AS
+  2  SELECT prod_id, SUM(quantity_sold) QTY_SOLD
+  3  FROM sales GROUP BY prod_id;
+
+View created.
+
+SQL> create table sale_summary(prod_id number(4) not null,prod_name varchar2(30),total_oty_sold number(10,2),prod_category varchar2(5));
+
+Table created.
+
+SQL> INSERT INTO sale_summary
+  2      SELECT prod_id, prod_name, qty_sold
+  3        FROM sale_vw
+  4        JOIN products
+  5       USING (prod_id)
+  6       WHERE prod_id = 16;
+INSERT INTO sale_summary
+            *
+ERROR at line 1:
+ORA-00947: not enough values
+
+QUESTION 163
+View the Exhibit and examine the description for the CUSTOMERS table.
+You want to update the CUST_CREDIT_LIMIT column to NULL for all the customers, where
+CUST_INCOME_LEVEL has NULL in the CUSTOMERS table. Which SQL statement will accomplish the
+task?
+A. UPDATE customers
+SET cust_credit_limit = NULL
+WHERE CUST_INCOME_LEVEL = NULL;
+B. UPDATE customers
+SET cust_credit_limit = NULL
+WHERE cust_income_level IS NULL;
+C. UPDATE customers
+SET cust_credit_limit = TO_NUMBER(NULL)
+WHERE cust_income_level = TO_NUMBER(NULL);
+D. UPDATE customers
+SET cust_credit_limit = TO_NUMBER(' ',9999)
+WHERE cust_income_level IS NULL;
+Correct Answer: B
+二、题目翻译
+查看CUSTOMERS表的结构:
+要更新CUSTOMERS表中所有customers的CUST_CREDIT_LIMIT值，当CUST_INCOME_LEVEL为NULL时更新CUST_CREDIT_LIMIT为空。
+哪个SQL语句能完成此上面的要求？
+
+三、题目解析
+在oracle中 ，判断列值是否为null,要用 列名 is null来判断，而设置值的时候，用等号(=)。
+QUESTION 164
+View the Exhibit and examine the structure of CUSTOMERS and SALES tables.
+Evaluate the following SQL statement:
+UPDATE (SELECT prod_id, cust_id, quantity_sold, time_id
+FROM sales)
+SET time_id = '22-MAR-2007'
+WHERE cust_id = (SELECT cust_id
+FROM customers
+WHERE cust_last_name = 'Roberts' AND
+credit_limit = 600);
+Which statement is true regarding the execution of the above UPDATE statement?
+A. It would not execute because two tables cannot be used in a single UPDATE statement.
+B. It would not execute because the SELECT statement cannot be used in place of the table name.
+C. It would execute and restrict modifications to only the columns specified in the SELECT statement.
+D. It would not execute because a subquery cannot be used in the WHERE clause of an UPDATE
+statement.
+Correct Answer: C
+二、题目翻译
+看下面的CUSTOMERS and SALES表的结构，
+评估下面的SQL语句：
+关于执行上面的UPDATE语句哪句话是正确的？
+A.执行失败，因为两个表不能用于一个UPDATE语句。
+B.执行失败，因为SELECT语句不能用于代替表名。
+C.执行成功，并限制只能修改SELECT语句指定的列。
+D.失败失败，因为子查询不能用于UPDATE的WHERE子句中。
+
+三、题目解析
+UPDATE后面的SELECT语句相当于一个简单视图，也就是对这个视图进行修改，所以，只能修改select后面的的列。
+
+SQL> UPDATE (SELECT prod_id, cust_id, quantity_sold, time_id FROM sales)
+  2     SET time_id = '22-MAR-2007'
+  3   WHERE cust_id = (SELECT cust_id
+  4                      FROM customers
+  5                     WHERE cust_last_name = 'Roberts'
+  6                       AND cust_credit_limit = 600);
+
+0 rows updated.

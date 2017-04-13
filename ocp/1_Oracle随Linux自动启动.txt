@@ -1,0 +1,12 @@
+1. 修改/etc/oratab (root用户执行）
+N改为Y
+orcl:/u01/app/oracle/product/11.2.0/db_1:Y
+
+2. 配置rc.local (root用户执行） 
+
+vi /etc/rc.d/rc.local
+增加以下行：
+su - oracle -c 'dbstart'
+su - oracle -c 'lsnrctl start'
+
+Oracle随Linux自动启动设置完毕！
