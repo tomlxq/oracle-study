@@ -1,0 +1,74 @@
+﻿OEL: oracle enterprise linux
+1. linux->Oracle enterprise linux
+2. E:\ocm\VMware\ocp 50G
+3. Memory 2G
+4. 仅主机模式　
+5. store virtual disk as a single file
+6. D:\腾科\OCP@腾科IT教育\OCP软件下载\操作系统_Oracle Linux 5.4_32\Enterprise-R5-U4-Server-i386-dvd.iso
+
+正式安装：
+安装介质校验，直接skip
+language:	English
+keyboard:	U.S.English
+
+win7 IP:	192.168.1.101(无线)
+VMnet1:		192.168.21.1
+VMnet8:		192.168.23.1 
+
+虚拟机->Edit->Virtual Network Editor
+	VMnet0	Bridged		
+	VMnet1	Host-only	192.168.21.0
+	VMnet8	NAT			192.168.23.0
+
+OEL 5.4
+IP Address:	192.168.21.3/255.255.255.0
+hostname:	oracle.example.com
+Gateway:	192.168.21.1
+时区:		Asia/Shanghai
+Pwd:		oracle
+包的选择：
+	Desktop Environments
+		Gnome Desktop Environment
+	Base System
+		Administration Tools
+		Base
+		X Window System
+	其它都不选
+安装完成后
+	接授协议
+	关闭防火墙
+	关闭SELinux Setting
+	创建用户跳过
+重启过后
+	打开终端->ctr+shift+加号放大　
+	ifconfig eth0	查看IP地址
+	ping 192.168.21.1
+	
+vmware vmnet1已经设置了IP，但是windows下 ipconfig和设置的不一致 
+http://blog.itpub.net/29634949/viewspace-1183266
+	
+VMware tools
+可以自由移动鼠标/拖动进出虚拟机
+df -h
+cd /media/VMwre\ Tools/
+ls	
+VMware tools
+可以自由移动鼠标/拖动进出虚拟机
+df -h
+cd /media/VMwre\ Tools/
+ls	
+cp VMwareTools-9.6.2-1688356.tar.gz /opt/
+cd /opt/
+tar -xzf VMwareTools-9.6.2-1688356.tar.gz
+cd vmware-tools-distrib/
+./vmware-install.pl 
+	
+
+Reference:
+1. linux设置网关和ip
+http://blog.csdn.net/zhaozh2000/article/details/6460176
+
+
+解决VMware nat service等服务不能启动
+打开虚拟机，在导航栏找到编辑，选择虚拟网络适配器
+进入到下图，在左下角找到恢复默认设置

@@ -1,0 +1,398 @@
+ORACLE环境变量定义
+	export在linux的bash中可以理解为设置环境变量。设置后能够被当前的shell及子shell使用。
+	这些变量的含义有一些有意义，可以查看相应的文档，我给你解释一些我知道的：
+	ORACLE_SID ORACLE的SID，作用是用来区分同一台计算机上的同一个数据库的不同实例。
+	ORACLE_HOME 表示ORACLE软件安装的目录
+	ORACLE_TERM 指定安装Oracle终端的类型
+	TNS_ADMIN 指定listener.ora tnsnames.ora的位置
+	NLS_LANG 指定Client的字符集
+	以下是Linux的变量：
+	LD_LIBRARY_PATH 设置临时的库文件的path路径
+	PATH 设置搜索路径
+	CLASSPATH 设置java lib文件搜索路径
+	TMPDIR 临时目录
+	set -o vi 默认的编辑器设置成vi
+	umask 022 用来设置创建文件或目录的默认权限
+
+一、安装ORACLE10g 软件(11.2.0.0)
+1.　搭建yum 仓库
+	挂载oel5.4 iso镜象文件
+	在虚拟机中选中你的虚拟机，右键->settings->CD/DVD(IDE)->Use ISO Image file,勾选Connected,Connect at power on 
+	[root@example ~]# umount /mnt
+	mount -o loop /dev/cdrom /mnt/
+	df -h
+	[root@oracle ~]# cat /etc/yum.repos.d/server.repo
+	[server]
+	name=oel5.4
+	baseurl=file:///mnt/Server
+	gpgcheck=0
+	检测yum 仓库是否已经配置好
+	yum list all
+	Tips：
+		执行yum list all 验证yum 仓库是否配置好。
+		若开始配置错了，用yum clean all 清理后，再次执行yum list all。
+
+4.	安装所需要的包
+	[root@ocm ~]# vi yum.sh
+	yum install binutils* -y
+	yum install compat* -y
+	yum install elfutils* -y
+	yum install gcc* -y
+	yum install glibc* -y
+	yum install kernel* -y
+	yum install ksh* -y
+	yum install libaio* -y
+	yum install libgcc* -y
+	yum install libgomp* -y
+	yum install libstdc* -y
+	yum install make* -y
+	yum install sysstat* -y
+	[root@ocm ~]# chmod 755 yum.sh 
+	[root@ocm ~]# ./yum.sh 
+（二）修改相关的系统配置
+	1. 修改etc/sysctl.conf,在/etc/sysctl.conf 文件尾部追加以下内容
+	[root@oracle ~]# vi /etc/sysctl.conf
+	fs.aio-max-nr = 1048576
+	fs.file-max = 6815744
+	kernel.shmall = 2097152
+	kernel.shmmax = 4294967295
+	kernel.shmmni = 4096
+	kernel.sem = 250 32000 100 128
+	net.ipv4.ip_local_port_range = 9000 65500
+	net.core.rmem_default = 262144
+	net.core.rmem_max = 4194304
+	net.core.wmem_default = 262144
+	net.core.wmem_max = 1048576
+	[root@oracle ~]# /sbin/sysctl -p 保存并退出，使修改生效
+	2. 修改/etc/security/limits.conf
+	//在/etc/secuirty/limits.conf 文件尾部追加以下内容，以设置用户限制
+	[root@oracle ~]# vi /etc/security/limits.conf
+	oracle soft nproc 2047
+	oracle hard nproc 16384
+	oracle soft nofile 1024
+	oracle hard nofile 65536
+	oracle soft stack 10240
+	3. 修改/etc/pam.d/login
+	//在/etc/pam.d/login 文件尾部追加以下内容，以修改登录配置
+	[root@oracle ~]# vi /etc/pam.d/login
+	session required pam_limits.so
+	4. 关闭SELINUX 功能
+	[root@oracle ~]# vi /etc/selinux/config
+	SELINUX=disabled //这里设置为disabled 即关闭SELINX
+	5. 修改/etc/hosts 文件
+	[root@oracle ~]# vi /etc/hosts
+	127.0.0.1 localhost.localdomain localhost
+	//本机IP 地址//长主机名//短主机名
+	192.168.21.4 oracle.example.com oracle
+	重启网络配置生效
+	Tips：
+		需要保证三处的主机名一致：
+		● /etc/hosts 中的长主机名
+		● 使用hostname 指令显示的主机名
+		● /etc/sysconfig/network 中的主机名//修改主机名后需要重启机器
+		使用IFCONFIG 指令查看本机IP
+		[root@oracle ~]# ifconfig
+		//确保此处IP 和/etc/hosts 文件中的IP 地址
+	[root@ocp ~]# service network restart
+	[root@ocp ~]# ping ocp.example.com
+（三）创建用户和用户组、创建安装目录
+1.	yum install oracle-validated
+	查看oracle用户
+	id oracle 安装完成发现oracle用户己自动创建出来了
+	或手动创建用户，组
+	[root@ocp ~]# groupadd dba   						//添加dba 用户组（ORACLE 管理组）
+	[root@ocp ~]# groupadd oinstall 					//添加oinstall 用户组（ORACLE 安装组）
+	[root@ocp ~]# useradd -g oinstall -G dba oracle		//创建oracle 用户并加入组
+	[root@ocp ~]# passwd oracle							//修改oracle 用户的密码
+	创建安装目录
+	[root@ocp ~]# cd /
+	[root@ocp /]# mkdir -p /u01/app/oracle						//创建安装目录
+	[root@ocp /]# chown -R oracle:oinstall /u01/app/oracle/		//修改安装目录的权限
+	检查权限发现己属于oracle oinstall
+	ls -l /u01/
+（四）修改环境变量	
+	1) 将以下几行追加在oracle 用户的环境变量中	
+	export PATH
+	export ORACLE_SID=orcl
+	export ORACLE_BASE=/u01/app/oracle
+	export ORACLE_HOME=$ORACLE_BASE/product/11.2.0/db_1
+	export PATH=$PATH:$ORACLE_HOME/bin
+	保存，并使参数生效
+	[root@ocp /]# source /home/oracle/.bash_profile  
+	[root@ocp /]# su - oracle
+	[oracle@ocp ~]$ echo $ORACLE_SID 
+	orcl
+	[oracle@ocp ~]$ echo $ORACLE_BASE 
+	/u01/app/oracle
+	[oracle@ocp ~]$ echo $ORACLE_HOME
+	/u01/app/oracle/product/11.2.0/db_1
+（五）解压缩安装包	
+	1)安装上传工具包，上传oracle安装包
+	su - 切换到root用户
+	[root@ocp ~]# cd /mnt/Server/
+	[root@ocp Server]# rpm -ivh lrzsz-0.12.20-22.1.i386.rpm 
+	
+	2) 将压缩包传输入LINUX 操作系统
+	1 如果已经安装VMware Tools 工具，直接拖动文件即可；
+	2 通过虚拟机设置共享文件夹，在/mnt 目录下找到共享文件夹；
+	3 通过WinSCP 工具进行远程传输。
+	linux_11gR2_database_1of2.zip
+	linux_11gR2_database_2of2.zip
+	将文件已oracle 用户身份传输至目录/u01/app/oracle
+
+	3.	上传oracle安装包
+		cd /u01/app/oracle/
+		rz 
+		选择,添加
+		p10404530_112030_LINUX_1of7.zip
+		p10404530_112030_LINUX_2of7.zip
+		unzip p10404530_112030_LINUX_1of7.zip 
+		unzip p10404530_112030_LINUX_2of7.zip 
+		或用脚本来解压
+		[oracle@ocp ~]$ cat unzip.sh 
+		ziphome=/u01/app/oracle
+		ziplist=`du -a $ziphome |grep '\.zip$'| awk '{print $2}'`
+		for loop in $ziplist
+		do
+		cd ${loop%/*}
+		unzip -o $loop
+		done
+		删除旧文件
+		rm -rf p10404530_112030_LINUX_*
+		修改权限
+		chown -R oracle.oinstall database/
+		ll
+		chmod 775 database/
+（六）安装数据库软件		
+6. 安装oracle
+	su - oracle
+	cd /u01/app/oracle
+	cd database/
+	./runInstaller
+	没有设置图形设置的一个输出,不能安装,设置windows的IP,然后冒号0.0
+	export DISPLAY=192.168.21.1:0.0
+	提前开启xmanager
+	./runInstaller   
+	会弹出oracle安装界面
+	1. 跳过email设置
+	2. 勾选skip software updates.
+	3. Install databases software only
+	4. Single instance database installation
+	5. language: english
+	6. Enterprise Edition
+	7. 目录核对一下,和之前设置一样就没有问题
+		Oracle base: /u01/app/oracle
+		ORACLE_HOME: /u01/app/oracle/product/11.2.0/db_1
+	8. 注意确定临时文件目录（保证目录存在并且权限正确)
+		Inventory Directory: /u01/app/oracle/oraInventory	
+	8.　Database administrator group: dba
+		Database operator group: dba
+	9. 　校验
+		 Fix & Check Again 
+		 用/tmp/CVU_11.2.0.3.0_oracle/runfixup.sh在root脚本下执行一下
+	10.　校验没有问题,按一下install
+	中间会弹出两个脚本,同样用root执行
+	安装过程查看日志： 
+二、创建数据库Create Oracle Database
+[oracle@localhost database]$ dbca
+
+	 
+1. ORA-00845: MEMORY_TARGET not supported on this system
+[root@ocm ~]# df -h | grep shm
+tmpfs                1014M     0 1014M   0% /dev/shm
+[root@ocm ~]# mount -o remount,size=2G /dev/shm 
+[root@ocm ~]# df -h | grep shm
+tmpfs                 2.0G     0  2.0G   0% /dev/shm
+
+来自Oracle的官方解析是：
+Starting with Oracle Database 11g, the Automatic Memory Management feature requires more shared memory (/dev/shm)and file descriptors. The size of the shared memory should be at least the greater of MEMORY_MAX_TARGET and MEMORY_TARGET for each Oracle instance on the computer. If MEMORY_MAX_TARGET or MEMORY_TARGET is set to a non zero value, and an incorrect size is assigned to the shared memory, it will result in an ORA-00845 error at startup.
+简单来说就是 MEMORY_MAX_TARGET 的设置不能超过 /dev/shm 的大小
+
+2. SecureCRT中解决SQLPLUS上下左右键问题
+	1 下载安装包rlwrap: rlwrap-0.30.tar.gz
+		http://utopia.knoware.nl/~hlub/uck/rlwrap/
+	2  install rlwrap：
+		wget "http://utopia.knoware.nl/~hlub/rlwrap/rlwrap-0.37.tar.gz"
+		tar -xzvf rlwrap-0.37.tar.gz
+		cd rlwrap-0.37
+		./configure && make && make check && make install
+		 
+		执行 ./configure && make && make check && make install 报错:
+		You need the GNU readline library(ftp://ftp.gnu.org/gnu/readline/ ) to build
+		this program!
+		 
+		PS:解决办法, 安装相关组件,  如:  yum install readline*
+		然后再执行  ./configure && make && make check && make install
+
+	3 使用
+		切换到oracle用户，编辑.bash_profile文件，
+		#su - oracle
+		#vi .bash_profile
+		在后边加上如下内容：
+		alias sqlplus='rlwrap sqlplus'
+		alias rman='rlwrap rman'
+		stty erase ^h 
+
+3. linux rz命令传输报错“Zmodem 传输被远端取消”
+	1) rz -e 使用rz命令时，加上-e选项，这样会将发送端的所有控制字符转义，这样就会避免乱码。
+	2）如果所用rz命令没有-e选项，请安装lrzsz软件版本
+
+	
+三、常见安装错误
+1.网络连接不通
+问题描述：无法连接到服务器获取安装包和相关文档。
+解决方案：
+1) 检查网线是否插好
+2) 检查网卡是否开启
+3) 检查是否配置IP 地址
+ifconfig
+发现没有配置IP 地址
+1 临时配置方法：ifconfig br0 192.168.0.201
+2 修改参数配置方法：
+vim /etc/sysconfig/network/network-scripts/ifcfg-br0
+DEVICE=br0
+ONBOOT=yes
+BOOTPROTO=dhcp
+TYPE=Bridge
+UM_CONTROLLED=no
+IPV6INIT=no
+PEERNTP=no
+NAME ="Bridge eth0"
+vim /etc/sysconfig/network/network-scripts/ifcfg-eth0
+DEVICE="eth0"
+BOOTPROTO=none
+BRIDGE=br0
+ONBOOT=yes
+3 重新启动网络服务
+service network restart
+4 检查网络配置是否更新
+ifconfig br0
+ping 192.168.0.254
+专业专注超越Oracle 安装入门篇之OEL5.4 安装Oracle11g
+- 21 -
+2.删除重建用户不干净
+问题描述：重建用户时显示用户家目录已经存在。
+解决方案：
+1) 先干净删除重建用户
+userdel -r oracle
+2) 删除旧用户遗留的家目录
+rm -rf /home/oracle
+3) 重建用户
+useradd oracle
+3.yum 安装包安装失败
+问题描述：yum 安装到一半失败。
+解决方案：
+1) 确定是下载包时失败还是安装时失败
+查看linux 的提示信息，发现是下载失败
+2) 检查网络连接
+ping 192.168.0.254 发现网络不通
+3) 将网线推紧
+4) 检查网络连接
+ping 192.168.0.254 发现网络已通
+5) 重新执行yum 安装
+yum install ...
+4.解压缩时权限不足
+问题描述：对压缩包有权限，却无法解压缩
+解决方案：
+1) 查看要释放文件的目录是否有权限
+ls -l /opt 发现虽然对压缩包有权限，对相应的目录却没有权限
+2) 修改解压缩文件的目录，或者改变该目录的权限
+使用oracle 用户：mkdir /opt/oracle ，将压缩包放至该目录下
+5.无法启动图形化界面
+问题描述：启动安装./runInstaller 时报了一堆错
+解决方案：
+1) 重做yum 安装包
+2) 再次尝试，发现问题解决
+Tips:使用yum 安装包时，差一个字母甚至空格都有可能导致少安装包，从而导致无法进入
+ORACLE 安装界面
+专业专注超越Oracle 安装入门篇之OEL5.4 安装Oracle11g
+- 22 -
+6.无法打开会话
+问题描述：登录ORACLE 用户时显示:Can not open session(使用root 用户亦无法登录，且其
+他用户可以正常登录)
+解决方案：
+1) 检查/etc/security/limits.conf 文件
+2) 修改其内容为：
+oracle soft nproc 2047
+oracle hard nproc 16384
+oracle soft nofile 1024
+oracle hard nofile 65536
+Tips:soft(软件)、hardware（硬件）、nproc（最大进程）、nofile（最大文件数量）
+7.进入安装界面提示权限不足
+问题描述：运行./runInstaller 界面提示权限不足
+解决方案：
+1) 检查环境变量中的$ORACLE_BASE 和$ORACLE_HOME
+more ~/.bash_profile
+2) 检查安装软件的目录是否和环境变量中的路径一致
+3) 检查ORACLE 用户以及oinstaller 用户组对安装软件的目录是否有足够的权限
+ls -l
+4) 若是有足够权限，不理会该错误，直接进行下一步操作，但是要核对安装界面所显示的
+路径和环境变量、用户设定目录是否一致
+5) 若没有足够权限，则赋予相应权限
+chown oracle:oinstaller /opt/oracle10g
+chmod 775 /opt/oracle10g
+8.安装检测时警告swap 空间不够
+问题描述：安装检测时警告swap 分区可能不足
+解决方案：
+1) 使用dd 命令为swap 创建新文件
+dd if=/dev/zero of=/home/swapfile bs=1M count=1024
+2) 将文件改为swap 格式
+mkswap /home/swapfile
+3) 将新的swap 开启
+swapon /home/swapfile
+4) 查看swap 大小
+swapon -s
+5) 将新的swap 改为开机自动挂载，在/etc/fstab 末尾添加：
+/home/swapfile swap swap defaults 0 0
+专业专注超越Oracle 安装入门篇之OEL5.4 安装Oracle11g
+- 23 -
+9.安装到一半显示磁盘空间不足
+问题描述：安装到一半显示无法写入，磁盘已满
+解决方案：
+1) 检查磁盘空间
+df -h
+2) 删除已安装的软件，转换到其他磁盘
+3) 如果其他磁盘也没有空间，重新规划或者删除部分文件
+Tips:安装软件前先确保有足够的空间（至少10G）
+10.安装完成后无法使用sqlplus 命令
+问题描述：安装完成后在终端输入sqlplus，显示command not found
+解决方案：
+1) 去安装目录下查找sqlplus 指令
+cd /opt/oracle10g/product/10.2.0/db_1/bin
+ls -l sqlplus
+2) 若找不到，则重新安装
+3) 能找到sqlplus，试着打全路径运行该指令，如果能成功执行，尝试修改$ORACLE_BASE
+4) 如果执行出错，显示HOME 不匹配，则尝试修改$ORACLE_HOME
+Tips:修改完.bash_profile 文件后使用source 指令重新编译，若新终端不生效，则重启计算机。
+11.建立数据库后数据库打不开
+问题描述：成功创建数据库，连接上sqlplus 后却无法打开数据库
+解决方案：
+1) 检查数据库文件是否成功创建
+cd $ORACLE_BASE/oradata
+ls 查看实例名
+进入orcl 目录下查看文件是否完整
+2) 检查环境中的$ORACLE_SID 是否和刚刚建立的实例名一致
+echo $ORACLE_SID
+若不一致，修改实例名即可
+专业专注超越Oracle 安装入门篇之OEL5.4 安装Oracle11g
+- 24 -
+12.安装、升级ORACLE 时报错ORA-27125
+问题描述：升级ORACLE，执行./runInsaller 至2%时报错ORA-25125:unable to create shared
+memory segment
+解决方案：
+1) 检查oracle 用户信息
+[oracle@oracle ~]$ id oracle
+uid=501(oracle) gid=502(oinstall) groups=502(oinstall),501(dba)
+2) 检查文件/proc/sys/vm/hugetlb_shm_group
+[oracle@oracle ~]$more /proc/sys/vm/hugetlb_shm_group
+0
+3) 用root 执行下面的命令，将dba 组添加到系统内核中
+echo 501 > /proc/sys/vm/hugetlb_shm_group
+Tips:根据系统显示oinstall 用户组的组ID 进行修改
+
+13.永恒的ORA-00600
+问题描述：安装、升级ORACLE 过程中遇到ORA-00600
+解决方案：
+检查网络配置，修改后继续。
+生产环境中一般使用升级ORACLE 或者重新安装ORACLE 来解决，详细解决方案参考网络
+该错误是ORACLE 软件的一个bug。	
