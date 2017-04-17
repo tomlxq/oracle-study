@@ -6668,3 +6668,520 @@ SQL> UPDATE (SELECT prod_id, cust_id, quantity_sold, time_id FROM sales)
   6                       AND cust_credit_limit = 600);
 
 0 rows updated.
+QUESTION 165
+View the Exhibit and examine the description for the CUSTOMERS table.
+You want to update the CUST_INCOME_LEVEL and CUST_CREDIT_LIMIT columns for the customer
+with the CUST_ID 2360. You want the value for the CUST_INCOME_LEVEL to have the same value as
+that of the customer with the CUST_ID 2560 and the CUST_CREDIT_LIMIT to have the same value as
+that of the customer with CUST_ID 2566.
+Which UPDATE statement will accomplish the task?
+A. UPDATE customers
+SET cust_income_level = (SELECT cust_income_level
+FROM customers
+WHERE cust_id = 2560),
+cust_credit_limit = (SELECT cust_credit_limit
+FROM customers
+WHERE cust_id = 2566)
+WHERE cust_id=2360;
+B. UPDATE customers
+SET (cust_income_level,cust_credit_limit) = (SELECT
+cust_income_level, cust_credit_limit
+FROM customers
+WHERE cust_id=2560 OR cust_id=2566)
+WHERE cust_id=2360;
+C. UPDATE customers
+SET (cust_income_level,cust_credit_limit) = (SELECT
+cust_income_level, cust_credit_limit
+FROM customers
+WHERE cust_id IN(2560, 2566)
+WHERE cust_id=2360;
+D. UPDATE customers
+SET (cust_income_level,cust_credit_limit) = (SELECT
+cust_income_level, cust_credit_limit
+FROM customers
+WHERE cust_id=2560 AND cust_id=2566)
+WHERE cust_id=2360;
+Correct Answer: A
+二、题目翻译
+查看CUSTOMERS表的结构:
+要更新CUST_ID为2360的CUST_INCOME_LEVEL和CUST_CREDIT_LIMIT列值,要让CUST_INCOME_LEVEL的值与CUST_ID为2560的值一样，让CUST_CREDIT_LIMIT的值与CUST_ID为2566的值一样。
+哪一个UPDATE语句能完成该任务?
+
+三、题目解析
+B和C选项不正确，由于子查询里返回多行记录，而这里又是=,所以报错。
+D明显子查询的条件不符合题意，这里不会返回结果。
+QUESTION 166
+View the Exhibit and examine the structures of the EMPLOYEES and DEPARTMENTS tables.
+You want to update the EMPLOYEES table as follows:4 ? 4;
+-Update only those employees who work in Boston or Seattle (locations 2900 and 2700).
+-Set department_id for these employees to the department_id corresponding to London (location_id
+2100).
+-Set the employees' salary in location_id 2100 to 1.1 times the average salary of their department.
+-Set the employees' commission in location_id 2100 to 1.5 times the average commission of their
+department.
+You issue the following command:
+SQL>UPDATE employees
+SET department_id =
+(SELECT department_id
+FROM departments
+WHERE location_id = 2100),
+(salary, commission) =
+(SELECT 1.1*AVG(salary), 1.5*AVG(commission)
+FROM employees, departments
+WHERE departments.location_id IN(2900,2700,2100))
+WHERE department_id IN
+(SELECT department_id
+FROM departments
+WHERE location_id = 2900
+OR location_id = 2700)
+What is the outcome?
+A. It executes successfully and gives the correct result.
+B. It executes successfully but does not give the correct result.
+C. It generates an error because a subquery cannot have a join condition in an UPDATE statement.
+D. It generates an error because multiple columns (SALARY, COMMISION) cannot be specified together
+in an UPDATE statement.
+二、题目翻译
+看下面EMPLOYEES和DEPARTMENTS表的结构:
+要把EMPLOYEES表做如下更新:
+--只更新那些在Boston或Seattle工作的employees（locations为2900和2700)。
+--设置这些employees的department_id为London（location_id=2100）对应的department_id。
+--设置location_id=2100的employees' salary为他们部门的平均薪水的1.1倍。
+--设置location_id=2100的employees' commission为他们部门的平均提成的1.1倍。
+执行下面的语句：
+结果是什么?
+A.执行成功并给出正确结果。
+B.执行成功但不给出正确结果。
+C.报错，因为UPDATE语句中的子查询不能使用连接条件。
+D.报错，因为UPDATE语句中不能一起指定多个列（SALARY, COMMISION）。
+
+三、题目解析
+(salary, commission) = (SELECT 1.1 * AVG(salary),
+                               1.5 * AVG(commission)
+                          FROM employees, departments
+                         WHERE departments.location_id IN (2900, 2700, 2100)
+这个子查询，查出来的，不是题目要求的记录，
+employees, departments两张表应该使用部门ID进行关联
+而且，这里只需要改location_id=2100的员工的工资和提成，其它两个部门的都不需要，所以不正确。
+所以，这个语句虽然能正常执行，但不是我们题目要求的结果。
+
+QUESTION 167
+Evaluate the following DELETE statement:
+DELETE FROM sales;
+There are no other uncommitted transactions on the SALES table.
+Which statement is true about the DELETE statement?
+A. It would not remove the rows if the table has a primary key.
+B. It removes all the rows as well as the structure of the table.
+C. It removes all the rows in the table and deleted rows can be rolled back.
+D. It removes all the rows in the table and deleted rows cannot be rolled back.
+Correct Answer: C
+
+二、题目翻译
+评估下面的DELETE语句:
+在SALES表上没有其它未提交的事务。
+关于DELETE语句哪句话是正确的？
+A.如果表中有主键则不能移除行。
+B.移除表中所有行及表结构。
+C.移除表中所有行，并且删除的行可以回滚。
+D.移除表中所有行，并且删除的行不可以回滚。
+
+三、题目解析
+DELETE FROM sales; 语句，
+1.没有where子句，所以是删除表中所有的行数据。
+2.delete是DML语句，在执行的时候，会记录undo信息，而且这里没有commit，所以可以用rollback回滚。
+QUESTION 168
+View the Exhibit and examine the description of SALES and PROMOTIONS tables.
+You want to delete rows from the SALES table, where the PROMO_NAME column in the PROMOTIONS
+table has either blowout sale or everyday low price as values.
+Which DELETE statements are valid? (Choose all that apply.)
+A. DELETE
+FROM sales
+WHERE promo_id = (SELECT promo_id
+FROM promotions
+WHERE promo_name = 'blowout sale')
+AND promo_id = (SELECT promo_id
+FROM promotions
+WHERE promo_name = 'everyday low price');
+B. DELETE
+FROM sales
+WHERE promo_id = (SELECT promo_id
+FROM promotions
+WHERE promo_name = 'blowout sale')
+OR promo_id = (SELECT promo_id
+FROM promotions
+WHERE promo_name = 'everyday low price');
+C. DELETE
+FROM sales
+WHERE promo_id IN (SELECT promo_id
+FROM promotions
+WHERE promo_name = 'blowout sale'
+OR promo_name = 'everyday low price');
+D. DELETE
+FROM sales
+WHERE promo_id IN (SELECT promo_id
+FROM promotions
+WHERE promo_name IN ('blowout sale','everyday low price'));
+Answer: BCD
+Correct Answer: BCD
+二、题目翻译
+看SALES和PROMOTIONS表的结构:
+要从SALES表中删除行，条件为PROMOTIONS表中PROMO_NAM列的值为blowout sale或者everyday low price。
+哪个DELETE语句有效?(选择所有正确的项)
+
+三、题目解析
+A选项不正确，题目要求的是PROMO_NAM列的值为blowout sale或者everyday low price，而A选项中，是用的AND,得出的结果就不是题目想要的结果。
+BCD选项正确。
+
+QUESTION 169
+View the Exhibit and examine the description for the PRODUCTS and SALES table.
+PROD_ID is a primary key in the PRODUCTS table and foreign key in the SALES table. You want to
+remove all the rows from the PRODUCTS table for which no sale was done for the last three years.
+Which is the valid DELETE statement?
+A. DELETE
+FROM products
+WHERE prod_id = (SELECT prod_id
+FROM sales
+WHERE time_id - 3*365 = SYSDATE );
+B. DELETE
+FROM products
+WHERE prod_id = (SELECT prod_id
+FROM sales
+WHERE SYSDATE >= time_id - 3*365 );
+C. DELETE
+FROM products
+WHERE prod_id IN (SELECT prod_id
+FROM sales
+WHERE SYSDATE - 3*365 >= time_id);
+D. DELETE
+FROM products
+WHERE prod_id IN (SELECT prod_id
+FROM sales
+WHERE time_id >= SYSDATE - 3*365 );
+Correct Answer: C
+
+二、题目翻译
+看下面PRODUCTS and SALES表的结构:
+PROD_ID是PRODUCTS表的主键，SALES表的外键.你想从PRODUCTS表移除所有过去三年没有销售过的产品行。
+哪一个DELETE语句有效？
+
+三、题目解析
+子查询SELECT prod_id FROM sales WHERE SYSDATE - 3 * 365 >= time_id判断哪些产品是三年前的产品。
+但是这样的判断也不够精确，比如，有可能有一年有366天,
+而且这里PROD_ID是sales表的外键，如果直接这样删除，会报外键约束的错, 除非先禁用约束，或连SALES表中的数据一起删除。
+不过，在这些选项中，只有C选项最接近，那就选C吧。
+QUESTION 170
+Which two statements are true regarding the DELETE and TRUNCATE commands? (Choose two.)
+A. DELETE can be used to remove only rows from only one table at a time.
+B. DELETE can be used to remove only rows from multiple tables at a time.
+C. DELETE can be used only on a table that is a parent of a referential integrity constraint.
+D. DELETE can be used to remove data from specific columns as well as complete rows.
+E. DELETE and TRUNCATE can be used on a table that is a parent of a referential integrity constraint
+having ON DELETE rule .
+Correct Answer: AE
+二、题目翻译
+关于DELETE和TRUNCATE命令哪两个句子是正确的？(选择两个)
+A.DELETE一次只能用于移除一个表的行。
+B.DELETE一次只能用于移除多个表的行。
+C.DELETE只能用于删除有引用完整性约束的父表。
+D.DELETE可以用于删除指定列的数据以及完整的行。
+E.DELETE和TRUNCATE可以用于有引用完整性约束ON DELETE规则的父表。
+
+三、题目解析
+表可以使用ON DELETE CASCADE选项（当删除父表数据时，子表数据也一起删除）或ON DELETE CASCAD SET NULL选项（当删除父表数据时，子表相关的列设置为NULL）,
+有这些选项，就可以在父表中直接删除相关的行，而不会报外键约束错误。
+
+QUESTION 171
+Which three statements/commands would cause a transaction to end? (Choose three.)
+A. COMMIT
+B. SELECT
+C. CREATE
+D. ROLLBACK
+E. SAVEPOINT
+Correct Answer: ACD
+二、题目翻译
+下列哪三个语句/命令能导致一个事务结束？（选择三个）
+
+三、题目解析
+A选项正确，commit会提交事务，事务结束。
+B选项不正确，select语句是DML语句，不影响事务。
+C选项正确，create语句是DDL语句，DDL语句会自动提交事务，事务结束。
+D选项正确，rollback回滚事务，事务结束。
+E选项不正确，savepoint是保存某个点，然后在回滚的时候可以回滚到某个点，但它不影响事务。
+
+QUESTION 172
+The SQL statements executed in a user session are as follows:
+SQL> CREATE TABLE product
+(pcode NUMBER(2),
+pname VARCHAR2(10));
+SQL> INSERT INTO product VALUES (1, 'pen');
+SQL> INSERT INTO product VALUES (2,'pencil');
+SQL> SAVEPOINT a;
+SQL> UPDATE product SET pcode = 10 WHERE pcode = 1;
+SQL> SAVEPOINT b;
+SQL> DELETE FROM product WHERE pcode = 2;
+SQL> COMMIT;
+SQL> DELETE FROM product WHERE pcode=10;
+Which two statements describe the consequences of issuing the ROLLBACK TO SAVE POINT a
+command in the session? (Choose two.)
+A. The rollback generates an error.
+B. No SQL statements are rolled back.
+C. Only the DELETE statements are rolled back.
+D. Only the second DELETE statement is rolled back.
+E. Both the DELETE statements and the UPDATE statement are rolled back.
+Correct Answer: AB
+二、题目翻译
+在一个user session执行如下的SQL语句:
+哪两个句子可以描述执行ROLLBACK TO SAVE POINT a的影响:
+A.rollback语句会报错。
+B.没有SQL语句被回滚。
+C.只有DELETE语句被回滚。
+D.只有第二个DELETE语句被回滚。
+E.两个DELETE语句和UPDATE语句被回滚。
+
+三、题目解析
+在倒数第二句，commit语句之后，前面的内容都提交了，事务就结束了.
+savepoint a是这个结束事务的回滚点，这个事务结束以后，再执行ROLLBACK TO SAVE POINT a就会报错了，而且也不会回滚任何的数据。
+
+QUESTION 173
+When does a transaction complete? (Choose all that apply.)
+A. when a DELETE statement is executed
+B. when a ROLLBACK command is executed
+C. when a PL/SQL anonymous block is executed
+D. when a data definition language ( DDL) statement is executed
+E. when a TRUNCATE statement is executed after the pending transaction
+Correct Answer: BDE
+二、题目翻译
+什么时候会结束一个事务(选择所有正确的选项)?
+A.当DELETE语句被执行后。
+B.当ROLLBACK语句被执行后。
+C.当一个PL/SQL匿名块被执行后。
+D.当DLL语句被执行后。
+E.在事务挂起之后执行TRUNCATE语句。
+
+三、题目解析
+A选项不正确，DELETE是DML语句，不会结束事务。
+B选项正确，rollback会回滚事务，事务结束。
+C选项不正确，PL/SQL匿名块，不影响事务。
+D选项正确，DDL语句，会自动提交事务，事务结束。
+E选项正确，TRUNCATE也是DDL语句，也会自动提交事务，所以事务结束。
+
+QUESTION 174
+Which statement is true regarding transactions? (Choose all that apply.)
+A. A transaction can consist only of a set of DML and DDL statements.
+B. A p art or an entire transaction can be undone by using ROLLBACK command .
+C. A transaction consists of a set of DML or DCL statements.
+D. A part or an entire transaction can be made permanent with a COMMIT
+E. A transaction can consist of only a set of queries or DML or DDL statements.
+Correct Answer: BC
+
+二、题目翻译
+下面关于事务的描述中，哪句是正确的？（选择所有正确的项）
+A.一个事务只能由一组DML和DDL语句组成。
+B.部分或整个事务可以使用ROLLBACK命令回滚。
+C.一个事务由一组DML或DCL语句组成。
+D.部分或整个事务可以使用COMMIT命令永久提交。
+E.一个事务只能由一组查询或DML或DDL语句组成。
+
+三、题目解析
+A选项不正确，DDL语句就自动提交事务了，所以一组事务中不能包含DDL语句。
+B选项正确，rollback可以回滚部分或整个事务。
+C选项，在答案中，是选的正确，但是做过测试，是不正确的，DCL语句和DDL语句一样，会自动提交数据。
+D选项不正确，commit会提交整个事务。
+E选项不正确，DDL语句会自动提交事务，所以一个事务中不能包含DDL语句。
+
+四、测试
+在11g的联机文档中，DCL语句定义如下：
+Data Control Language
+     You can issue native data control language (DCL) statements from an Oracle environment, allowing central administration of user privileges and access levels for heterogeneous data stores.
+根据描述可以知道，grant,revoke这些控制权限的语句，属于DCL语句，下面就使用grant语句来做实验。
+SQL> create table t(id int);
+
+Table created.
+
+SQL> insert into t values(1);
+
+1 row created.
+
+SQL> grant select on t to hr;
+
+Grant succeeded.
+
+SQL> select * from t;
+
+        ID
+----------
+         1
+
+SQL> rollback;
+
+Rollback complete.
+
+SQL> select * from t;
+
+        ID
+----------
+         1
+实验证明：grant已经把事务自动提交了，所以，事务中是不能包含DCL语句的。
+QUESTION 175
+Which two statements are true regarding savepoints? (Choose two.)
+A. Savepoints are effective only for COMMIT.
+B. Savepoints may be used to ROLLBACK.
+C. Savepoints can be used for only DML statements.
+D. Savepoints are effective for both COMMIT and ROLLBACK.
+E. Savepoints can be used for both DML and DDL statements.
+Correct Answer: BC
+二、题目翻译
+关于savepoint的描述，下面哪两句话是正确的？(选择两个）
+A.保存点只对COMMIT有效。
+B.保存点可以用于ROLLBACK。
+C.保存点只能用于DML语句。
+D.保存点对于COMMIT和ROLLBACK都有效。
+E.保存点可以用于DML和DDL语句。
+
+三、题目解析
+savepoint 表示保存某个点，可以rollback到这个点，也可以commit提交整个事务，但对于commit来说，这个savepoint没有任何意义。
+所以A和D不正确，B正确。
+DML语句会开始一个事务，在这事务中，可以使用savepoint保存点，但DDL不像DML那样，它不会开始一个事务，也不用提交事务，所以DDL不需要保存点。
+所以，C正确，D不正确。
+
+补充题库 第1题 TRUNCATE命令的使用
+一、原题
+Evaluate the SQL statement:
+TRUNCATE TABLE DEPT;
+Which three are true about the SQL statement? (Choose three.)
+A. It releases the storage space used by the table.
+B. It does not release the storage space used by the table.
+C. You can roll back the deletion of rows after the statement executes.
+D. You can NOT roll back the deletion of rows after the statement executes.
+E. An attempt to use DESCRIBE on the DEPT table after the TRUNCATE statement executes will
+display an error.
+F. You must be the owner of the table or have DELETE ANY TABLE system privileges to truncate
+the DEPT table
+
+答案： A,D,F
+
+二、题目翻译
+评估下面的sql语句:
+TRUNCATE TABLE DEPT;
+关于上面的sql语句，哪三个描述是正确的?(选择三项)
+A.会释放表使用的存储空间。
+B.不会释放表使用的存储空间。
+C.执行完成后，可以回滚删除的数据。
+D.执行完成后，不能回滚删除的数据。
+E.执行完成后，使用DESCRIBE DEPT命令显示表结构会报错。
+F. 执行这个命令，需要是这张表的拥有者，或者有DELETE ANY TABLE权限。
+
+三、题目解析
+TRUNCATE命令，是删除表中所有的数据，并且释放表空间，因为在删除的过程中不会产生undo信息，所以，不能回滚。
+执行这个命令，需要有相关的权限，是自己建的表，或是有DELETE ANY TABLE权限，才可以删。
+
+一、原题
+You need to design a student registration database that contains several tables storing academic
+information.
+The STUDENTS table stores information about a student. The STUDENT_GRADES table stores
+information about the student's grades. Both of the tables have a column named STUDENT_ID.
+The STUDENT_ID column in the STUDENTS table is a primary key.
+You need to create a foreign key on the STUDENT_ID column of the STUDENT_GRADES table
+that points to the STUDENT_ID column of the STUDENTS table. Which statement creates the
+foreign key?
+A.
+CREATE TABLE student_grades (student_id NUMBER(12),
+                             semester_end DATE, 
+                             gpa NUMBER(4,3), 
+                             CONSTRAINT student_id_fk REFERENCES (student_id) FOREIGN KEY students(student_id));
+B.
+CREATE TABLE student_grades(student_id NUMBER(12),
+                            semester_end DATE, 
+                            gpa NUMBER(4,3), 
+                            student_id_fk FOREIGN KEY (student_id) REFERENCES students(student_id));
+C.
+ CREATE TABLE student_grades(student_id NUMBER(12),
+                             semester_end DATE, 
+                             gpa NUMBER(4,3), 
+                             CONSTRAINT FOREIGN KEY (student_id) REFERENCES students(student_id));
+D.
+CREATE TABLE student_grades(student_id NUMBER(12),
+                             semester_end DATE, 
+                             gpa NUMBER(4,3),
+                             CONSTRAINT student_id_fk FOREIGN KEY (student_id) REFERENCES students(student_id));
+
+
+答案: D
+
+二、题目翻译
+要设计一个包含几个表的存储大学生注册信息的数据库。
+STUDENTS表保存学生信息，STUDENT_GRADES表保存学生的成绩信息，这两张表都有一列STUDENT_ID,STUDENTS表中的STUDENT_ID列是主键。
+现在要在STUDENT_GRADES表上建一个STUDENT_ID列的外键，下面哪个是建外键的语句?
+
+三、题目解析
+这个就是语法问题，查一下语法图，就可以了。
+
+一、原题
+Here is the structure and data of the CUST_TRANS table:
+
+Exhibit:
+Dates are stored in the default date format dd-mm-rr in the CUST_TRANS table.
+Which three SQL statements would execute successfully? (Choose three.)
+A. SELECT transdate + '10' FROM cust_trans;
+B. SELECT * FROM cust_trans WHERE transdate = '01-01-07';
+C. SELECT transamt FROM cust_trans WHERE custno > '11';
+D. SELECT * FROM cust_trans WHERE transdate='01-JANUARY-07';
+E. SELECT custno + 'A' FROM cust_trans WHERE transamt > 2000;
+
+答案: A,C,D
+
+二、题目翻译
+下面是CUST_TRANS表的结构
+日期被存成默认格式dd-mm-rr
+下面哪几个SQL语句会执行成功?(选择三项)
+
+三、题目解析
+A选项正确，transdate列是DATE类型， + '10'，虽然是一个字符串，但它会自动转成数值类型，与DATE类型相加，所以正确。
+B选项错误，transdate列是默认格式，使用transdate = '01-01-07'判断报错。
+C选项正确，custno列是字符类型，字符类型比较大小，是按字母顺序，转成ASC码来比较。
+D选项正确，transdate是默认的dd-mm-rr格式，可以和'01-JANUARY-07'匹配比较，所以也不需要将字符串转成日期格式。
+E选项不正确，custno + 'A'，custno是字符串，两个字符串连接要使用 ||, 而不是+ 。
+SQL> select case when  sysdate > '01-january-08' then 'greater' else 'others' end from dual;
+
+CASEWHE
+-------
+greater
+
+SQL> select case when  sysdate > '01-jan-08' then 'greater' else 'others' end from dual;
+
+CASEWHE
+-------
+greater
+
+SQL> select case when  sysdate > '01-jan-2008' then 'greater' else 'others' end from dual;
+
+CASEWHE
+-------
+greater
+
+SQL> select case when  sysdate > '01-january-2008' then 'greater' else 'others' end from dual;
+
+CASEWHE
+-------
+greater
+
+一、原题
+See the Exhibit and examine the structure and data in the INVOICE table:
+Exhibit:
+
+Which two SQL statements would executes successfully? (Choose two.)
+A. SELECT MAX(inv_date),MIN(cust_id) FROM invoice;
+B. SELECT MAX(AVG(SYSDATE - inv_date)) FROM invoice;
+C. SELECT AVG(inv_date) FROM invoice;
+D. SELECT AVG(inv_date - SYSDATE),AVG(inv_amt) FROM invoice;
+
+答案: A,D
+
+二、题目翻译
+看下面INVOICE表的结构：
+哪两个SQL会执行成功（选择两项）?
+
+三、题目解析
+B选项不正确，SYSDATE - inv_date的结果是数字，这里AVG的结果就只有一条记录了，再求MAX，就没意义了，这句会报错。
+C选面不正确，inv_date是日期类型，AVG求日期的平均值，会报错。
+
+http://blog.csdn.net/holly2008/article/details/26983849
