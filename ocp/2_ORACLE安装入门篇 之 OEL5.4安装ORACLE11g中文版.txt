@@ -249,7 +249,7 @@ ifconfig
 发现没有配置IP 地址
 1 临时配置方法：ifconfig br0 192.168.0.201
 2 修改参数配置方法：
-vim /etc/sysconfig/network/network-scripts/ifcfg-br0
+vim /etc/sysconfig/network-scripts/ifcfg-br0
 DEVICE=br0
 ONBOOT=yes
 BOOTPROTO=dhcp
